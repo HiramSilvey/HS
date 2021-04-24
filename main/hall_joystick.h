@@ -1,7 +1,7 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef MAIN_JOYSTICK_H_
-#define MAIN_JOYSTICK_H_
+#ifndef MAIN_HALL_JOYSTICK_H_
+#define MAIN_HALL_JOYSTICK_H_
 
 // Neutral, minimum, and maximum values each joystick axis is expected to
 // output.
@@ -11,9 +11,9 @@ struct JoystickBounds {
   int max;
 };
 
-class Joystick {
+class HallJoystick {
  public:
-  explicit Joystick(JoystickBounds bounds)
+  explicit HallJoystick(JoystickBounds bounds)
     : bounds_(bounds), sensor_(Tlv493d()) {}
 
   // Initializations to be run once before the main loop.
@@ -30,4 +30,4 @@ class Joystick {
   Tlv493d sensor_;
 }
 
-#endif  // MAIN_JOYSTICK_H_
+#endif  // MAIN_HALL_JOYSTICK_H_

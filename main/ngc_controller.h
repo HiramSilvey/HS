@@ -5,7 +5,7 @@
 
 #include <GamecubeAPI.h>
 #include "main/controller.h"
-#include "main/joystick.h"
+#include "main/hall_joystick.h"
 
 class NGCController: public Controller {
  public:
@@ -15,7 +15,7 @@ class NGCController: public Controller {
   Gamecube_Data_t output_;
   CGamecubeController controller_;
   CGamecubeConsole console_;
-  Joystick joystick_;
+  HallJoystick joystick_;
 }
 
 #endif  // MAIN_NGC_CONTROLLER_H_

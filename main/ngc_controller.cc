@@ -3,7 +3,7 @@
 #include <GamecubeAPI.h>
 #include "main/constants.h"
 #include "main/ngc_controller.h"
-#include "main/joystick.h"
+#include "main/hall_joystick.h"
 #include "main/pins.h"
 
 // Default output data values.
@@ -52,7 +52,7 @@ bool NGCController::Init() {
 
   output_ = defaultGamecubeData;
   console_ = CGamecubeConsole(kGameCubeConsole);
-  joystick_ = Joystick({.neutral = kJoystickNeutral,
+  joystick_ = HallJoystick({.neutral = kJoystickNeutral,
                         .min = kJoystickMin,
                         .max = kJoystickMax});
 

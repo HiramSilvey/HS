@@ -4,14 +4,14 @@
 #define MAIN_USB_CONTROLLER_H_
 
 #include "main/controller.h"
-#include "main/joystick.h"
+#include "main/hall_joystick.h"
 
 class USBController: public Controller {
  public:
   USBController();
 
  private:
-  Joystick joystick_;
+  HallJoystick joystick_;
 }
 
 #endif  // MAIN_USB_CONTROLLER_H_

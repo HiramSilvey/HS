@@ -1,19 +1,19 @@
 // Copyright 2021 Hiram Silvey
 
-#include "main/joystick.h"
+#include "main/hall_joystick.h"
 
 #include <Tlv493d.h>
 
-void Joystick::Setup() {
+void HallJoystick::Setup() {
   sensor_.begin();
 }
 
-int Joystick::GetX() {
+int HallJoystick::GetX() {
   // TODO(hiram): implement
   return 0;
 }
 
-int Joystick::GetY() {
+int HallJoystick::GetY() {
   // TODO(hiram): implement
   return 0;
 }

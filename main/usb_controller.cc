@@ -2,7 +2,7 @@
 
 #include "main/constants.h"
 #include "main/usb_controller.h"
-#include "main/joystick.h"
+#include "main/hall_joystick.h"
 #include "main/pins.h"
 
 // Button IDs.
