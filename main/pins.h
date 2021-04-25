@@ -1,7 +1,7 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef MAIN_PINS_H_
-#define MAIN_PINS_H_
+#ifndef PINS_H_
+#define PINS_H_
 
 // Button pins.
 const int kThumbTop = 0;
@@ -34,4 +34,4 @@ const int kJoystickSCL = 19;
 const int kGameCubeController = 22;  // Necessary; pin unused.
 const int kGameCubeConsole = 23;  // Bi-directional data pin; RJ45 brown stripe.
 
-#endif  // MAIN_PINS_H_
+#endif  // PINS_H_

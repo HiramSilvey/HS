@@ -1,7 +1,7 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef MAIN_CONTROLLER_H_
-#define MAIN_CONTROLLER_H_
+#ifndef CONTROLLER_H_
+#define CONTROLLER_H_
 
 class Controller {
  public:
@@ -14,7 +14,7 @@ class Controller {
 
  private:
   // Simultaneous opposing cardinal direction resolution.
-  int ResolveSOCD(int low_direction, int high_direction);
-}
+  virtual int ResolveSOCD(int low_direction, int high_direction) = 0;
+};
 
-#endif  // MAIN_CONTROLLER_H_
+#endif  // CONTROLLER_H_

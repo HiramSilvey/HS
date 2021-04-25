@@ -1,10 +1,10 @@
 // Copyright 2021 Hiram Silvey
 
-#include "main/hall_joystick.h"
+#include "hall_joystick.h"
 
 #include <Tlv493d.h>
 
-void HallJoystick::Setup() {
+void HallJoystick::Init() {
   sensor_.begin();
 }
 

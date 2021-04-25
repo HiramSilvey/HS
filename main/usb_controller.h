@@ -1,17 +1,23 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef MAIN_USB_CONTROLLER_H_
-#define MAIN_USB_CONTROLLER_H_
+#ifndef USB_CONTROLLER_H_
+#define USB_CONTROLLER_H_
 
-#include "main/controller.h"
-#include "main/hall_joystick.h"
+#include <memory>
+
+#include "controller.h"
+#include "hall_joystick.h"
 
 class USBController: public Controller {
  public:
   USBController();
+  bool Init() override;
+  void Loop() override;
 
  private:
-  HallJoystick joystick_;
-}
+  int ResolveSOCD(int low_direction, int high_direction) override;
 
-#endif  // MAIN_USB_CONTROLLER_H_
+  std::unique_ptr<HallJoystick> joystick_;
+};
+
+#endif  // USB_CONTROLLER_H_

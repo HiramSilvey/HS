@@ -1,23 +1,20 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef MAIN_HALL_JOYSTICK_H_
-#define MAIN_HALL_JOYSTICK_H_
+#ifndef HALL_JOYSTICK_H_
+#define HALL_JOYSTICK_H_
 
-// Neutral, minimum, and maximum values each joystick axis is expected to
-// output.
-struct JoystickBounds {
-  int neutral;
-  int min;
-  int max;
-};
+#include <Tlv493d.h>
 
 class HallJoystick {
  public:
-  explicit HallJoystick(JoystickBounds bounds)
-    : bounds_(bounds), sensor_(Tlv493d()) {}
+  explicit HallJoystick(int neutral, int min, int max) {
+    bounds_.neutral = neutral;
+    bounds_.min = min;
+    bounds_.max = max;
+  }
 
   // Initializations to be run once before the main loop.
-  void Setup();
+  void Init();
 
   // Read and return X axis value.
   int GetX();
@@ -26,8 +23,16 @@ class HallJoystick {
   int GetY();
 
  private:
-  const JoystickBounds bounds_;
-  Tlv493d sensor_;
-}
+  // Neutral, minimum, and maximum values each joystick axis is expected to
+  // output.
+  struct JoystickBounds {
+    int neutral;
+    int min;
+    int max;
+  };
 
-#endif  // MAIN_HALL_JOYSTICK_H_
+  JoystickBounds bounds_;
+  Tlv493d sensor_;
+};
+
+#endif  // HALL_JOYSTICK_H_

@@ -1,9 +1,11 @@
 // Copyright 2021 Hiram Silvey
 
-#include "main/constants.h"
-#include "main/usb_controller.h"
-#include "main/hall_joystick.h"
-#include "main/pins.h"
+#include <memory>
+
+#include "constants.h"
+#include "usb_controller.h"
+#include "hall_joystick.h"
+#include "pins.h"
 
 // Button IDs.
 const int kSquare = 1;
@@ -29,6 +31,10 @@ const int kDPadDown = 270;
 const int kJoystickNeutral = 512;
 const int kJoystickMin     = 0;
 const int kJoystickMax     = 1023;
+
+USBController::USBController() {
+  joystick_ = std::make_unique<HallJoystick>(kJoystickNeutral, kJoystickMin, kJoystickMax);
+}
 
 int USBController::ResolveSOCD(int low_direction, int high_direction) {
   if (digitalRead(low_direction) == LOW
