@@ -36,10 +36,10 @@ const int kL3 = 11;
 const int kR3 = 12;
 
 // D-pad degrees.
-const int kDPadRightAngle = 0;
-const int kDPadUpAngle = 90;
-const int kDPadLeftAngle = 180;
-const int kDPadDownAngle = 270;
+const int kDPadUpAngle = 0;
+const int kDPadRightAngle = 90;
+const int kDPadDownAngle = 180;
+const int kDPadLeftAngle = 270;
 
 // Analog joystick value bounds.
 const int kJoystickNeutral = 512;
@@ -52,17 +52,17 @@ namespace {
   }
 
   int GetDPadAngle() {
-    if (ReadButton(kZLeft) == kPressed) {
-      return kDPadLeft;
+    if (ReadButton(kDPadLeft) == kPressed) {
+      return kDPadLeftAngle;
     }
-    if (ReadButton(kZUp) == kPressed) {
-      return kDPadUp;
+    if (ReadButton(kDPadUp) == kPressed) {
+      return kDPadUpAngle;
     }
-    if (ReadButton(kZDown) == kPressed) {
-      return kDPadDown;
+    if (ReadButton(kDPadDown) == kPressed) {
+      return kDPadDownAngle;
     }
-    if (ReadButton(kZRight) == kPressed) {
-      return kDPadRight;
+    if (ReadButton(kDPadRight) == kPressed) {
+      return kDPadRightAngle;
     }
     return -1;
   }
@@ -128,6 +128,8 @@ void USBController::Loop() {
   Joystick.Y(joystick_->GetY());
   Joystick.Z(ResolveSOCD(kZDown, kZUp));
   Joystick.Zrotate(ResolveSOCD(kZLeft, kZRight));
+  Joystick.sliderLeft(kJoystickNeutral);
+  Joystick.sliderRight(kJoystickNeutral);
 
   for (const auto& element : layout_) {
     Joystick.button(element.first, ReadButton(element.second));

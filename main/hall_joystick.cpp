@@ -10,10 +10,10 @@ void HallJoystick::Init() {
 
 int HallJoystick::GetX() {
   // TODO(hiram): implement
-  return 0;
+  return bounds_.neutral;
 }
 
 int HallJoystick::GetY() {
   // TODO(hiram): implement
-  return 0;
+  return bounds_.neutral;
 }
