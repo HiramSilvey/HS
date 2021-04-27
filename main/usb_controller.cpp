@@ -7,6 +7,8 @@
 #include "hall_joystick.h"
 #include "pins.h"
 
+extern volatile uint8_t usb_configuration;
+
 // Right joystick pins.
 const int kZLeft = kIndexTop;
 const int kZUp = kMiddleTop;
@@ -79,7 +81,7 @@ int USBController::ResolveSOCD(int low_direction, int high_direction) {
 }
 
 bool USBController::Init() {
-  if (!Serial) {
+  if (!usb_configuration) {
     return false;
   }
 
