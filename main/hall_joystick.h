@@ -7,10 +7,14 @@
 
 class HallJoystick {
  public:
-  explicit HallJoystick(int neutral, int min, int max) {
-    bounds_.neutral = neutral;
-    bounds_.min = min;
-    bounds_.max = max;
+  // Minimum, maximum, and neutral values each joystick axis is expected to
+  // output.
+  explicit HallJoystick(int min, int max, int neutral) {
+    output_bounds_ = {
+                      .min = min,
+                      .max = max,
+                      .neutral = neutral
+    };
   }
 
   // Initializations to be run once before the main loop.
@@ -23,15 +27,13 @@ class HallJoystick {
   int GetY();
 
  private:
-  // Neutral, minimum, and maximum values each joystick axis is expected to
-  // output.
-  struct JoystickBounds {
-    int neutral;
+  struct Bounds {
     int min;
     int max;
+    int neutral;
   };
-
-  JoystickBounds bounds_;
+  Bounds input_bounds_;
+  Bounds output_bounds_;
   Tlv493d sensor_;
 };
 
