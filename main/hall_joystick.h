@@ -10,10 +10,10 @@ class HallJoystick {
   // Minimum, maximum, and neutral values each joystick axis is expected to
   // output.
   explicit HallJoystick(int min, int max, int neutral) {
-    output_bounds_ = {
-                      .min = min,
-                      .max = max,
-                      .neutral = neutral
+    out_ = {
+            .min = min,
+            .max = max,
+            .neutral = neutral
     };
   }
 
@@ -32,8 +32,14 @@ class HallJoystick {
     int max;
     int neutral;
   };
-  Bounds input_bounds_;
-  Bounds output_bounds_;
+
+  // Map the provided float value from the specified input range to the global
+  // output range.
+  int Normalize(float val, const Bounds& in);
+
+  Bounds x_in_;
+  Bounds y_in_;
+  Bounds out_;
   Tlv493d sensor_;
 };
 
