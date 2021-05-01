@@ -9,33 +9,37 @@ class HallJoystick {
  public:
   // Minimum, maximum, and neutral values each joystick axis is expected to
   // output.
-  explicit HallJoystick(int min, int max, int neutral) {
+  explicit HallJoystick(int min, int max) {
     out_ = {
             .min = min,
-            .max = max,
-            .neutral = neutral
+            .max = max
     };
   }
+
+  struct Coordinates {
+    int x;
+    int y;
+  };
 
   // Initializations to be run once before the main loop.
   void Init();
 
-  // Read and return X axis value.
-  int GetX();
-
-  // Read and return Y axis value.
-  int GetY();
+  // Read and return X and Y axes values.
+  Coordinates GetCoordinates();
 
  private:
   struct Bounds {
     int min;
     int max;
-    int neutral;
   };
 
   // Map the provided float value from the specified input range to the global
   // output range.
   int Normalize(float val, const Bounds& in);
+
+  // Read and return 4 consecutive bytes as an int from EEPROM, with the highest
+  // order byte at the lowest address.
+  int GetIntFromEEPROM(int address);
 
   Bounds x_in_;
   Bounds y_in_;

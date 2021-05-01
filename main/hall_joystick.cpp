@@ -4,8 +4,22 @@
 
 #include <Wire.h>
 #include <Tlv493d.h>
+#include <EEPROM.h>
+
+int HallJoystick::GetIntFromEEPROM(int address) {
+  byte one = EEPROM.read(address);
+  byte two = EEPROM.read(address+1);
+  byte three = EEPROM.read(address+2);
+  byte four = EEPROM.read(address+3);
+  return one << 24 | two << 16 | three << 8 | four;
+}
 
 void HallJoystick::Init() {
+  x_in_.min = GetIntFromEEPROM(0);
+  x_in_.max = GetIntFromEEPROM(4);
+  y_in_.min = GetIntFromEEPROM(8);
+  y_in_.max = GetIntFromEEPROM(12);
+
   sensor_.begin();
   sensor_.setAccessMode(sensor_.FASTMODE);
   sensor_.disableTemp();
@@ -19,10 +33,7 @@ int HallJoystick::Normalize(float val, const Bounds& in) {
                    out_.min, out_.max);
 }
 
-int HallJoystick::GetX() {
-  return Normalize(sensor_.getX(), x_in_);
-}
-
-int HallJoystick::GetY() {
-  return Normalize(sensor_.getY(), y_in_);
+HallJoystick::Coordinates HallJoystick::GetCoordinates() {
+  sensor_.updateData();
+  return {Normalize(sensor_.getX(), x_in_), Normalize(sensor_.getY(), y_in_)};
 }

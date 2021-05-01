@@ -69,7 +69,8 @@ namespace {
 }  // namespace
 
 USBController::USBController() {
-  joystick_ = std::make_unique<HallJoystick>(kJoystickNeutral, kJoystickMin, kJoystickMax);
+  joystick_ = std::make_unique<HallJoystick>(kJoystickMin, kJoystickMax);
+  joystick_->Init();
 }
 
 int USBController::ResolveSOCD(int low_direction, int high_direction) {
@@ -124,8 +125,9 @@ bool USBController::Init() {
 }
 
 void USBController::Loop() {
-  Joystick.X(joystick_->GetX());
-  Joystick.Y(joystick_->GetY());
+  HallJoystick::Coordinates coords = joystick_->GetCoordinates();
+  Joystick.X(coords.x);
+  Joystick.Y(kJoystickMax-coords.y);
   Joystick.Z(ResolveSOCD(kZDown, kZUp));
   Joystick.Zrotate(ResolveSOCD(kZLeft, kZRight));
   Joystick.sliderLeft(kJoystickNeutral);
