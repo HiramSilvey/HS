@@ -33,9 +33,9 @@ class HallJoystick {
     int max;
   };
 
-  // Map the provided float value from the specified input range to the global
+  // Map the provided int value from the specified input range to the global
   // output range.
-  int Normalize(float val, const Bounds& in);
+  int Normalize(int val, const Bounds& in);
 
   // Read and return 4 consecutive bytes as an int from EEPROM, with the highest
   // order byte at the lowest address.

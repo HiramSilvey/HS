@@ -21,19 +21,19 @@ void HallJoystick::Init() {
   y_in_.max = GetIntFromEEPROM(12);
 
   sensor_.begin();
-  sensor_.setAccessMode(sensor_.FASTMODE);
+  sensor_.setAccessMode(sensor_.LOWPOWERMODE);
   sensor_.disableTemp();
-  // Set I2C clock to recommended 1MHz for FASTMODE.
-  Wire.setClock(1000000);
 }
 
-int HallJoystick::Normalize(float val, const Bounds& in) {
-  int ival = val * 1000;
-  return constrain(map(ival, in.min, in.max, out_.min, out_.max),
+int HallJoystick::Normalize(int val, const Bounds& in) {
+  return constrain(map(val, in.min, in.max, out_.min, out_.max),
                    out_.min, out_.max);
 }
 
 HallJoystick::Coordinates HallJoystick::GetCoordinates() {
   sensor_.updateData();
-  return {Normalize(sensor_.getX(), x_in_), Normalize(sensor_.getY(), y_in_)};
+  float z = sensor_.getZ();
+  int x = sensor_.getX() / z * 1000000;
+  int y = sensor_.getY() / z * 1000000;
+  return {Normalize(x, x_in_), Normalize(y, y_in_)};
 }
