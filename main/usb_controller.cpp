@@ -1,8 +1,6 @@
 // Copyright 2021 Hiram Silvey
 
 #include <memory>
-
-#include "constants.h"
 #include "usb_controller.h"
 #include "hall_joystick.h"
 #include "pins.h"
@@ -46,22 +44,22 @@ const int kJoystickNeutral = 512;
 const int kJoystickMin     = 0;
 const int kJoystickMax     = 1023;
 
-namespace {
-  int ReadButton(int pin) {
-    return kPressed ? digitalRead(pin) == LOW : kReleased;
-  }
+// TODO(hiram): Move game-specific values out of this file.
+// Super Smash Bros. Melee specific value.
+const int kMeleeLightShield = 661;
 
+namespace {
   int GetDPadAngle() {
-    if (ReadButton(kDPadLeft) == kPressed) {
+    if (digitalRead(kDPadLeft) == LOW) {
       return kDPadLeftAngle;
     }
-    if (ReadButton(kDPadUp) == kPressed) {
+    if (digitalRead(kDPadUp) == LOW) {
       return kDPadUpAngle;
     }
-    if (ReadButton(kDPadDown) == kPressed) {
+    if (digitalRead(kDPadDown) == LOW) {
       return kDPadDownAngle;
     }
-    if (ReadButton(kDPadRight) == kPressed) {
+    if (digitalRead(kDPadRight) == LOW) {
       return kDPadRightAngle;
     }
     return -1;
@@ -86,18 +84,18 @@ bool USBController::Init() {
     return false;
   }
 
-  layout_[kSquare] = kThumbTop;
-  layout_[kX] = kIndexMiddle;
-  layout_[kCircle] = kMiddleMiddle;
-  layout_[kTriangle] = kRingMiddle;
-  layout_[kL1] = kPinkyMiddle;
-  layout_[kR1] = kPinkyTop;
-  layout_[kL3] = kThumbBottom;
-  layout_[kL2] = kMiddleBottom;
-  layout_[kR2] = kRingBottom;
-  layout_[kR3] = kPinkyBottom;
+  layout_[kSquare] = kRingMiddle;
+  layout_[kX] = kThumbTop;
+  layout_[kCircle] = kPinkyTop;
+  layout_[kTriangle] = kMiddleMiddle;
+  layout_[kL1] = kMiddleBottom;
+  layout_[kR1] = kThumbBottom;
+  layout_[kL2] = kIndexMiddle;
+  // layout_[kR2] = kPinkyMiddle;
   layout_[kShare] = kLeftIndexExtra;
   layout_[kOptions] = kRightIndexExtra;
+  layout_[kL3] = kRingBottom;
+  layout_[kR3] = kPinkyBottom;
 
   pinMode(kThumbTop, INPUT_PULLUP);
   pinMode(kThumbMiddle, INPUT_PULLUP);
@@ -130,11 +128,13 @@ void USBController::Loop() {
   Joystick.Y(kJoystickMax-coords.y);
   Joystick.Z(ResolveSOCD(kZDown, kZUp));
   Joystick.Zrotate(ResolveSOCD(kZLeft, kZRight));
-  Joystick.sliderLeft(kJoystickNeutral);
   Joystick.sliderRight(kJoystickNeutral);
 
+  int slider_strength = digitalRead(kPinkyMiddle) == LOW ? kMeleeLightShield : kJoystickNeutral;
+  Joystick.sliderLeft(slider_strength);
+
   for (const auto& element : layout_) {
-    Joystick.button(element.first, ReadButton(element.second));
+    Joystick.button(element.first, digitalRead(element.second) == LOW);
   }
 
   Joystick.hat(GetDPadAngle());

@@ -7,8 +7,7 @@
 
 class HallJoystick {
  public:
-  // Minimum, maximum, and neutral values each joystick axis is expected to
-  // output.
+  // Minimum and maximum values each joystick axis is expected to output.
   explicit HallJoystick(int min, int max) {
     out_ = {
             .min = min,
