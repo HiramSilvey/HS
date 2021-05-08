@@ -3,9 +3,6 @@
 #ifndef USB_CONTROLLER_H_
 #define USB_CONTROLLER_H_
 
-#include "hall_joystick.h"
-
-#include <memory>
 #include <unordered_map>
 
 #include "controller.h"
@@ -17,7 +14,7 @@ public:
   void Loop() override;
 
 private:
-  int ResolveSOCD(int low_direction, int high_direction) override;
+  void LoadProfile() override;
 
   std::unique_ptr<HallJoystick> joystick_;
   std::unordered_map<int, int> layout_;

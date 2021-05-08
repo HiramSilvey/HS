@@ -15,11 +15,6 @@ int HallJoystick::GetIntFromEEPROM(int address) {
 }
 
 void HallJoystick::Init() {
-  x_in_.min = GetIntFromEEPROM(0);
-  x_in_.max = GetIntFromEEPROM(4);
-  y_in_.min = GetIntFromEEPROM(8);
-  y_in_.max = GetIntFromEEPROM(12);
-
   sensor_.begin();
   sensor_.setAccessMode(sensor_.LOWPOWERMODE);
   sensor_.disableTemp();
