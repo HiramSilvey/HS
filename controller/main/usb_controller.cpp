@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "Arduino.h"
 #include "hall_joystick.h"
 #include "pins.h"
 

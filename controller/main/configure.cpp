@@ -1,6 +1,8 @@
 // Copyright 2021 Hiram Silvey
 
-#include "configurator.h"
+#include "configure.h"
+
+#include "Arduino.h"
 
 void Configure() {
   bool was_released = false;

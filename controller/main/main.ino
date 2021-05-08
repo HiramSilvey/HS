@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "controller.h"
-#include "configurator.h"
+#include "configure.h"
 #include "usb_controller.h"
 
 std::unique_ptr<Controller> controller;
