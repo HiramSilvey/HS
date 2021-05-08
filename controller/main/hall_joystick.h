@@ -6,7 +6,7 @@
 #include <Tlv493d.h>
 
 class HallJoystick {
- public:
+public:
   // Minimum and maximum values each joystick axis is expected to output.
   explicit HallJoystick(int min, int max) {
     out_ = {
@@ -26,7 +26,7 @@ class HallJoystick {
   // Read and return X and Y axes values.
   Coordinates GetCoordinates();
 
- private:
+private:
   struct Bounds {
     int min;
     int max;

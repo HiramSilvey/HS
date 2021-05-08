@@ -1,7 +1,9 @@
 // Copyright 2021 Hiram Silvey
 
-#include <memory>
 #include "usb_controller.h"
+
+#include <memory>
+
 #include "hall_joystick.h"
 #include "pins.h"
 
