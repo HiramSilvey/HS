@@ -6,6 +6,7 @@
 #include "pins.h"
 
 void StoreProfiles() {
+  delay(100);  // Ensure button states are settled before relying on them.
   if (digitalRead(kRightIndexExtra) != LOW) {
     return;
   }
