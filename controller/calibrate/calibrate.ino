@@ -20,7 +20,6 @@ void SaveToEEPROM(int val, int address) {
   EEPROM.update(address+3, four);
 }
 
-// TODO(hiram): Clean up duplicate code and clarify the 5 second delay.
 int GetAverageY(bool down) {
   Serial.print("Hold joystick all the way to the ");
   if (down) {

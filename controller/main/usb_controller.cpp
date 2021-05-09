@@ -43,7 +43,6 @@ const int kDPadRightAngle = 90;
 const int kDPadDownAngle = 180;
 const int kDPadLeftAngle = 270;
 
-// TODO(hiram): Move game-specific values out of this file.
 // Super Smash Bros. Melee specific value.
 const int kMeleeLightShield = 661;
 
@@ -71,7 +70,6 @@ USBController::USBController() {
 }
 
 void USBController::LoadProfile() {
-  // TODO(hiram): Scrap layout_ and implement this using data from EEPROM.
   layout_[kSquare] = kRingMiddle;
   layout_[kX] = kThumbTop;
   layout_[kCircle] = kPinkyTop;
