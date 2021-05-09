@@ -6,6 +6,12 @@
 #include <Tlv493d.h>
 #include <EEPROM.h>
 
+HallJoystick::HallJoystick(int min, int max)
+  : x_in_({.min = GetIntFromEEPROM(0), .max = GetIntFromEEPROM(4)}),
+    y_in_({.min = GetIntFromEEPROM(8), .max = GetIntFromEEPROM(12)}),
+    out_({.min = min, .max = max}),
+    out_neutral_((max - min + 1) / 2 + min) {}
+
 int HallJoystick::GetIntFromEEPROM(int address) {
   byte one = EEPROM.read(address);
   byte two = EEPROM.read(address+1);
@@ -31,4 +37,16 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates() {
   int x = sensor_.getX() / z * 1000000;
   int y = sensor_.getY() / z * 1000000;
   return {Normalize(x, x_in_), Normalize(y, y_in_)};
+}
+
+int HallJoystick::get_min() {
+  return out_.min;
+}
+
+int HallJoystick::get_max() {
+  return out_.max;
+}
+
+int HallJoystick::get_neutral() {
+  return out_neutral_;
 }

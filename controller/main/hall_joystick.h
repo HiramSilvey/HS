@@ -8,23 +8,11 @@
 class HallJoystick {
 public:
   // Minimum and maximum values each joystick axis is expected to output.
-  explicit HallJoystick(int min, int max)
-    : x_in_({.min = GetIntFromEEPROM(0), .max = GetIntFromEEPROM(4)}),
-      y_in_({.min = GetIntFromEEPROM(8), .max = GetIntFromEEPROM(12)}),
-      out_({.min = min, .max = max}),
-      out_neutral_((max - min + 1) / 2 + min) {}
+  explicit HallJoystick(int min, int max);
 
-  int get_min() {
-    return out_.min;
-  }
-
-  int get_max() {
-    return out_.max;
-  }
-
-  int get_neutral() {
-    return out_neutral_;
-  }
+  int get_min();
+  int get_max();
+  int get_neutral();
 
   // Initializations to be run once before the main loop.
   void Init();
