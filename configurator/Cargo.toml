@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 serialport = "4.0.1"
+json = "0.12.4"
