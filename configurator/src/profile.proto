@@ -1,0 +1,90 @@
+syntax = "proto3"
+
+// Next available ID: 5
+message Profile {
+  string name = 1;
+
+  // Next available ID: 1
+  enum Platform {
+    PC = 0;
+  }
+
+  repeated Platform platform = 2;
+  int32 position = 3;
+
+  // Next available ID: 20
+  message Layout {
+    // Next available ID: 24
+    enum DigitalAction {
+      A = 0;
+      B = 1;
+      X = 2;
+      Y = 3;
+      L1 = 4;
+      L2 = 5;
+      R1 = 6;
+      R2 = 7;
+      START = 8;
+      SHARE = 9;
+      HOME = 10;
+      CAPTURE = 11;
+      D_PAD_UP = 12;
+      D_PAD_DOWN = 13;
+      D_PAD_LEFT = 14;
+      D_PAD_RIGHT = 15;
+      R_STICK_UP = 16;
+      R_STICK_DOWN = 17;
+      R_STICK_LEFT = 18;
+      R_STICK_RIGHT = 19;
+      SLIDER_LEFT_MIN = 20;
+      SLIDER_LEFT_MAX = 21;
+      SLIDER_RIGHT_MIN = 22;
+      SLIDER_RIGHT_MAX = 23;
+    }
+
+    // Next available ID: 2
+    message AnalogAction {
+      // Next available ID: 4
+      enum ID {
+        R_STICK_Y = 0;
+        R_STICK_X = 1;
+        SLIDER_LEFT = 2;
+        SLIDER_RIGHT = 3;
+      }
+
+      ID id = 0;
+      int32 value = 1;
+    }
+
+    // Next available ID: 2
+    message Action {
+      oneof type {
+        DigitalAction digital = 0;
+        AnalogAction analog = 1;
+      }
+    }
+
+    Action thumb_top = 0;
+    Action thumb_middle = 1;
+    Action thumb_bottom = 2;
+    Action index_top = 3;
+    Action index_middle = 4;
+    Action middle_top = 5;
+    Action middle_middle = 6;
+    Action middle_bottom = 7;
+    Action ring_top = 8;
+    Action ring_middle = 9;
+    Action ring_bottom = 10;
+    Action pinky_top = 11;
+    Action pinky_middle = 12;
+    Action pinky_bottom = 13;
+    Action left_index_extra = 14;
+    Action left_middle_extra = 15;
+    Action left_ring_extra = 16;
+    Action right_index_extra = 17;
+    Action right_middle_extra = 18;
+    Action right_ring_extra = 19;
+  }
+
+  Layout layout = 4;
+}

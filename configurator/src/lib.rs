@@ -1,55 +1,34 @@
-enum ConsoleID {
-    PC,
-    N64,
-    Gamecube,
-    Switch,
+use std::path::Path;
+
+struct Controller {
+    port: String,
+    save_dir: Path,
+    board: Box<dyn SerialPort>,
 }
 
-enum Action {
-    A,
-    B,
-    X,
-    Y,
-    L1,
-    L2,
-    R1,
-    R2,
-    RStickUp,
-    RStickDown,
-    RStickLeft,
-    RStickRight,
-    DPadUp,
-    DPadDown,
-    DPadLeft,
-    DPadRight,
-    Plus,  // Start, Options, Menu
-    Minus, // Share, Change View
-    Home,
-    Capture,
-}
+impl Controller {
+    fn new(port: String, save_dir: Path) -> Controller {
+        Controller {
+            port: port,
+            save_dir: save_dir,
+        }
+    }
 
-struct Profile {
-    console: ConsoleID,
-    thumb_top: Action,
-    thumb_middle: Action,
-    thumb_bottom: Action,
-    index_top: Action,
-    index_middle: Action,
-    middle_top: Action,
-    middle_middle: Action,
-    middle_bottom: Action,
-    ring_top: Action,
-    ring_middle: Action,
-    ring_bottom: Action,
-    pinky_top: Action,
-    pinky_middle: Action,
-    pinky_bottom: Action,
-    left_index_extra: Action,
-    left_middle_extra: Action,
-    left_ring_extra: Action,
-    right_index_extra: Action,
-    right_middle_extra: Action,
-    right_ring_extra: Action,
+    fn load_profiles(&self) -> Result<()> {}
+    fn save_profiles(&self) -> Result<()> {}
+
+    fn connect(&self) -> Result<()> {
+        let board = serialport::new(self.port, 9600)
+            .timeout(Duration::from_millis(10))
+            .open();
+        let mut board = match board {
+            Ok(port) => port,
+            Err(e) => return Err(e),
+        };
+        self.board = board;
+    }
+
+    fn write(&self) -> Result<()> {}
 }
 
 #[cfg(test)]
