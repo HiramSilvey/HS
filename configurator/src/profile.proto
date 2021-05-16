@@ -1,4 +1,6 @@
-syntax = "proto3"
+syntax = "proto3";
+
+package configurator;
 
 // Next available ID: 5
 message Profile {
@@ -6,84 +8,87 @@ message Profile {
 
   // Next available ID: 1
   enum Platform {
-    PC = 0;
+    UNKNOWN = 0;
+    PC = 1;
   }
 
   repeated Platform platform = 2;
   int32 position = 3;
 
-  // Next available ID: 20
+  // Next available ID: 21
   message Layout {
-    // Next available ID: 24
+    // Next available ID: 25
     enum DigitalAction {
-      A = 0;
-      B = 1;
-      X = 2;
-      Y = 3;
-      L1 = 4;
-      L2 = 5;
-      R1 = 6;
-      R2 = 7;
-      START = 8;
-      SHARE = 9;
-      HOME = 10;
-      CAPTURE = 11;
-      D_PAD_UP = 12;
-      D_PAD_DOWN = 13;
-      D_PAD_LEFT = 14;
-      D_PAD_RIGHT = 15;
-      R_STICK_UP = 16;
-      R_STICK_DOWN = 17;
-      R_STICK_LEFT = 18;
-      R_STICK_RIGHT = 19;
-      SLIDER_LEFT_MIN = 20;
-      SLIDER_LEFT_MAX = 21;
-      SLIDER_RIGHT_MIN = 22;
-      SLIDER_RIGHT_MAX = 23;
+      NO_OP = 0;
+      A = 1;
+      B = 2;
+      X = 3;
+      Y = 4;
+      L1 = 5;
+      L2 = 6;
+      R1 = 7;
+      R2 = 8;
+      START = 9;
+      SHARE = 10;
+      HOME = 11;
+      CAPTURE = 12;
+      D_PAD_UP = 13;
+      D_PAD_DOWN = 14;
+      D_PAD_LEFT = 15;
+      D_PAD_RIGHT = 16;
+      R_STICK_UP = 17;
+      R_STICK_DOWN = 18;
+      R_STICK_LEFT = 19;
+      R_STICK_RIGHT = 20;
+      SLIDER_LEFT_MIN = 21;
+      SLIDER_LEFT_MAX = 22;
+      SLIDER_RIGHT_MIN = 23;
+      SLIDER_RIGHT_MAX = 24;
     }
 
-    // Next available ID: 2
+    // Next available ID: 3
     message AnalogAction {
-      // Next available ID: 4
+      // Next available ID: 5
       enum ID {
-        R_STICK_Y = 0;
-        R_STICK_X = 1;
-        SLIDER_LEFT = 2;
-        SLIDER_RIGHT = 3;
+        NO_OP = 0; 
+        R_STICK_Y = 1;
+        R_STICK_X = 2;
+        SLIDER_LEFT = 3;
+        SLIDER_RIGHT = 4;
       }
 
-      ID id = 0;
-      int32 value = 1;
+      ID id = 1;
+      int32 value = 2;
     }
 
-    // Next available ID: 2
+    // Next available ID: 3
     message Action {
       oneof type {
-        DigitalAction digital = 0;
-        AnalogAction analog = 1;
+        DigitalAction digital = 1;
+        AnalogAction analog = 2;
       }
     }
 
-    Action thumb_top = 0;
-    Action thumb_middle = 1;
-    Action thumb_bottom = 2;
-    Action index_top = 3;
-    Action index_middle = 4;
-    Action middle_top = 5;
-    Action middle_middle = 6;
-    Action middle_bottom = 7;
-    Action ring_top = 8;
-    Action ring_middle = 9;
-    Action ring_bottom = 10;
-    Action pinky_top = 11;
-    Action pinky_middle = 12;
-    Action pinky_bottom = 13;
-    Action left_index_extra = 14;
-    Action left_middle_extra = 15;
-    Action left_ring_extra = 16;
-    Action right_index_extra = 17;
-    Action right_middle_extra = 18;
-    Action right_ring_extra = 19;
+    Action thumb_top = 1;
+    Action thumb_middle = 2;
+    Action thumb_bottom = 3;
+    Action index_top = 4;
+    Action index_middle = 5;
+    Action middle_top = 6;
+    Action middle_middle = 7;
+    Action middle_bottom = 8;
+    Action ring_top = 9;
+    Action ring_middle = 10;
+    Action ring_bottom = 11;
+    Action pinky_top = 12;
+    Action pinky_middle = 13;
+    Action pinky_bottom = 14;
+    Action left_index_extra = 15;
+    Action left_middle_extra = 16;
+    Action left_ring_extra = 17;
+    Action right_index_extra = 18;
+    Action right_middle_extra = 19;
+    Action right_ring_extra = 20;
   }
 
   Layout layout = 4;
