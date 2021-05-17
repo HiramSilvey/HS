@@ -1,57 +1,80 @@
-mod configurator {
-    use anyhow::Result;
-    use serialport::SerialPort;
-    use std::fs;
-    use std::path::Path;
-    use std::time::Duration;
+use anyhow::Result;
+use profiles::Profile;
+use std::fs;
+use std::path::Path;
+use std::time::Duration;
+use std::vec::Vec;
 
-    pub struct Configurator<'a> {
-        controller: Box<dyn SerialPort>,
-        path: &'a Path,
+mod profiles {
+    include!(concat!(env!("OUT_DIR"), "/configurator.profiles.rs"));
+}
+
+pub struct Configurator<'a, 'b> {
+    port: &'a str,
+    path: &'b Path,
+    profiles: Vec<Profile>,
+}
+
+impl<'a, 'b> Configurator<'a, 'b> {
+    pub fn new(port: &'a str, profiles_dir: &'b str) -> Result<Configurator<'a, 'b>> {
+        let path = Path::new(profiles_dir);
+        Configurator::load_profiles(path)?;
+        Ok(Configurator {
+            port: port,
+            path: path,
+            profiles: Vec::new(),
+        })
     }
 
-    impl<'a> Configurator<'a> {
-        pub fn new(port: &str, profiles_dir: &'a str) -> Result<Configurator<'a>> {
-            let controller = Configurator::open_connection(port)?;
-            let path = Path::new(profiles_dir);
-            Configurator::load_profiles(path)?;
-            Ok(Configurator {
-                controller: controller,
-                path: path,
-            })
-        }
+    pub fn create_profile(&mut self, name: String) -> Option<&mut Profile> {
+        let mut profile = Profile::default();
+        profile.name = name;
+        self.profiles.push(profile);
+        let i = self.profiles.len() - 1;
+        Some(&mut self.profiles[i])
+    }
 
-        fn open_connection(port: &str) -> Result<Box<dyn SerialPort>> {
-            Ok(serialport::new(port, 9600)
-                .timeout(Duration::from_millis(10))
-                .open()?)
-        }
+    pub fn get_profile(&mut self, name: &str) -> Option<&mut Profile> {
+        let i = self.find_profile(name)?;
+        Some(&mut self.profiles[i])
+    }
 
-        fn load_profiles(path: &Path) -> Result<()> {
-            for entry in fs::read_dir(path)? {
-                let entry = entry?;
-                let p = entry.path();
-                if p.is_file() {
-                    println!("{}", p.display());
-                }
+    fn find_profile(&self, name: &str) -> Option<usize> {
+        for i in 0..self.profiles.len() {
+            if self.profiles[i].name == name {
+                return Some(i);
             }
-            Ok(())
         }
-
-        fn save_profiles(&self) -> Result<()> {
-            Ok(())
-        }
-
-        fn write(&self) -> Result<()> {
-            Ok(())
-        }
+        None
     }
 
-    #[cfg(test)]
-    mod tests {
-        #[test]
-        fn it_works() {
-            assert_eq!(2 + 2, 4);
+    fn load_profiles(path: &Path) -> Result<()> {
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let p = entry.path();
+            if p.is_dir() {
+                println!("{}", p.display());
+            }
         }
+        Ok(())
+    }
+
+    fn save_profiles(&self) -> Result<()> {
+        Ok(())
+    }
+
+    fn write(&self) -> Result<()> {
+        let mut controller = serialport::new(self.port, 9600)
+            .timeout(Duration::from_millis(10))
+            .open()?;
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
     }
 }

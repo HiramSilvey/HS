@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package configurator;
+package configurator.profiles;
 
 // Next available ID: 5
 message Profile {
