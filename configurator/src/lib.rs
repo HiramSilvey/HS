@@ -1,6 +1,9 @@
 use anyhow::Result;
 use profiles::Profile;
+use prost::Message;
+use std::fmt;
 use std::fs;
+use std::io::Cursor;
 use std::path::Path;
 use std::time::Duration;
 use std::vec::Vec;
@@ -18,12 +21,13 @@ pub struct Configurator<'a, 'b> {
 impl<'a, 'b> Configurator<'a, 'b> {
     pub fn new(port: &'a str, profiles_dir: &'b str) -> Result<Configurator<'a, 'b>> {
         let path = Path::new(profiles_dir);
-        Configurator::load_profiles(path)?;
-        Ok(Configurator {
+        let mut c = Configurator {
             port: port,
             path: path,
             profiles: Vec::new(),
-        })
+        };
+        c.load_profiles(None)?;
+        Ok(c)
     }
 
     pub fn create_profile(&mut self, name: String) -> Option<&mut Profile> {
@@ -48,12 +52,17 @@ impl<'a, 'b> Configurator<'a, 'b> {
         None
     }
 
-    fn load_profiles(path: &Path) -> Result<()> {
+    fn load_profiles(&mut self, path: Option<&Path>) -> Result<()> {
+        let path = path.unwrap_or(self.path);
         for entry in fs::read_dir(path)? {
             let entry = entry?;
             let p = entry.path();
             if p.is_dir() {
-                println!("{}", p.display());
+                self.load_profiles(Some(&p))?;
+            } else {
+                let buf = fs::read(p)?;
+                let profile = Profile::decode(&mut Cursor::new(buf))?;
+                self.profiles.push(profile);
             }
         }
         Ok(())
@@ -67,6 +76,22 @@ impl<'a, 'b> Configurator<'a, 'b> {
         let mut controller = serialport::new(self.port, 9600)
             .timeout(Duration::from_millis(10))
             .open()?;
+        Ok(())
+    }
+}
+
+impl fmt::Display for Profile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
+impl<'a, 'b> fmt::Display for Configurator<'a, 'b> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "port: {}\npath: {}", self.port, self.path.display())?;
+        for p in &self.profiles {
+            write!(f, "\n{}", p)?;
+        }
         Ok(())
     }
 }

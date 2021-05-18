@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.40"
+bytes = "1.0.1"
 prost = "0.7.0"
 serialport = "4.0.1"
 
