@@ -63,7 +63,7 @@ message Profile {
 
     // Next available ID: 3
     message Action {
-      oneof type {
+      oneof action_type {
         DigitalAction digital = 1;
         AnalogAction analog = 2;
       }

@@ -8,7 +8,7 @@ use std::path::Path;
 use std::time::Duration;
 use std::vec::Vec;
 
-mod profiles {
+pub mod profiles {
     include!(concat!(env!("OUT_DIR"), "/configurator.profiles.rs"));
 }
 
@@ -68,7 +68,14 @@ impl<'a, 'b> Configurator<'a, 'b> {
         Ok(())
     }
 
-    fn save_profiles(&self) -> Result<()> {
+    pub fn save_profiles(&self) -> Result<()> {
+        for profile in &self.profiles {
+            let mut buf = Vec::new();
+            buf.reserve(profile.encoded_len());
+            profile.encode(&mut buf)?;
+            let path = self.path.join(Path::new(&profile.name));
+            fs::write(path, buf)?;
+        }
         Ok(())
     }
 
@@ -89,8 +96,8 @@ impl fmt::Display for Profile {
 impl<'a, 'b> fmt::Display for Configurator<'a, 'b> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "port: {}\npath: {}", self.port, self.path.display())?;
-        for p in &self.profiles {
-            write!(f, "\n{}", p)?;
+        for profile in &self.profiles {
+            write!(f, "\n{}", profile)?;
         }
         Ok(())
     }
