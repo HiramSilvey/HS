@@ -2,8 +2,8 @@ from google.protobuf import text_format
 from pathlib import Path
 import profiles_pb2
 
-out_path = Path('profiles/serialized')
-in_files = Path('profiles/text').rglob('*.textpb')
+out_path = Path('../profiles')
+in_files = Path('text_profiles').rglob('*.textpb')
 for f_in_name in in_files:
     f_in = open(f_in_name, 'rb')
     buf = f_in.read()
