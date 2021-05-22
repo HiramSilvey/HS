@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package configurator.profiles;
 
-// Next available ID: 5
+// Next available ID: 4
 message Profile {
   string name = 1;
 
@@ -12,38 +12,45 @@ message Profile {
     PC = 1;
   }
 
-  repeated Platform platform = 2;
-  int32 position = 3;
+  // Next available ID: 3
+  message PlatformConfig {
+    Platform platform = 1;
+    int32 position = 2;
+  }
+
+  repeated PlatformConfig platform_config = 2;
 
   // Next available ID: 21
   message Layout {
     // Next available ID: 25
     enum DigitalAction {
       NO_OP = 0;
-      A = 1;
-      B = 2;
-      X = 3;
-      Y = 4;
+      X = 1;
+      CIRCLE = 2;
+      TRIANGLE = 3;
+      SQUARE = 4;
       L1 = 5;
       L2 = 6;
-      R1 = 7;
-      R2 = 8;
-      START = 9;
-      SHARE = 10;
-      HOME = 11;
-      CAPTURE = 12;
-      D_PAD_UP = 13;
-      D_PAD_DOWN = 14;
-      D_PAD_LEFT = 15;
-      D_PAD_RIGHT = 16;
-      R_STICK_UP = 17;
-      R_STICK_DOWN = 18;
-      R_STICK_LEFT = 19;
-      R_STICK_RIGHT = 20;
-      SLIDER_LEFT_MIN = 21;
-      SLIDER_LEFT_MAX = 22;
-      SLIDER_RIGHT_MIN = 23;
-      SLIDER_RIGHT_MAX = 24;
+      L3 = 7;
+      R1 = 8;
+      R2 = 9;
+      R3 = 10;
+      OPTIONS = 11;
+      SHARE = 12;
+      HOME = 13;
+      CAPTURE = 14;
+      D_PAD_UP = 15;
+      D_PAD_DOWN = 16;
+      D_PAD_LEFT = 17;
+      D_PAD_RIGHT = 18;
+      R_STICK_UP = 19;
+      R_STICK_DOWN = 20;
+      R_STICK_LEFT = 21;
+      R_STICK_RIGHT = 22;
+      SLIDER_LEFT_MIN = 23;
+      SLIDER_LEFT_MAX = 24;
+      SLIDER_RIGHT_MIN = 25;
+      SLIDER_RIGHT_MAX = 26;
     }
 
     // Next available ID: 3
@@ -91,5 +98,5 @@ message Profile {
     Action right_ring_extra = 20;
   }
 
-  Layout layout = 4;
+  Layout layout = 3;
 }

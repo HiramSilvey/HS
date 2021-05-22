@@ -1,0 +1,27 @@
+name: "Default"
+platform_config: {
+    platform: PC
+    position: 0
+}
+layout: {
+    index_top: { digital: R_STICK_LEFT }
+    middle_top: { digital: R_STICK_UP }
+    ring_top: { digital: R_STICK_RIGHT }
+    pinky_top: { digital: L3 }
+    index_middle: { digital: R2 }
+    middle_middle: { digital: L2 }
+    ring_middle: { digital: R1 }
+    pinky_middle: { digital: L1 }
+    thumb_bottom: { digital: R_STICK_DOWN }
+    thumb_middle: { digital: CIRCLE }
+    thumb_top: { digital: X }
+    middle_bottom: { digital: SQUARE }
+    ring_bottom: { digital: TRIANGLE }    
+    pinky_bottom: { digital: R3 }
+    left_ring_extra: { digital: D_PAD_LEFT }
+    left_middle_extra: { digital: D_PAD_DOWN }
+    left_index_extra: { digital: SHARE }
+    right_index_extra: { digital: OPTIONS }
+    right_middle_extra: { digital: D_PAD_UP }
+    right_ring_extra: { digital: D_PAD_RIGHT }
+}
