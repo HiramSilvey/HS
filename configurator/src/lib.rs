@@ -43,6 +43,17 @@ impl<'a, 'b> Configurator<'a, 'b> {
         Some(&mut self.profiles[i])
     }
 
+    pub fn save_profiles(&self) -> Result<()> {
+        for profile in &self.profiles {
+            let mut buf = Vec::new();
+            buf.reserve(profile.encoded_len());
+            profile.encode(&mut buf)?;
+            let path = self.path.join(Path::new(&profile.name));
+            fs::write(path, buf)?;
+        }
+        Ok(())
+    }
+
     fn find_profile(&self, name: &str) -> Option<usize> {
         for i in 0..self.profiles.len() {
             if self.profiles[i].name == name {
@@ -64,17 +75,6 @@ impl<'a, 'b> Configurator<'a, 'b> {
                 let profile = Profile::decode(&mut Cursor::new(buf))?;
                 self.profiles.push(profile);
             }
-        }
-        Ok(())
-    }
-
-    pub fn save_profiles(&self) -> Result<()> {
-        for profile in &self.profiles {
-            let mut buf = Vec::new();
-            buf.reserve(profile.encoded_len());
-            profile.encode(&mut buf)?;
-            let path = self.path.join(Path::new(&profile.name));
-            fs::write(path, buf)?;
         }
         Ok(())
     }
