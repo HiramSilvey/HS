@@ -1,4 +1,6 @@
 use anyhow::Result;
+use profiles::profile::Platform;
+use profiles::profile::Platform::{Pc, Unknown};
 use profiles::Profile;
 use prost::Message;
 use std::fmt;
@@ -8,8 +10,16 @@ use std::path::Path;
 use std::time::Duration;
 use std::vec::Vec;
 
+const PLATFORMS: [Platform; 1] = [Pc];
+
 pub mod profiles {
     include!(concat!(env!("OUT_DIR"), "/configurator.profiles.rs"));
+}
+
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+struct PlatformProperties {
+    priority: u8,
+    position: u8,
 }
 
 pub struct Configurator<'a, 'b> {
@@ -79,7 +89,58 @@ impl<'a, 'b> Configurator<'a, 'b> {
         Ok(())
     }
 
-    fn write(&self) -> Result<()> {
+    fn compress(&self) -> Option<Vec<u8>> {
+        // list of profiles
+        // byte 0: 8 bit console map
+        // byte 1, up to 4: each nibble represents position per console according to console bitmap
+        // next byte: length of profile data (to find next profile)
+        let mut compressed: Vec<u8> = Vec::new();
+        for profile in &self.profiles {
+            let mut properties: Vec<PlatformProperties> = Vec::new();
+            for config in &profile.platform_config {
+                if config.platform == Unknown as i32 {
+                    return None;
+                }
+                if config.position < 0 || config.position > 255 {
+                    return None;
+                }
+                let mut priority: u8 = 0;
+                for i in 0..PLATFORMS.len() {
+                    if config.platform == PLATFORMS[i] as i32 {
+                        priority = i as u8;
+                        break;
+                    }
+                }
+                properties.push(PlatformProperties {
+                    priority: priority,
+                    position: config.position as u8,
+                });
+            }
+            properties.sort();
+            let mut platform_bitmap: u8 = 0;
+            let mut positions: Vec<u8> = Vec::new();
+            let mut curr_positions: u8 = 0;
+            for i in 0..properties.len() {
+                let property = &properties[i];
+                platform_bitmap |= 1 << property.priority + 7;
+                if i % 2 == 0 {
+                    curr_positions |= property.position << 4;
+                } else {
+                    curr_positions |= property.position;
+                    positions.push(curr_positions);
+                }
+            }
+            if curr_positions > 0 {
+                positions.push(curr_positions);
+            }
+            compressed.push(platform_bitmap);
+            compressed.append(&mut positions);
+            // TODO(hiram): Compress data, get length of data
+        }
+        Some(compressed)
+    }
+
+    pub fn upload(&self) -> Result<()> {
         let mut controller = serialport::new(self.port, 9600)
             .timeout(Duration::from_millis(10))
             .open()?;
