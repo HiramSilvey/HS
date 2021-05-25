@@ -1,6 +1,7 @@
 use anyhow::Result;
 use profiles::profile::Platform;
 use profiles::profile::Platform::{Pc, Unknown};
+use profiles::profile::PlatformConfig;
 use profiles::Profile;
 use prost::Message;
 use std::fmt;
@@ -17,9 +18,19 @@ pub mod profiles {
 }
 
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
-struct PlatformProperties {
+struct PlatformMask {
     priority: u8,
     position: u8,
+}
+
+struct Header {
+    platform_bitmap: u8,
+    positions: Vec<u8>,
+}
+
+struct Body {
+    size: u8,
+    data: Vec<u8>,
 }
 
 pub struct Configurator<'a, 'b> {
@@ -89,55 +100,65 @@ impl<'a, 'b> Configurator<'a, 'b> {
         Ok(())
     }
 
-    fn compress(&self) -> Option<Vec<u8>> {
+    fn encode_header(configs: &Vec<PlatformConfig>) -> Option<Vec<u8>> {
+        let mut masks = Vec::new();
+        for config in configs {
+            if config.platform == Unknown as i32 || config.position < 0 || config.position > 255 {
+                return None;
+            }
+            masks.push(PlatformMask {
+                priority: PLATFORMS
+                    .iter()
+                    .position(|&x| x as i32 == config.platform)? as u8,
+                position: config.position as u8,
+            });
+        }
+        masks.sort();
+
+        let mut header = Header {
+            platform_bitmap: 0,
+            positions: Vec::new(),
+        };
+        let mut curr_positions: u8 = 0;
+        for i in 0..masks.len() {
+            let mask = &masks[i];
+            header.platform_bitmap |= 1 << mask.priority + 7;
+            if i % 2 == 0 {
+                curr_positions |= mask.position << 4;
+            } else {
+                curr_positions |= mask.position;
+                header.positions.push(curr_positions);
+            }
+        }
+        if curr_positions > 0 {
+            header.positions.push(curr_positions);
+        }
+        let mut encoded = Vec::new();
+        encoded.push(header.platform_bitmap);
+        encoded.append(&mut header.positions);
+        Some(encoded)
+    }
+
+    fn encode_profile(profile: &Profile) -> Option<Vec<u8>> {
+        let mut header = Self::encode_header(&profile.platform_config)?;
+        // let body = Self::encode_body(&profile.layout)?;
+
+        let mut encoded: Vec<u8> = Vec::new();
+        encoded.append(&mut header);
+        Some(encoded)
+    }
+
+    fn encode(&self) -> Option<Vec<u8>> {
         // list of profiles
         // byte 0: 8 bit console map
         // byte 1, up to 4: each nibble represents position per console according to console bitmap
         // next byte: length of profile data (to find next profile)
-        let mut compressed: Vec<u8> = Vec::new();
+        // TODO(hiram): Compress data, get length of data
+        let mut encoded: Vec<u8> = Vec::new();
         for profile in &self.profiles {
-            let mut properties: Vec<PlatformProperties> = Vec::new();
-            for config in &profile.platform_config {
-                if config.platform == Unknown as i32 {
-                    return None;
-                }
-                if config.position < 0 || config.position > 255 {
-                    return None;
-                }
-                let mut priority: u8 = 0;
-                for i in 0..PLATFORMS.len() {
-                    if config.platform == PLATFORMS[i] as i32 {
-                        priority = i as u8;
-                        break;
-                    }
-                }
-                properties.push(PlatformProperties {
-                    priority: priority,
-                    position: config.position as u8,
-                });
-            }
-            properties.sort();
-            let mut platform_bitmap: u8 = 0;
-            let mut positions: Vec<u8> = Vec::new();
-            let mut curr_positions: u8 = 0;
-            for i in 0..properties.len() {
-                let property = &properties[i];
-                platform_bitmap |= 1 << property.priority + 7;
-                if i % 2 == 0 {
-                    curr_positions |= property.position << 4;
-                } else {
-                    curr_positions |= property.position;
-                    positions.push(curr_positions);
-                }
-            }
-            if curr_positions > 0 {
-                positions.push(curr_positions);
-            }
-            compressed.push(platform_bitmap);
-            compressed.append(&mut positions);
-            // TODO(hiram): Compress data, get length of data
+            encoded.append(&mut Self::encode_profile(&profile)?);
         }
-        Some(compressed)
+        Some(encoded)
     }
 
     pub fn upload(&self) -> Result<()> {
