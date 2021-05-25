@@ -1,7 +1,8 @@
 use anyhow::Result;
-use profiles::profile::Platform;
+use profiles::profile::layout::action::ActionType::{Analog, Digital};
+use profiles::profile::layout::{Action, DigitalAction};
 use profiles::profile::Platform::{Pc, Unknown};
-use profiles::profile::PlatformConfig;
+use profiles::profile::{Layout, Platform, PlatformConfig};
 use profiles::Profile;
 use prost::Message;
 use std::fmt;
@@ -12,6 +13,8 @@ use std::time::Duration;
 use std::vec::Vec;
 
 const PLATFORMS: [Platform; 1] = [Pc];
+const BUTTON_ID_BITS: u32 = 5;
+const BUTTON_VALUE_BITS: u32 = 10;
 
 pub mod profiles {
     include!(concat!(env!("OUT_DIR"), "/configurator.profiles.rs"));
@@ -26,6 +29,11 @@ struct PlatformMask {
 struct Header {
     platform_bitmap: u8,
     positions: Vec<u8>,
+}
+
+struct Button {
+    num_bits: u8,
+    data: u16,
 }
 
 struct Body {
@@ -136,6 +144,33 @@ impl<'a, 'b> Configurator<'a, 'b> {
         let mut encoded = Vec::new();
         encoded.push(header.platform_bitmap);
         encoded.append(&mut header.positions);
+        Some(encoded)
+    }
+
+    fn encode_button(action: &Action) -> Option<Button> {
+        let mut encoded = Button {
+            num_bits: BUTTON_ID_BITS as u8,
+            data: 0,
+        };
+        let id_mask = i32::pow(2, BUTTON_ID_BITS);
+        let value_mask = i32::pow(2, BUTTON_VALUE_BITS);
+        match action.action_type.as_ref()? {
+            Digital(x) => {
+                encoded.data = (x & id_mask) as u16;
+            }
+            Analog(x) => {
+                if x.id != 0 {
+                    encoded.num_bits = (BUTTON_ID_BITS + BUTTON_VALUE_BITS) as u8;
+                    encoded.data =
+                        ((x.id & id_mask << BUTTON_VALUE_BITS) | (x.value & value_mask)) as u16;
+                }
+            }
+        }
+        Some(encoded)
+    }
+
+    fn encode_body(layout: &Layout) -> Option<Vec<u8>> {
+        let mut encoded: Vec<u8> = vec![0];
         Some(encoded)
     }
 

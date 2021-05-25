@@ -58,10 +58,10 @@ message Profile {
       // Next available ID: 5
       enum ID {
         NO_OP = 0; 
-        R_STICK_Y = 1;
-        R_STICK_X = 2;
-        SLIDER_LEFT = 3;
-        SLIDER_RIGHT = 4;
+        R_STICK_Y = 27;
+        R_STICK_X = 28;
+        SLIDER_LEFT = 29;
+        SLIDER_RIGHT = 30;
       }
 
       ID id = 1;
