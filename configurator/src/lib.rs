@@ -1,10 +1,11 @@
 use anyhow::Result;
 use profiles::profile::layout::action::ActionType::{Analog, Digital};
-use profiles::profile::layout::{Action, DigitalAction};
+use profiles::profile::layout::Action;
 use profiles::profile::Platform::{Pc, Unknown};
 use profiles::profile::{Layout, Platform, PlatformConfig};
 use profiles::Profile;
 use prost::Message;
+use std::cmp;
 use std::fmt;
 use std::fs;
 use std::io::Cursor;
@@ -13,8 +14,20 @@ use std::time::Duration;
 use std::vec::Vec;
 
 const PLATFORMS: [Platform; 1] = [Pc];
-const BUTTON_ID_BITS: u32 = 5;
-const BUTTON_VALUE_BITS: u32 = 10;
+const BUTTON_ID_BITS: usize = 5;
+const BUTTON_VALUE_BITS: usize = 10;
+const BITMASKS: [i32; 10] = [
+    0b1,
+    0b11,
+    0b111,
+    0b1111,
+    0b11111,
+    0b111111,
+    0b1111111,
+    0b11111111,
+    0b111111111,
+    0b1111111111,
+];
 
 pub mod profiles {
     include!(concat!(env!("OUT_DIR"), "/configurator.profiles.rs"));
@@ -147,13 +160,13 @@ impl<'a, 'b> Configurator<'a, 'b> {
         Some(encoded)
     }
 
-    fn encode_button(action: &Action) -> Option<Button> {
+    fn get_button(action: &Action) -> Option<Button> {
         let mut encoded = Button {
             num_bits: BUTTON_ID_BITS as u8,
             data: 0,
         };
-        let id_mask = i32::pow(2, BUTTON_ID_BITS);
-        let value_mask = i32::pow(2, BUTTON_VALUE_BITS);
+        let id_mask = BITMASKS[BUTTON_ID_BITS - 1];
+        let value_mask = BITMASKS[BUTTON_VALUE_BITS - 1];
         match action.action_type.as_ref()? {
             Digital(x) => {
                 encoded.data = (x & id_mask) as u16;
@@ -170,25 +183,65 @@ impl<'a, 'b> Configurator<'a, 'b> {
     }
 
     fn encode_body(layout: &Layout) -> Option<Vec<u8>> {
-        let mut encoded: Vec<u8> = vec![0];
+        let actions = [
+            layout.thumb_top.as_ref()?,
+            layout.thumb_middle.as_ref()?,
+            layout.thumb_bottom.as_ref()?,
+            layout.index_top.as_ref()?,
+            layout.index_middle.as_ref()?,
+            layout.middle_top.as_ref()?,
+            layout.middle_middle.as_ref()?,
+            layout.middle_bottom.as_ref()?,
+            layout.ring_top.as_ref()?,
+            layout.ring_middle.as_ref()?,
+            layout.ring_bottom.as_ref()?,
+            layout.pinky_top.as_ref()?,
+            layout.pinky_middle.as_ref()?,
+            layout.pinky_bottom.as_ref()?,
+            layout.left_index_extra.as_ref()?,
+            layout.left_middle_extra.as_ref()?,
+            layout.left_ring_extra.as_ref()?,
+            layout.right_index_extra.as_ref()?,
+            layout.right_middle_extra.as_ref()?,
+            layout.right_ring_extra.as_ref()?,
+        ];
+        let mut encoded: Vec<u8> = Vec::new();
+        let mut curr_byte: u8 = 0;
+        let mut available = 8;
+        for action in actions.iter() {
+            let button = Self::get_button(action)?;
+            let mut remaining = button.num_bits;
+            let mut data = button.data;
+            while remaining > 0 {
+                let num_bits = cmp::min(available, remaining);
+                let bits: u8 = (data & BITMASKS[(num_bits as usize) - 1] as u16) as u8;
+                curr_byte |= bits << available - num_bits;
+                available -= num_bits;
+                remaining -= num_bits;
+                data >>= num_bits;
+                if available == 0 {
+                    encoded.push(curr_byte);
+                    curr_byte = 0;
+                    available = 8;
+                }
+            }
+        }
+        if available < 8 {
+            encoded.push(curr_byte);
+        }
         Some(encoded)
     }
 
     fn encode_profile(profile: &Profile) -> Option<Vec<u8>> {
         let mut header = Self::encode_header(&profile.platform_config)?;
-        // let body = Self::encode_body(&profile.layout)?;
-
+        let mut body = Self::encode_body(profile.layout.as_ref()?)?;
         let mut encoded: Vec<u8> = Vec::new();
         encoded.append(&mut header);
+        encoded.append(&mut body);
         Some(encoded)
     }
 
     fn encode(&self) -> Option<Vec<u8>> {
-        // list of profiles
-        // byte 0: 8 bit console map
-        // byte 1, up to 4: each nibble represents position per console according to console bitmap
-        // next byte: length of profile data (to find next profile)
-        // TODO(hiram): Compress data, get length of data
         let mut encoded: Vec<u8> = Vec::new();
         for profile in &self.profiles {
             encoded.append(&mut Self::encode_profile(&profile)?);
