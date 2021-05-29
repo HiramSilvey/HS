@@ -1,7 +1,7 @@
 use configurator::Configurator;
 
 fn main() {
-    let config = Configurator::new("/some/port", "../profiles").unwrap();
+    let config = Configurator::new("/dev/ttyACM0", "../profiles").unwrap();
     println!("{}", config);
-    config.upload();
+    config.upload().unwrap();
 }

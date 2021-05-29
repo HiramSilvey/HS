@@ -81,13 +81,13 @@ impl<'a, 'b> Configurator<'a, 'b> {
         Ok(())
     }
 
-    pub fn upload(&self) -> Option<()> {
+    pub fn upload(&self) -> Result<()> {
         let encoded = encoder::encode(&self.profiles)?;
         let mut controller = serialport::new(self.port, 9600)
             .timeout(Duration::from_millis(10))
-            .open()
-            .ok()?;
-        Some(())
+            .open()?;
+        controller.write_all(&encoded)?;
+        Ok(())
     }
 }
 

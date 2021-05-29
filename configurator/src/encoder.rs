@@ -3,6 +3,7 @@ use crate::profiles::profile::layout::Action;
 use crate::profiles::profile::Platform::{Pc, Unknown};
 use crate::profiles::profile::{Layout, Platform, PlatformConfig};
 use crate::profiles::Profile;
+use anyhow::{anyhow, Result};
 use std::cmp;
 use std::fmt;
 
@@ -138,12 +139,15 @@ fn encode_profile(profile: &Profile) -> Option<Vec<u8>> {
     Some(encoded)
 }
 
-pub fn encode(profiles: &Vec<Profile>) -> Option<Vec<u8>> {
+pub fn encode(profiles: &Vec<Profile>) -> Result<Vec<u8>> {
     let mut encoded: Vec<u8> = Vec::new();
     for profile in profiles {
-        encoded.append(&mut encode_profile(&profile)?);
+        encoded.append(match &mut encode_profile(&profile) {
+            Some(x) => x,
+            None => return Err(anyhow!("Encoding profile \"{}\" failed!", profile.name)),
+        });
     }
-    Some(encoded)
+    Ok(encoded)
 }
 
 impl fmt::Display for Action {
