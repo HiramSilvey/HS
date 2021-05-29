@@ -10,6 +10,8 @@ use std::vec::Vec;
 
 mod encoder;
 
+const MAX_EEPROM_BYTES: i32 = 1064;
+
 pub mod profiles {
     include!(concat!(env!("OUT_DIR"), "/configurator.profiles.rs"));
 }
@@ -83,6 +85,13 @@ impl<'a, 'b> Configurator<'a, 'b> {
 
     pub fn upload(&self) -> Result<()> {
         let encoded = encoder::encode(&self.profiles)?;
+        if (encoded.len() > MAX_EEPROM_BYTES) {
+            return Err(anyhow::Error(
+                "Encoded length of {} bytes exceeds controller maximum of {} bytes.",
+                encoded.len(),
+                MAX_EEPROM_BYTES,
+            ));
+        }
         let mut controller = serialport::new(self.port, 9600)
             .timeout(Duration::from_millis(10))
             .open()?;

@@ -135,6 +135,7 @@ fn encode_profile(profile: &Profile) -> Option<Vec<u8>> {
     let mut body = encode_body(profile.layout.as_ref()?)?;
     let mut encoded: Vec<u8> = Vec::new();
     encoded.append(&mut header);
+    encoded.push(body.len() as u8);
     encoded.append(&mut body);
     Some(encoded)
 }
