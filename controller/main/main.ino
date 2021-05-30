@@ -8,6 +8,9 @@
 std::unique_ptr<Controller> controller;
 
 void setup() {
+  // Ensure button states are settled before relying on them in initialization.
+  delay(100);
+
   auto usb_controller = std::make_unique<USBController>();
   while(true) {
     if (usb_controller->Init()) {
