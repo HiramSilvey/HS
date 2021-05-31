@@ -4,3 +4,4 @@ configurator/target/
 *_pb2\.*
 __pycache__
 configurator/utility/profiles/serialized/
+*\.pb\.*
