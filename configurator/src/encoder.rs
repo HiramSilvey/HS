@@ -1,13 +1,12 @@
 use crate::profiles::profile::layout::action::ActionType::{Analog, Digital};
 use crate::profiles::profile::layout::Action;
-use crate::profiles::profile::Platform::{Pc, Unknown};
-use crate::profiles::profile::{Layout, Platform, PlatformConfig};
+use crate::profiles::profile::Platform::Unknown;
+use crate::profiles::profile::{Layout, PlatformConfig};
 use crate::profiles::Profile;
 use anyhow::{anyhow, Result};
 use std::cmp;
 use std::fmt;
 
-const PLATFORMS: [Platform; 1] = [Pc];
 const BUTTON_ID_BITS: i32 = 5;
 const BUTTON_VALUE_BITS: i32 = 10;
 
@@ -22,16 +21,20 @@ struct Button {
     data: i32,
 }
 
-fn encode_header(configs: &Vec<PlatformConfig>) -> Option<Vec<u8>> {
+fn encode_header(configs: &Vec<PlatformConfig>) -> Result<Vec<u8>> {
     let mut masks = Vec::new();
     for config in configs {
-        if config.platform == Unknown as i32 || config.position < 0 || config.position > 255 {
-            return None;
+        if config.platform == Unknown as i32 {
+            return Err(anyhow!("Required platform is not specified."));
+        }
+        if config.position < u8::MIN as i32 || config.position > u8::MAX as i32 {
+            return Err(anyhow!(
+                "Position {} is not able to be represented by an 8-bit unsigned integer.",
+                config.position
+            ));
         }
         masks.push(PlatformMask {
-            priority: PLATFORMS
-                .iter()
-                .position(|&x| x as i32 == config.platform)? as u8,
+            priority: config.platform as u8,
             position: config.position as u8,
         });
     }
@@ -56,7 +59,7 @@ fn encode_header(configs: &Vec<PlatformConfig>) -> Option<Vec<u8>> {
     let mut encoded = Vec::new();
     encoded.push(platform_bitmap);
     encoded.append(&mut positions);
-    Some(encoded)
+    Ok(encoded)
 }
 
 fn get_button(action: &Action) -> Option<Button> {
@@ -78,34 +81,41 @@ fn get_button(action: &Action) -> Option<Button> {
     Some(encoded)
 }
 
-fn encode_body(layout: &Layout) -> Option<Vec<u8>> {
+fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
     let actions = [
-        layout.thumb_top.as_ref()?,
-        layout.thumb_middle.as_ref()?,
-        layout.thumb_bottom.as_ref()?,
-        layout.index_top.as_ref()?,
-        layout.index_middle.as_ref()?,
-        layout.middle_top.as_ref()?,
-        layout.middle_middle.as_ref()?,
-        layout.middle_bottom.as_ref()?,
-        layout.ring_top.as_ref()?,
-        layout.ring_middle.as_ref()?,
-        layout.ring_bottom.as_ref()?,
-        layout.pinky_top.as_ref()?,
-        layout.pinky_middle.as_ref()?,
-        layout.pinky_bottom.as_ref()?,
-        layout.left_index_extra.as_ref()?,
-        layout.left_middle_extra.as_ref()?,
-        layout.left_ring_extra.as_ref()?,
-        layout.right_index_extra.as_ref()?,
-        layout.right_middle_extra.as_ref()?,
-        layout.right_ring_extra.as_ref()?,
+        layout.thumb_top.as_ref(),
+        layout.thumb_middle.as_ref(),
+        layout.thumb_bottom.as_ref(),
+        layout.index_top.as_ref(),
+        layout.index_middle.as_ref(),
+        layout.middle_top.as_ref(),
+        layout.middle_middle.as_ref(),
+        layout.middle_bottom.as_ref(),
+        layout.ring_top.as_ref(),
+        layout.ring_middle.as_ref(),
+        layout.ring_bottom.as_ref(),
+        layout.pinky_top.as_ref(),
+        layout.pinky_middle.as_ref(),
+        layout.pinky_bottom.as_ref(),
+        layout.left_index_extra.as_ref(),
+        layout.left_middle_extra.as_ref(),
+        layout.left_ring_extra.as_ref(),
+        layout.right_index_extra.as_ref(),
+        layout.right_middle_extra.as_ref(),
+        layout.right_ring_extra.as_ref(),
     ];
     let mut encoded: Vec<u8> = Vec::new();
     let mut curr_byte: u8 = 0;
     let mut available = 8;
     for action in actions.iter() {
-        let button = get_button(action)?;
+        let action = match action {
+            Some(x) => x,
+            None => return Err(anyhow!("Unable to get action.")),
+        };
+        let button = match get_button(action) {
+            Some(x) => x,
+            None => return Err(anyhow!("Unable to get button.")),
+        };
         let mut remaining = button.num_bits;
         while remaining > 0 {
             let offset = available - remaining;
@@ -127,26 +137,27 @@ fn encode_body(layout: &Layout) -> Option<Vec<u8>> {
     if available < 8 {
         encoded.push(curr_byte);
     }
-    Some(encoded)
+    Ok(encoded)
 }
 
-fn encode_profile(profile: &Profile) -> Option<Vec<u8>> {
+fn encode_profile(profile: &Profile) -> Result<Vec<u8>> {
     let mut header = encode_header(&profile.platform_config)?;
-    let mut body = encode_body(profile.layout.as_ref()?)?;
+    let layout = match profile.layout.as_ref() {
+        Some(x) => x,
+        None => return Err(anyhow!("Unable to get layout.")),
+    };
+    let mut body = encode_body(layout)?;
     let mut encoded: Vec<u8> = Vec::new();
     encoded.append(&mut header);
     encoded.push(body.len() as u8);
     encoded.append(&mut body);
-    Some(encoded)
+    Ok(encoded)
 }
 
 pub fn encode(profiles: &Vec<Profile>) -> Result<Vec<u8>> {
     let mut encoded: Vec<u8> = Vec::new();
     for profile in profiles {
-        encoded.append(match &mut encode_profile(&profile) {
-            Some(x) => x,
-            None => return Err(anyhow!("Encoding profile \"{}\" failed!", profile.name)),
-        });
+        encoded.append(&mut encode_profile(&profile)?);
     }
     Ok(encoded)
 }

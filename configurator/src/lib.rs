@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use profiles::Profile;
 use prost::Message;
 use std::fmt;
@@ -10,7 +10,7 @@ use std::vec::Vec;
 
 mod encoder;
 
-const MAX_EEPROM_BYTES: i32 = 1064;
+const MAX_EEPROM_BYTES: usize = 1064;
 
 pub mod profiles {
     include!(concat!(env!("OUT_DIR"), "/configurator.profiles.rs"));
@@ -85,8 +85,8 @@ impl<'a, 'b> Configurator<'a, 'b> {
 
     pub fn upload(&self) -> Result<()> {
         let encoded = encoder::encode(&self.profiles)?;
-        if (encoded.len() > MAX_EEPROM_BYTES) {
-            return Err(anyhow::Error(
+        if encoded.len() > MAX_EEPROM_BYTES {
+            return Err(anyhow!(
                 "Encoded length of {} bytes exceeds controller maximum of {} bytes.",
                 encoded.len(),
                 MAX_EEPROM_BYTES,

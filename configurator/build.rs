@@ -1,6 +1,9 @@
 use std::io::Result;
 
 fn main() -> Result<()> {
-    prost_build::compile_protos(&["src/profiles.proto"], &["src/"])?;
+    prost_build::compile_protos(
+        &["/home/hiram/Projects/HS/src/profiles.proto"],
+        &["/home/hiram/Projects/HS/src/"],
+    )?;
     Ok(())
 }
