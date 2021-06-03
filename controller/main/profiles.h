@@ -3,6 +3,16 @@
 #ifndef PROFILES_H_
 #define PROFILES_H_
 
-void StoreProfiles();
+#include "profiles.pb.h"
+
+class Profiles {
+ public:
+  static void Store();
+  static configurator_profiles_Profile Fetch(configurator_profiles_Profile_Platform Platform);
+ private:
+  int GetAddress(configurator_profiles_Profile_Platform Platform, int position);
+  configurator_profiles_Profile Decode(int address);
+};
+
 
 #endif  // PROFILES_H_
