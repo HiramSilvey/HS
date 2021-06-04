@@ -4,6 +4,7 @@
 
 #include "Arduino.h"
 #include <EEPROM.h>
+#include "decoder.h"
 #include "pins.h"
 #include "profiles.pb.h"
 
@@ -24,15 +25,7 @@ void Profiles::Store() {
   }
 }
 
-int Profiles::GetAddress(Platform platform, int position) {
-  // If not found, fall back to default.
-}
-
-Profile Profiles::Decode(int address) {
-  
-}
-
-Profile Fetch(Platform platform) {
+int Profiles::GetPosition() {
   std::pair<int, int>[] button_to_position = {
                                               std::make_pair(kLeftRingExtra, 1),
                                               std::make_pair(kLeftMiddleExtra, 2),
@@ -46,9 +39,11 @@ Profile Fetch(Platform platform) {
       break;
     }
   }
-  int address = GetAddress(platform, position);
-  if (address < 16) {
-    throw std::runtime_error;
-  }
-  return Decode(address);
+  return position;
+}
+
+Profile Fetch(Platform platform) {
+  int position = GetPosition();
+  int address = Decoder::GetAddress(platform, position);
+  return Decoder::Decode(address);
 }

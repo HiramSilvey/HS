@@ -10,8 +10,7 @@ class Profiles {
   static void Store();
   static configurator_profiles_Profile Fetch(configurator_profiles_Profile_Platform Platform);
  private:
-  int GetAddress(configurator_profiles_Profile_Platform Platform, int position);
-  configurator_profiles_Profile Decode(int address);
+  int GetPosition();
 };
 
 
