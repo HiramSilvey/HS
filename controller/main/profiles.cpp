@@ -43,7 +43,5 @@ int Profiles::GetPosition() {
 }
 
 Profile Fetch(Platform platform) {
-  int position = GetPosition();
-  int address = Decoder::GetAddress(platform, position);
-  return Decoder::Decode(address);
+  return Decoder::Decode(platform, GetPosition());
 }

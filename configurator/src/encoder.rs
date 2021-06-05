@@ -159,7 +159,12 @@ pub fn encode(profiles: &Vec<Profile>) -> Result<Vec<u8>> {
     for profile in profiles {
         encoded.append(&mut encode_profile(&profile)?);
     }
-    Ok(encoded)
+    let mut wrapped: Vec<u8> = Vec::new();
+    let len = encoded.len() as u16;
+    wrapped.push((len >> 8) as u8);
+    wrapped.push((len & 0xFF) as u8);
+    wrapped.append(&mut encoded);
+    Ok(wrapped)
 }
 
 impl fmt::Display for Action {

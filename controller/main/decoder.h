@@ -7,11 +7,13 @@
 
 class Decoder {
  public:
-  static int GetAddress(configurator_profiles_Profile_Platform Platform, int position);
-  static configurator_profiles_Profile Decode(int address);
+  configurator_profiles_Profile Decode(configurator_profiles_Profile_Platform Platform, int position);
  private:
-  configurator_profiles_Profile_PlatformConfig GetPlatformConfig(int address);
-  int GetNextAddress(int address);
+  int FindAddress(configurator_profiles_Profile_Platform Platform, int position);
+  int DecodeHeader(int address, configurator_profiles_Profile_PlatformConfig& platform_config);
+
+  const int data_len_;
+  int curr_addr_;
 };
 
 
