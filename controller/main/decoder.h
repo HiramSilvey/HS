@@ -7,13 +7,10 @@
 
 class Decoder {
  public:
-  configurator_profiles_Profile Decode(configurator_profiles_Profile_Platform Platform, int position);
+  static configurator_profiles_Profile_Layout Decode(configurator_profiles_Profile_Platform Platform, int position);
  private:
-  int FindAddress(configurator_profiles_Profile_Platform Platform, int position);
-  int DecodeHeader(int address, configurator_profiles_Profile_PlatformConfig& platform_config);
-
-  const int data_len_;
-  int curr_addr_;
+  std::vector<configurator_profiles_Profile_PlatformConfig> DecodeHeader(int addr);
+  configurator_profiles_Profile_Layout DecodeBody(int addr);
 };
 
 

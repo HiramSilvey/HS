@@ -7,51 +7,59 @@
 using Profile = configurator_profiles_Profile;
 using Platform = configurator_profiles_Profile_Platform;
 using PlatformConfig = configurator_profiles_Profile_PlatformConfig;
+using PC = configurator_profiles_Profile_Platform_PC;
+using Layout = configurator_profiles_Profile_Layout;
 
-const kLowestAddr = 16;
+const kMinAddr = 16;
 
-Decoder::Decoder() : data_len_(EEPROM.read(kLowestAddr)) {
-  curr_addr_ = kLowestAddr + 1;
+std::vector<PlatformConfig> Decoder::DecodeHeader(int addr) {
+  const byte platform_bitmap = EEPROM.read(addr++);
+  std::vector<PlatformConfig> configs;
+  for (int platform = PC /*first*/; platform <= PC /*last*/; platform++) {
+    if (platform_bitmap & 1 << 8 - platform) {
+      PlatformConfig config;
+      config.platform = static_cast<Platform>(platform);
+      if (configs.size() % 2 == 0) {
+        config.position = EEPORM.read(addr) >> 4;
+      } else {
+        config.position = EEPROM.read(addr++) & 0xFF;
+      }
+      configs.push_back(config);
+    }
+  }
+  return configs;
 }
 
-std::vector<PlatformConfig> Decoder::DecodeHeader() {
-  const byte platform_bitmap = EEPROM.read(curr_addr_++);
-  std::vector<Platform> platforms;
+Layout Decoder::DecodeBody(int addr) {
+  int remaining = 8;
+  int body_len = EEPROM.read(addr++);
+  return;
 }
 
-int Decoder::FindAddress(Platform platform, int position) {
-  // If not found, fall back to default.
-  int default_addr = 0;
-  while (curr_addr_ < kLowestAddr + data_len_ + 1) {
-    PlatformConfig platform_config;
-    int header_len = DecodeHeader(address, &platform_config);
-    if (header_len <= 0) {
+Layout Decoder::Decode(Platform platform, int position) {
+  const int max_addr = kMinAddr + EEPROM.read(kMinAddr) + 1;
+
+  int curr_addr = kMinAddr + 1;
+  while (curr_addr < max_addr) {
+    std::vector<PlatformConfig> configs = DecodeHeader(curr_addr);
+    // Advance past the header.
+    curr_addr += configs.size() / 2 + configs.size() % 2 + 1;
+    if ([&]{
+          for (const auto& config : configs) {
+            if (config.platform == platform && config.position == position) {
+              return true;
+            }
+          }
+          return false;
+        }) {
       break;
     }
-    curr_addr_ += header_len;
-    if (platform_config.platform == platform) {
-      if (platform_config.position == position) {
-        return curr_addr_;
-      }
-      // Default position.
-      if (platform_config.position == 0) {
-        default_address = address;
-      }
-    }
-    // Advance to the next profile.
-    int body_len = EEPROM.read(curr_addr_++);
-    curr_addr_ += body_len;
-    header_len = DecodeHeader(address, &platform_config);
+    // Advance to the header of the next profile.
+    curr_addr += EEPROM.read(curr_addr++);
+  }
+  if (curr_addr >= max_addr) {
+    throw std::runtime_error("No matching or default profile found for the specified platform!"); 
   }
 
-  if (default_address >= kLowestAddr) {
-    return default_address;
-  }
-  throw std::runtime_error("No matching or default profile found for the specified platform!");
-}
-
-Profile Decoder::Decode(Platform platform, int position) {
-  int address = FindAddress(platform, position);
-  int body_len = EEPROM.read(address);
-  
+  return DecodeBody(curr_addr);
 }

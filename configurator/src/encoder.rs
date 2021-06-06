@@ -45,7 +45,7 @@ fn encode_header(configs: &Vec<PlatformConfig>) -> Result<Vec<u8>> {
     let mut curr_positions: u8 = 0;
     for i in 0..masks.len() {
         let mask = &masks[i];
-        platform_bitmap |= 1 << mask.priority + 7;
+        platform_bitmap |= 1 << 8 - mask.priority;
         if i % 2 == 0 {
             curr_positions |= mask.position << 4;
         } else {
