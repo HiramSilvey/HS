@@ -1,8 +1,8 @@
-use crate::profiles::profile::layout::action::ActionType::{Analog, Digital};
-use crate::profiles::profile::layout::Action;
-use crate::profiles::profile::Platform::Unknown;
-use crate::profiles::profile::{Layout, PlatformConfig};
-use crate::profiles::Profile;
+use super::profiles::profile::layout::action::ActionType::{Analog, Digital};
+use super::profiles::profile::layout::Action;
+use super::profiles::profile::Platform::Unknown;
+use super::profiles::profile::{Layout, PlatformConfig};
+use super::profiles::Profile;
 use anyhow::{anyhow, Result};
 use std::cmp;
 use std::fmt;

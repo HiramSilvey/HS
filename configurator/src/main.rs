@@ -1,3 +1,4 @@
+mod configurator;
 use configurator::Configurator;
 
 fn main() {
