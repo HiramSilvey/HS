@@ -1,7 +1,6 @@
+use crate::profile::Profile;
 use anyhow::{anyhow, Result};
-use profile::Profile;
 use prost::Message;
-use std::fmt;
 use std::fs;
 use std::io::Cursor;
 use std::path::Path;
@@ -12,19 +11,20 @@ use crate::encoder;
 
 const MAX_EEPROM_BYTES: usize = 1064;
 
-pub fn load_all(path: &Path, profiles: &Vec<Profile>) -> Result<()> {
+pub fn load_all(path: &Path) -> Result<Vec<Profile>> {
+    let mut profiles = Vec::new();
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let p = entry.path();
         if p.is_dir() {
-            load_all(&p, profiles)?;
+            profiles.append(&mut load_all(&p)?);
         } else {
             let buf = fs::read(p)?;
             let profile = Profile::decode(&mut Cursor::new(buf))?;
             profiles.push(profile);
         }
     }
-    Ok(())
+    Ok(profiles)
 }
 
 pub fn save_all(profiles: &Vec<Profile>, path: &Path) -> Result<()> {
@@ -40,7 +40,7 @@ pub fn save_all(profiles: &Vec<Profile>, path: &Path) -> Result<()> {
 
 pub fn find(profiles: &Vec<Profile>, name: &str) -> Option<usize> {
     for i in 0..profiles.len() {
-        if self.profiles[i].name == name {
+        if profiles[i].name == name {
             return Some(i);
         }
     }

@@ -1,8 +1,10 @@
-mod configurator;
-use configurator::Configurator;
+use configurator::profiles;
+use std::path::Path;
 
 fn main() {
-    let config = Configurator::new("/dev/ttyACM0", "../profiles").unwrap();
-    println!("{}", config);
-    config.upload().unwrap();
+    let profiles = profiles::load_all(&Path::new("../profiles")).unwrap();
+    for profile in &profiles {
+        println!("{}", profile);
+    }
+    profiles::upload(&profiles, "/dev/ttyACM0").unwrap();
 }
