@@ -1,3 +1,4 @@
+use crate::encoder;
 use crate::profile::Profile;
 use anyhow::{anyhow, Result};
 use prost::Message;
@@ -6,8 +7,6 @@ use std::io::Cursor;
 use std::path::Path;
 use std::time::Duration;
 use std::vec::Vec;
-
-use crate::encoder;
 
 const MAX_EEPROM_BYTES: usize = 1064;
 
@@ -61,4 +60,15 @@ pub fn upload(profiles: &Vec<Profile>, port: &str) -> Result<()> {
         .open()?;
     controller.write_all(&encoded)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic]
+    fn test_load_all_bad_dir() {
+        load_all(&Path::new("")).unwrap();
+    }
 }
