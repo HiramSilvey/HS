@@ -7,7 +7,7 @@
 
 class Decoder {
  public:
-  static configurator_profiles_Profile_Layout Decode(configurator_profiles_Profile_Platform Platform, int position);
+  static hs_profile_Profile_Layout Decode(hs_profile_Profile_Platform Platform, int position);
 };
 
 

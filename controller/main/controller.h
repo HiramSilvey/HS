@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "hall_joystick.h"
+#include "profile.pb.h"
 
 class Controller {
 public:
@@ -17,8 +18,6 @@ public:
   virtual void Loop() = 0;
 
 protected:
-  static void InitPins();
-
   // Simultaneous opposing cardinal direction resolution.
   static int ResolveSOCD(int low_direction, int high_direction, int joystick_min,
                          int joystick_max, int joystick_neutral);

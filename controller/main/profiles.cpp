@@ -6,10 +6,10 @@
 #include <EEPROM.h>
 #include "decoder.h"
 #include "pins.h"
-#include "profiles.pb.h"
+#include "profile.pb.h"
 
-using Profile = configurator_profiles_Profile;
-using Platform = configurator_profiles_Profile_Platform;
+using Layout = hs_profile_Profile_Layout;
+using Platform = hs_profile_Profile_Platform;
 
 // TODO(hiramj): Add support for termination byte to exit the loop.
 void Profiles::Store() {
@@ -25,14 +25,14 @@ void Profiles::Store() {
   }
 }
 
-int Profiles::GetPosition() {
+int GetPosition() {
   std::pair<int, int>[] button_to_position = {
                                               std::make_pair(kLeftRingExtra, 1),
                                               std::make_pair(kLeftMiddleExtra, 2),
                                               std::make_pair(kRightMiddleExtra, 3),
                                               std::make_pair(kRightMiddleRing, 4),
   };
-  int position = 0; 
+  int position = 0;
   for (const auto& [b, p] : button_to_position) {
     if (digitalRead(b) != LOW) {
       position = p;
@@ -42,6 +42,6 @@ int Profiles::GetPosition() {
   return position;
 }
 
-Profile Fetch(Platform platform) {
+Layout Profiles::Fetch(Platform platform) {
   return Decoder::Decode(platform, GetPosition());
 }

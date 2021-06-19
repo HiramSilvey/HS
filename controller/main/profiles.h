@@ -3,14 +3,12 @@
 #ifndef PROFILES_H_
 #define PROFILES_H_
 
-#include "profiles.pb.h"
+#include "profile.pb.h"
 
 class Profiles {
  public:
   static void Store();
-  static configurator_profiles_Profile Fetch(configurator_profiles_Profile_Platform Platform);
- private:
-  int GetPosition();
+  static hs_profile_Profile_Layout Fetch(hs_profile_Profile_Platform Platform);
 };
 
 
