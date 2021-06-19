@@ -3,7 +3,7 @@
 #ifndef DECODER_H_
 #define DECODER_H_
 
-#include "profiles.pb.h"
+#include "profile.pb.h"
 
 class Decoder {
  public:

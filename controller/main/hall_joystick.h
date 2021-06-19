@@ -10,9 +10,9 @@ public:
   // Minimum and maximum values each joystick axis is expected to output.
   explicit HallJoystick(int min, int max);
 
-  int GetMin();
-  int GetMax();
-  int GetNeutral();
+  int get_min();
+  int get_max();
+  int get_neutral();
 
   // Initializations to be run once before the main loop.
   void Init();

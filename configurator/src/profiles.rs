@@ -58,6 +58,9 @@ pub fn upload(profiles: &Vec<Profile>, port: &str) -> Result<()> {
     let mut controller = serialport::new(port, 9600)
         .timeout(Duration::from_millis(10))
         .open()?;
+    for byte in &encoded {
+        println!("{}", byte);
+    }
     controller.write_all(&encoded)?;
     Ok(())
 }

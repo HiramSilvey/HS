@@ -4,6 +4,7 @@
 #define USB_CONTROLLER_H_
 
 #include <unordered_map>
+#include <vector>
 #include "controller.h"
 
 class USBController: public Controller {
@@ -16,7 +17,7 @@ private:
   struct AnalogButton {
     int value;
     int pin;
-  }
+  };
 
   void LoadProfile() override;
   int GetDPadAngle();
