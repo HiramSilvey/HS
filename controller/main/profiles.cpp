@@ -13,20 +13,20 @@ using Platform = hs_profile_Profile_Platform;
 
 // TODO(hiramj): Add support for termination byte to exit the loop.
 void Profiles::Store() {
-  while (!Serial) {}
+  // while (!Serial) {}
   if (digitalRead(kRightIndexExtra) != LOW) {
     return;
   }
-  Serial.println("Storing!");
+  // Serial.println("Storing!");
   int address = 16;  // 0-15 reserved for joystick calibration values.
   while(true) {
     if (Serial.available() > 0) {
       byte data = Serial.read();
       EEPROM.update(address, data);
-      Serial.print("Writing ");
-      Serial.print(data, DEC);
-      Serial.print(" to address ");
-      Serial.println(address);
+      // Serial.print("Writing ");
+      // Serial.print(data, DEC);
+      // Serial.print(" to address ");
+      // Serial.println(address);
       address++;
     }
   }
@@ -46,8 +46,8 @@ int GetPosition() {
       break;
     }
   }
-  Serial.print("Got position ");
-  Serial.println(position);
+  // Serial.print("Got position ");
+  // Serial.println(position);
   return position;
 }
 

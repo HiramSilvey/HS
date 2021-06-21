@@ -153,7 +153,6 @@ fn encode_profile(profile: &Profile) -> Result<Vec<u8>> {
     let mut body = encode_body(layout)?;
     let mut encoded: Vec<u8> = Vec::new();
     encoded.append(&mut header);
-    encoded.push(body.len() as u8);
     encoded.append(&mut body);
     Ok(encoded)
 }
