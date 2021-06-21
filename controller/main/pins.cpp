@@ -26,6 +26,9 @@ void Pins::Init() {
   pinMode(kRightIndexExtra, INPUT_PULLUP);
   pinMode(kRightMiddleExtra, INPUT_PULLUP);
   pinMode(kRightRingExtra, INPUT_PULLUP);
+
+  // Ensure button states are settled before relying on them.
+  delay(100);
 }
 
 std::vector<Pins::ActionPin> Pins::GetActionPins(const Layout& layout) {

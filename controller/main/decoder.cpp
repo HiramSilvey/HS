@@ -43,10 +43,6 @@ namespace {
         } else {
           config.position = EEPROM.read(addr++) & 0xFF;
         }
-        // Serial.print("Platform = ");
-        // Serial.println(config.platform);
-        // Serial.print("Position = ");
-        // Serial.println(config.position);
         configs.push_back(config);
       }
     }
@@ -54,14 +50,6 @@ namespace {
   }
 
   int FetchData(int remaining, int& addr, byte& curr_byte, int& unread) {
-    // Serial.print("Fetching remaining ");
-    // Serial.print(remaining);
-    // Serial.print(" bits from byte ");
-    // Serial.print(curr_byte);
-    // Serial.print(" with ");
-    // Serial.print(unread);
-    // Serial.print(" unread bits at address ");
-    // Serial.println(addr);
     int data = 0;
     while (remaining > 0) {
       int offset = unread - remaining;
@@ -76,20 +64,12 @@ namespace {
       if (unread == 0) {
         curr_byte = EEPROM.read(addr++);
         unread = 8;
-        // Serial.print("Byte exhausted. Fetching remaining ");
-        // Serial.print(remaining);
-        // Serial.print(" bits from byte ");
-        // Serial.print(curr_byte);
-        // Serial.print(" with 8 unread bits at address ");
-        // Serial.println(addr - 1);
       }
     }
     return data;
   }
 
   Layout DecodeBody(int addr) {
-    // Serial.print("Decoding body at address ");
-    // Serial.println(addr);
     Layout layout;
     Action* actions[20] = {
                            &layout.thumb_top,
@@ -114,19 +94,12 @@ namespace {
                            &layout.right_ring_extra
     };
     byte curr_byte = EEPROM.read(addr++);
-    // Serial.print("First body byte = ");
-    // Serial.println(curr_byte);
     int unread = 8;
     for (Action* action : actions) {
       int button_id = FetchData(kLenActionID, addr, curr_byte, unread);
-      // Serial.print("Button ID = ");
-      // Serial.println(button_id);
       if (button_id >= kMinAnalogActionID) {
-        // Serial.println("Analog button detected! Reading value...");
         action->action_type.analog.id = static_cast<AnalogAction_ID>(button_id);
         int button_value = FetchData(kLenAnalogActionValue, addr, curr_byte, unread);
-        // Serial.print("Button value = ");
-        // Serial.println(button_value);
         action->action_type.analog.value = button_value;
         action->which_action_type = hs_profile_Profile_Layout_Action_analog_tag;
       } else {
@@ -140,25 +113,14 @@ namespace {
 }  // namespace
 
 Layout Decoder::Decode(Platform platform, int position) {
-  // Serial.print("Looking for platform ");
-  // Serial.print(platform);
-  // Serial.print(", position ");
-  // Serial.println(position);
   const int encoded_len = (EEPROM.read(kMinAddr) << 8) | EEPROM.read(kMinAddr + 1);
   const int max_addr = kMinAddr + encoded_len + 1;
-  // Serial.print("Max address = ");
-  // Serial.println(max_addr);
 
   int curr_addr = kMinAddr + 2;
   while (curr_addr < max_addr) {
-    // Serial.print("Curr address = ");
-    // Serial.println(curr_addr);
     std::vector<PlatformConfig> configs = DecodeHeader(curr_addr);
-    // Serial.println("Header decoded!");
     // Advance past the header.
     curr_addr += configs.size() / 2 + configs.size() % 2 + 1;
-    // Serial.print("Curr address after header = ");
-    // Serial.println(curr_addr);
     if ([&]{
           for (const auto& config : configs) {
             if (config.platform == platform && config.position == position) {
@@ -167,15 +129,12 @@ Layout Decoder::Decode(Platform platform, int position) {
           }
           return false;
         }()) {
-      // Serial.println("Found correct profile!");
       break;
     }
-    // Serial.println("Profile did not match, advancing to next profile...");
     // Advance to the header of the next profile.
     curr_addr += 13;
   }
   if (curr_addr >= max_addr) {
-    // Serial.println("Profile not found!");
     exit(1);
   }
 

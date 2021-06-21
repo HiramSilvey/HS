@@ -39,68 +39,10 @@ USBController::USBController() {
   hat_right_ = -1;
 }
 
-/*
-void PrintAction(const Action& action) {
-  if (action.which_action_type == hs_profile_Profile_Layout_Action_digital_tag) {
-    Serial.println(action.action_type.digital);
-  } else {
-    Serial.print(action.action_type.analog.id);
-    Serial.print(", ");
-    Serial.println(action.action_type.analog.value);
-  }
-}
-
-void PrintLayout(const Layout& layout) {
-  Serial.print("thumb_top = ");
-  PrintAction(layout.thumb_top);
-  Serial.print("thumb_middle = ");
-  PrintAction(layout.thumb_middle);
-  Serial.print("thumb_bottom = ");
-  PrintAction(layout.thumb_bottom);
-  Serial.print("index_top = ");
-  PrintAction(layout.index_top);
-  Serial.print("index_middle = ");
-  PrintAction(layout.index_middle);
-  Serial.print("middle_top = ");
-  PrintAction(layout.middle_top);
-  Serial.print("middle_middle = ");
-  PrintAction(layout.middle_middle);
-  Serial.print("middle_bottom = ");
-  PrintAction(layout.middle_bottom);
-  Serial.print("ring_top = ");
-  PrintAction(layout.ring_top);
-  Serial.print("ring_middle = ");
-  PrintAction(layout.ring_middle);
-  Serial.print("ring_bottom = ");
-  PrintAction(layout.ring_bottom);
-  Serial.print("pinky_top = ");
-  PrintAction(layout.pinky_top);
-  Serial.print("pinky_middle = ");
-  PrintAction(layout.pinky_middle);
-  Serial.print("pinky_bottom = ");
-  PrintAction(layout.pinky_bottom);
-  Serial.print("left_index_extra = ");
-  PrintAction(layout.left_index_extra);
-  Serial.print("left_middle_extra = ");
-  PrintAction(layout.left_middle_extra);
-  Serial.print("left_ring_extra = ");
-  PrintAction(layout.left_ring_extra);
-  Serial.print("right_index_extra = ");
-  PrintAction(layout.right_index_extra);
-  Serial.print("right_middle_extra = ");
-  PrintAction(layout.right_middle_extra);
-  Serial.print("right_ring_extra = ");
-  PrintAction(layout.right_ring_extra);
-}
-*/
-
 void USBController::LoadProfile() {
-  // Serial.println("Loading...");
   Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_PC);
   // PrintLayout(layout);
-  // Serial.println("Fetched! Getting action pins...");
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
-  // Serial.println("Action pins obtained. Applying...");
 
   std::unordered_map<int, int> action_to_button_id = {
     {hs_profile_Profile_Layout_DigitalAction_X, 2},
@@ -120,10 +62,7 @@ void USBController::LoadProfile() {
   for (const auto& action_pin : action_pins) {
     auto action = action_pin.action;
     int pin = action_pin.pin;
-    // Serial.print("Applying action to pin ");
-    // Serial.println(pin);
     if (action.which_action_type == hs_profile_Profile_Layout_Action_digital_tag) {
-      // Serial.println("Digital action found!");
       auto digital = action.action_type.digital;
       if (action_to_button_id.find(digital) != action_to_button_id.end()) {
         int button_id = action_to_button_id[digital];
@@ -132,86 +71,57 @@ void USBController::LoadProfile() {
         } else {
           button_id_to_pins_[button_id] = {pin};
         }
-        // Serial.print("Added pin ");
-        // Serial.print(pin);
-        // Serial.print(" to button ID ");
-        // Serial.println(button_id);
       } else {
         switch (digital) {
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_UP:
           z_up_.value = joystick_->get_max();
           z_up_.pin = pin;
-          // Serial.print("Set R_STICK_UP pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_DOWN:
           z_down_.value = joystick_->get_min();
           z_down_.pin = pin;
-          // Serial.print("Set R_STICK_DOWN pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_LEFT:
           z_left_.value = joystick_->get_min();
           z_left_.pin = pin;
-          // Serial.print("Set R_STICK_LEFT pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_RIGHT:
           z_right_.value = joystick_->get_max();
           z_right_.pin = pin;
-          // Serial.print("Set R_STICK_RIGHT pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_LEFT_MIN:
           slider_left_low_.value = joystick_->get_min();
           slider_left_low_.pin = pin;
-          // Serial.print("Set SLIDER_LEFT_MIN pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_LEFT_MAX:
           slider_left_high_.value = joystick_->get_max();
           slider_left_high_.pin = pin;
-          // Serial.print("Set SLIDER_LEFT_MAX pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_RIGHT_MIN:
           slider_right_low_.value = joystick_->get_min();
           slider_right_low_.pin = pin;
-          // Serial.print("Set SLIDER_RIGHT_MIN pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_RIGHT_MAX:
           slider_right_high_.value = joystick_->get_max();
           slider_right_high_.pin = pin;
-          // Serial.print("Set SLIDER_RIGHT_MAX pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_UP:
           hat_up_ = pin;
-          // Serial.print("Set D_PAD_UP pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_DOWN:
           hat_down_ = pin;
-          // Serial.print("Set D_PAD_DOWN pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_LEFT:
           hat_left_ = pin;
-          // Serial.print("Set D_PAD_LEFT pin to ");
-          // Serial.println(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_RIGHT:
           hat_right_ = pin;
-          // Serial.print("Set D_PAD_RIGHT pin to ");
-          // Serial.println(pin);
           break;
         default:
           break;
         }
       }
     } else {
-      // Serial.println("Analog action found!");
       auto analog = action.action_type.analog;
       int value = analog.value;
       switch (analog.id) {
