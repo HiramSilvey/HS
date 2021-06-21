@@ -39,10 +39,65 @@ USBController::USBController() {
   hat_right_ = -1;
 }
 
+void PrintAction(const Action& action) {
+  if (action.which_action_type == hs_profile_Profile_Layout_Action_digital_tag) {
+    Serial.println(action.action_type.digital);
+  } else {
+    Serial.print(action.action_type.analog.id);
+    Serial.print(", ");
+    Serial.println(action.action_type.analog.value);
+  }
+}
+void PrintLayout(const Layout& layout) {
+  Serial.print("thumb_top = ");
+  PrintAction(layout.thumb_top);
+  Serial.print("thumb_middle = ");
+  PrintAction(layout.thumb_middle);
+  Serial.print("thumb_bottom = ");
+  PrintAction(layout.thumb_bottom);
+  Serial.print("index_top = ");
+  PrintAction(layout.index_top);
+  Serial.print("index_middle = ");
+  PrintAction(layout.index_middle);
+  Serial.print("middle_top = ");
+  PrintAction(layout.middle_top);
+  Serial.print("middle_middle = ");
+  PrintAction(layout.middle_middle);
+  Serial.print("middle_bottom = ");
+  PrintAction(layout.middle_bottom);
+  Serial.print("ring_top = ");
+  PrintAction(layout.ring_top);
+  Serial.print("ring_middle = ");
+  PrintAction(layout.ring_middle);
+  Serial.print("ring_bottom = ");
+  PrintAction(layout.ring_bottom);
+  Serial.print("pinky_top = ");
+  PrintAction(layout.pinky_top);
+  Serial.print("pinky_middle = ");
+  PrintAction(layout.pinky_middle);
+  Serial.print("pinky_bottom = ");
+  PrintAction(layout.pinky_bottom);
+  Serial.print("left_index_extra = ");
+  PrintAction(layout.left_index_extra);
+  Serial.print("left_middle_extra = ");
+  PrintAction(layout.left_middle_extra);
+  Serial.print("left_ring_extra = ");
+  PrintAction(layout.left_ring_extra);
+  Serial.print("right_index_extra = ");
+  PrintAction(layout.right_index_extra);
+  Serial.print("right_middle_extra = ");
+  PrintAction(layout.right_middle_extra);
+  Serial.print("right_ring_extra = ");
+  PrintAction(layout.right_ring_extra);
+}
+
 void USBController::LoadProfile() {
+  Serial.println("Loading...");
   Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_PC);
-  // PrintLayout(layout);
+  PrintLayout(layout);
+  Serial.println("Fetched! Getting action pins...");
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
+  Serial.println("Action pins obtained. Applying...");
 
   std::unordered_map<int, int> action_to_button_id = {
     {hs_profile_Profile_Layout_DigitalAction_X, 2},
