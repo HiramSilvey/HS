@@ -20,18 +20,15 @@ private:
   };
 
   void LoadProfile() override;
+  int ResolveSOCD(std::vector<AnalogButton> buttons);
   int GetDPadAngle();
 
   std::unique_ptr<HallJoystick> joystick_;
   std::unordered_map<int, std::vector<int>> button_id_to_pins_;
-  AnalogButton z_up_;
-  AnalogButton z_down_;
-  AnalogButton z_left_;
-  AnalogButton z_right_;
-  AnalogButton slider_left_low_;
-  AnalogButton slider_left_high_;
-  AnalogButton slider_right_low_;
-  AnalogButton slider_right_high_;
+  std::vector<AnalogButton> z_y_;
+  std::vector<AnalogButton> z_x_;
+  std::vector<AnalogButton> slider_left_;
+  std::vector<AnalogButton> slider_right_;
   int hat_up_;
   int hat_down_;
   int hat_left_;

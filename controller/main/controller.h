@@ -17,11 +17,6 @@ public:
   // Main loop to be run each tick.
   virtual void Loop() = 0;
 
-protected:
-  // Simultaneous opposing cardinal direction resolution.
-  static int ResolveSOCD(int low_direction, int high_direction, int joystick_min,
-                         int joystick_max, int joystick_neutral);
-
 private:
   // Load the controller profile settings based on the button held.
   virtual void LoadProfile() = 0;

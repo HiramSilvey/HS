@@ -25,79 +25,19 @@ USBController::USBController() {
   joystick_ = std::make_unique<HallJoystick>(0, 1023);
   joystick_->Init();
   button_id_to_pins_ = {};
-  z_up_ = {0, -1};
-  z_down_ = {0, -1};
-  z_left_ = {0, -1};
-  z_right_ = {0, -1};
-  slider_left_low_ = {0, -1};
-  slider_left_high_ = {0, -1};
-  slider_right_low_ = {0, -1};
-  slider_right_high_ = {0, -1};
+  z_x_ = {};
+  z_y_ = {};
+  slider_left_ = {};
+  slider_right_ = {};
   hat_up_ = -1;
   hat_down_ = -1;
   hat_left_ = -1;
   hat_right_ = -1;
 }
 
-void PrintAction(const Action& action) {
-  if (action.which_action_type == hs_profile_Profile_Layout_Action_digital_tag) {
-    Serial.println(action.action_type.digital);
-  } else {
-    Serial.print(action.action_type.analog.id);
-    Serial.print(", ");
-    Serial.println(action.action_type.analog.value);
-  }
-}
-void PrintLayout(const Layout& layout) {
-  Serial.print("thumb_top = ");
-  PrintAction(layout.thumb_top);
-  Serial.print("thumb_middle = ");
-  PrintAction(layout.thumb_middle);
-  Serial.print("thumb_bottom = ");
-  PrintAction(layout.thumb_bottom);
-  Serial.print("index_top = ");
-  PrintAction(layout.index_top);
-  Serial.print("index_middle = ");
-  PrintAction(layout.index_middle);
-  Serial.print("middle_top = ");
-  PrintAction(layout.middle_top);
-  Serial.print("middle_middle = ");
-  PrintAction(layout.middle_middle);
-  Serial.print("middle_bottom = ");
-  PrintAction(layout.middle_bottom);
-  Serial.print("ring_top = ");
-  PrintAction(layout.ring_top);
-  Serial.print("ring_middle = ");
-  PrintAction(layout.ring_middle);
-  Serial.print("ring_bottom = ");
-  PrintAction(layout.ring_bottom);
-  Serial.print("pinky_top = ");
-  PrintAction(layout.pinky_top);
-  Serial.print("pinky_middle = ");
-  PrintAction(layout.pinky_middle);
-  Serial.print("pinky_bottom = ");
-  PrintAction(layout.pinky_bottom);
-  Serial.print("left_index_extra = ");
-  PrintAction(layout.left_index_extra);
-  Serial.print("left_middle_extra = ");
-  PrintAction(layout.left_middle_extra);
-  Serial.print("left_ring_extra = ");
-  PrintAction(layout.left_ring_extra);
-  Serial.print("right_index_extra = ");
-  PrintAction(layout.right_index_extra);
-  Serial.print("right_middle_extra = ");
-  PrintAction(layout.right_middle_extra);
-  Serial.print("right_ring_extra = ");
-  PrintAction(layout.right_ring_extra);
-}
-
 void USBController::LoadProfile() {
-  Serial.println("Loading...");
   Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_PC);
-  PrintLayout(layout);
-  Serial.println("Fetched! Getting action pins...");
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
-  Serial.println("Action pins obtained. Applying...");
 
   std::unordered_map<int, int> action_to_button_id = {
     {hs_profile_Profile_Layout_DigitalAction_X, 2},
@@ -129,36 +69,28 @@ void USBController::LoadProfile() {
       } else {
         switch (digital) {
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_UP:
-          z_up_.value = joystick_->get_max();
-          z_up_.pin = pin;
+          z_y_.push_back({joystick_->get_max(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_DOWN:
-          z_down_.value = joystick_->get_min();
-          z_down_.pin = pin;
+          z_y_.push_back({joystick_->get_min(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_LEFT:
-          z_left_.value = joystick_->get_min();
-          z_left_.pin = pin;
+          z_x_.push_back({joystick_->get_min(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_RIGHT:
-          z_right_.value = joystick_->get_max();
-          z_right_.pin = pin;
+          z_x_.push_back({joystick_->get_max(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_LEFT_MIN:
-          slider_left_low_.value = joystick_->get_min();
-          slider_left_low_.pin = pin;
+          slider_left_.push_back({joystick_->get_min(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_LEFT_MAX:
-          slider_left_high_.value = joystick_->get_max();
-          slider_left_high_.pin = pin;
+          slider_left_.push_back({joystick_->get_max(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_RIGHT_MIN:
-          slider_right_low_.value = joystick_->get_min();
-          slider_right_low_.pin = pin;
+          slider_right_.push_back({joystick_->get_min(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_SLIDER_RIGHT_MAX:
-          slider_right_high_.value = joystick_->get_max();
-          slider_right_high_.pin = pin;
+          slider_right_.push_back({joystick_->get_max(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_UP:
           hat_up_ = pin;
@@ -181,37 +113,17 @@ void USBController::LoadProfile() {
       int value = analog.value;
       switch (analog.id) {
       case hs_profile_Profile_Layout_AnalogAction_ID_R_STICK_X:
-        {
-          AnalogButton* z_x = value < joystick_->get_neutral() ?
-            &z_left_ : &z_right_;
-          z_x->value = value;
-          z_x->pin = pin;
-          break;
-        }
+        z_x_.push_back({value, pin});
+        break;
       case hs_profile_Profile_Layout_AnalogAction_ID_R_STICK_Y:
-        {
-          AnalogButton* z_y = value < joystick_->get_neutral() ?
-            &z_down_ : &z_up_;
-          z_y->value = value;
-          z_y->pin = pin;
-          break;
-        }
+        z_y_.push_back({value, pin});
+        break;
       case hs_profile_Profile_Layout_AnalogAction_ID_SLIDER_LEFT:
-        {
-          AnalogButton* slider_left = value < joystick_->get_neutral() ?
-            &slider_left_low_ : &slider_left_high_;
-          slider_left->value = value;
-          slider_left->pin = pin;
-          break;
-        }
+        slider_left_.push_back({value, pin});
+        break;
       case hs_profile_Profile_Layout_AnalogAction_ID_SLIDER_RIGHT:
-        {
-          AnalogButton* slider_right = value < joystick_->get_neutral() ?
-            &slider_right_low_ : &slider_right_high_;
-          slider_right->value = value;
-          slider_right->pin = pin;
-          break;
-        }
+        slider_right_.push_back({value, pin});
+        break;
       default:
         break;
       }
@@ -230,6 +142,28 @@ bool USBController::Init() {
   Joystick.useManualSend(true);
   return true;
 }
+
+int USBController::ResolveSOCD(std::vector<AnalogButton> buttons) {
+  int neutral = joystick_->get_neutral();
+  int min_value = neutral;
+  int max_value = neutral;
+  for (const auto& button : buttons) {
+    if (digitalRead(button.pin) == LOW) {
+      if (button.value < min_value) {
+        min_value = button.value;
+      } else if (button.value > max_value) {
+        max_value = button.value;
+      }
+    }
+  }
+  if (min_value != neutral && max_value != neutral) {
+    return neutral;
+  } else if (min_value != neutral) {
+    return min_value;
+  }
+  return max_value;
+}
+
 
 int USBController::GetDPadAngle() {
   if (hat_left_ && digitalRead(hat_left_) == LOW) {
@@ -251,19 +185,10 @@ void USBController::Loop() {
   HallJoystick::Coordinates coords = joystick_->GetCoordinates();
   Joystick.X(coords.x);
   Joystick.Y(joystick_->get_max()-coords.y);
-  Joystick.Z(ResolveSOCD(z_down_.pin, z_up_.pin, z_down_.value, z_up_.value,
-                         joystick_->get_neutral()));
-  Joystick.Zrotate(ResolveSOCD(z_left_.pin, z_right_.pin, z_left_.value,
-                               z_right_.value, joystick_->get_neutral()));
-  Joystick.sliderLeft(ResolveSOCD(slider_left_low_.pin, slider_left_high_.pin,
-                                  slider_left_low_.value,
-                                  slider_left_high_.value,
-                                  joystick_->get_neutral()));
-  Joystick.sliderRight(ResolveSOCD(slider_right_low_.pin,
-                                   slider_right_high_.pin,
-                                   slider_right_low_.value,
-                                   slider_right_high_.value,
-                                   joystick_->get_neutral()));
+  Joystick.Z(ResolveSOCD(z_y_));
+  Joystick.Zrotate(ResolveSOCD(z_x_));
+  Joystick.sliderLeft(ResolveSOCD(slider_left_));
+  Joystick.sliderRight(ResolveSOCD(slider_right_));
 
   for (const auto& element : button_id_to_pins_) {
     bool active = 0;

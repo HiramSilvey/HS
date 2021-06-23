@@ -1,5 +1,6 @@
 use crate::profile::profile::layout::action::ActionType::{Analog, Digital};
 use crate::profile::profile::layout::Action;
+use crate::profile::profile::layout::DigitalAction;
 use crate::profile::profile::Platform::Unknown;
 use crate::profile::profile::{Layout, PlatformConfig};
 use crate::profile::Profile;
@@ -78,7 +79,8 @@ fn get_button(action: &Action) -> Option<Button> {
         Analog(x) => {
             if x.id != 0 {
                 encoded.num_bits = BUTTON_ID_BITS + BUTTON_VALUE_BITS;
-                encoded.data = (x.id << BUTTON_VALUE_BITS) | x.value;
+                encoded.data =
+                    ((x.id + DigitalAction::SliderRightMax as i32) << BUTTON_VALUE_BITS) | x.value;
             }
         }
     }
