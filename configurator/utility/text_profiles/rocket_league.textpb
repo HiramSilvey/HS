@@ -1,0 +1,27 @@
+name: "Rocket League"
+platform_config: {
+    platform: PC
+    position: 0
+}
+layout: {
+    thumb_top: { digital: X }
+    thumb_middle: { digital: R3 }
+    thumb_bottom: { digital: L3 }
+    index_top: { digital: L2 }
+    index_middle: { digital: R2 }
+    middle_top: { digital: SQUARE }
+    middle_middle: { digital: R1 }
+    middle_bottom: { digital: CIRCLE }
+    ring_top: { digital: R_STICK_UP }
+    ring_middle: { digital: L1 }
+    ring_bottom: { digital: R_STICK_DOWN }
+    pinky_top: { digital: R_STICK_LEFT }
+    pinky_middle: { digital: TRIANGLE }
+    pinky_bottom: { digital: R_STICK_RIGHT }
+    left_ring_extra: { digital: D_PAD_LEFT }
+    left_middle_extra: { digital: D_PAD_UP }
+    left_index_extra: { digital: SHARE }
+    right_index_extra: { digital: OPTIONS }
+    right_middle_extra: { digital: D_PAD_DOWN }
+    right_ring_extra: { digital: D_PAD_RIGHT }
+}
