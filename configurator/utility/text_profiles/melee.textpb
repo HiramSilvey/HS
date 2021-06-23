@@ -1,0 +1,32 @@
+name: "Melee"
+platform_config: {
+    platform: PC
+    position: 1
+}
+layout: {
+    index_top: { digital: R_STICK_LEFT }
+    middle_top: { digital: R_STICK_UP }
+    ring_top: { digital: R_STICK_RIGHT }
+    pinky_top: { digital: NO_OP }
+    index_middle: { digital: L2 }
+    middle_middle: { digital: TRIANGLE }
+    ring_middle: { digital: CIRCLE }
+    pinky_middle: {
+      analog: {
+        id: SLIDER_LEFT
+        value: 661
+      }
+    }
+    thumb_bottom: { digital: R_STICK_DOWN }
+    thumb_middle: { digital: R1 }
+    thumb_top: { digital: X }
+    middle_bottom: { digital: NO_OP }
+    ring_bottom: { digital: NO_OP }    
+    pinky_bottom: { digital: NO_OP }
+    left_ring_extra: { digital: D_PAD_LEFT }
+    left_middle_extra: { digital: D_PAD_UP }
+    left_index_extra: { digital: SHARE }
+    right_index_extra: { digital: OPTIONS }
+    right_middle_extra: { digital: D_PAD_DOWN }
+    right_ring_extra: { digital: D_PAD_RIGHT }
+}

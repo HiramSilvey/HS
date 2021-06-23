@@ -6,28 +6,26 @@
 #include <Tlv493d.h>
 
 class HallJoystick {
- public:
-  // Minimum, maximum, and neutral values each joystick axis is expected to
-  // output.
-  explicit HallJoystick(int min, int max) {
-    out_ = {
-            .min = min,
-            .max = max
-    };
-  }
+public:
+  // Minimum and maximum values each joystick axis is expected to output.
+  explicit HallJoystick(int min, int max);
+
+  int get_min();
+  int get_max();
+  int get_neutral();
+
+  // Initializations to be run once before the main loop.
+  void Init();
 
   struct Coordinates {
     int x;
     int y;
   };
 
-  // Initializations to be run once before the main loop.
-  void Init();
-
   // Read and return X and Y axes values.
   Coordinates GetCoordinates();
 
- private:
+private:
   struct Bounds {
     int min;
     int max;
@@ -41,9 +39,14 @@ class HallJoystick {
   // order byte at the lowest address.
   int GetIntFromEEPROM(int address);
 
-  Bounds x_in_;
-  Bounds y_in_;
-  Bounds out_;
+  // Input data bounds.
+  const Bounds x_in_;
+  const Bounds y_in_;
+
+  // Output data bounds.
+  const Bounds out_;
+  const int out_neutral_;
+
   Tlv493d sensor_;
 };
 

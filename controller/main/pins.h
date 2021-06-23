@@ -3,6 +3,9 @@
 #ifndef PINS_H_
 #define PINS_H_
 
+#include <vector>
+#include "profile.pb.h"
+
 // Button pins.
 const int kThumbTop = 0;
 const int kThumbMiddle = 1;
@@ -25,13 +28,18 @@ const int kRightIndexExtra = 17;
 const int kRightMiddleExtra = 20;
 const int kRightRingExtra = 21;
 
-// Joystick data and clock pins. Must be paired SDA and SCL pins on the
-// microcontroller.
-const int kJoystickSDA = 18;
-const int kJoystickSCL = 19;
+class Pins {
+public:
+  struct ActionPin {
+    hs_profile_Profile_Layout_Action action;
+    int pin;
+  };
 
-// Gamecube data pins.
-const int kGameCubeController = 22;  // Necessary; pin unused.
-const int kGameCubeConsole = 23;  // Bi-directional data pin; RJ45 brown stripe.
+  // Initialize all button pins.
+  static void Init();
+
+  // Get pins associated with each profile layout action.
+  static std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layout& layout);
+};
 
 #endif  // PINS_H_
