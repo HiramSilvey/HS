@@ -1,32 +1,32 @@
 name: "Melee"
 platform_config: {
     platform: PC
-    position: 1
+    position: 1  # Left hand ring finger extra button
 }
 layout: {
-    index_top: { digital: R_STICK_LEFT }
-    middle_top: { digital: R_STICK_UP }
-    ring_top: { digital: R_STICK_RIGHT }
-    pinky_top: { digital: NO_OP }
-    index_middle: { digital: L2 }
-    middle_middle: { digital: TRIANGLE }
-    ring_middle: { digital: CIRCLE }
+    index_top: { digital: R_STICK_LEFT }     # C left
+    middle_top: { digital: R_STICK_UP }      # C up
+    ring_top: { digital: R_STICK_RIGHT }     # C right
+    pinky_top: { digital: NO_OP }            
+    index_middle: { digital: L2 }            # L
+    middle_middle: { digital: TRIANGLE }     # Y
+    ring_middle: { digital: CIRCLE }         # B
     pinky_middle: {
       analog: {
-        id: SLIDER_LEFT
+        id: SLIDER_LEFT                      # Map to R for light shield, L-cancel
         value: 661
       }
     }
-    thumb_bottom: { digital: R_STICK_DOWN }
-    thumb_middle: { digital: R1 }
-    thumb_top: { digital: X }
+    thumb_bottom: { digital: R_STICK_DOWN }  # C down
+    thumb_middle: { digital: R1 }            # Z
+    thumb_top: { digital: X }                # A
     middle_bottom: { digital: NO_OP }
     ring_bottom: { digital: NO_OP }    
     pinky_bottom: { digital: NO_OP }
     left_ring_extra: { digital: D_PAD_LEFT }
     left_middle_extra: { digital: D_PAD_UP }
     left_index_extra: { digital: SHARE }
-    right_index_extra: { digital: OPTIONS }
+    right_index_extra: { digital: OPTIONS }  # Start
     right_middle_extra: { digital: D_PAD_DOWN }
     right_ring_extra: { digital: D_PAD_RIGHT }
 }

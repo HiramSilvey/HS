@@ -1,27 +1,27 @@
 name: "Rocket League"
 platform_config: {
     platform: PC
-    position: 0
+    position: 0  # Default profile
 }
 layout: {
-    thumb_top: { digital: R2 }
-    thumb_middle: { digital: L2 }
-    thumb_bottom: { digital: R_STICK_DOWN }
-    index_top: { digital: TRIANGLE }
-    index_middle: { digital: X }
-    middle_top: { digital: CIRCLE }
-    middle_middle: { digital: SQUARE }
-    middle_bottom: { digital: R3 }
-    ring_top: { digital: R_STICK_UP }
-    ring_middle: { digital: R1 }
-    ring_bottom: { digital: L3 }
-    pinky_top: { digital: R_STICK_LEFT }
-    pinky_middle: { digital: L1 }
-    pinky_bottom: { digital: R_STICK_RIGHT }
-    left_ring_extra: { digital: D_PAD_LEFT }
-    left_middle_extra: { digital: D_PAD_UP }
-    left_index_extra: { digital: SHARE }
-    right_index_extra: { digital: OPTIONS }
-    right_middle_extra: { digital: D_PAD_DOWN }
-    right_ring_extra: { digital: D_PAD_RIGHT }
+    index_middle: { digital: X }                # Jump
+    index_top: { digital: TRIANGLE }            # Focus on ball
+    middle_middle: { digital: CIRCLE }          # Air roll left
+    middle_top: { digital: SQUARE }             # Air roll right
+    ring_middle: { digital: L1 }                # Boost
+    pinky_middle: { digital: R1 }               # Drift
+    thumb_middle: { digital: L2 }               # Reverse
+    thumb_top: { digital: R2 }                  # Forward
+    ring_bottom: { digital: L3 }                # Use item
+    middle_bottom: { digital: R3 }              # Look behind
+    ring_top: { digital: R_STICK_UP }           # Look up
+    thumb_bottom: { digital: R_STICK_DOWN }     # Look down
+    pinky_bottom: { digital: R_STICK_LEFT }     # Look left
+    pinky_top: { digital: R_STICK_RIGHT }       # Look right
+    left_middle_extra: { digital: D_PAD_UP }    # Quick chat
+    right_middle_extra: { digital: D_PAD_DOWN } # Quick chat
+    left_ring_extra: { digital: D_PAD_LEFT }    # Quick chat
+    right_ring_extra: { digital: D_PAD_RIGHT }  # Quick chat
+    left_index_extra: { digital: SHARE }        # Menu
+    right_index_extra: { digital: OPTIONS }     # Score
 }
