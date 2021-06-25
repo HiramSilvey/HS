@@ -4,19 +4,19 @@ platform_config: {
     position: 0
 }
 layout: {
-    thumb_top: { digital: X }
-    thumb_middle: { digital: R3 }
-    thumb_bottom: { digital: L3 }
-    index_top: { digital: L2 }
-    index_middle: { digital: R2 }
-    middle_top: { digital: SQUARE }
-    middle_middle: { digital: R1 }
-    middle_bottom: { digital: CIRCLE }
+    thumb_top: { digital: R2 }
+    thumb_middle: { digital: L2 }
+    thumb_bottom: { digital: R_STICK_DOWN }
+    index_top: { digital: TRIANGLE }
+    index_middle: { digital: X }
+    middle_top: { digital: CIRCLE }
+    middle_middle: { digital: SQUARE }
+    middle_bottom: { digital: R3 }
     ring_top: { digital: R_STICK_UP }
-    ring_middle: { digital: L1 }
-    ring_bottom: { digital: R_STICK_DOWN }
+    ring_middle: { digital: R1 }
+    ring_bottom: { digital: L3 }
     pinky_top: { digital: R_STICK_LEFT }
-    pinky_middle: { digital: TRIANGLE }
+    pinky_middle: { digital: L1 }
     pinky_bottom: { digital: R_STICK_RIGHT }
     left_ring_extra: { digital: D_PAD_LEFT }
     left_middle_extra: { digital: D_PAD_UP }

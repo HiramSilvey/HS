@@ -55,9 +55,6 @@ pub fn upload(profiles: &Vec<Profile>, port: &str) -> Result<()> {
             MAX_EEPROM_BYTES,
         ));
     }
-    for byte in &encoded {
-        println!("{}", byte);
-    }
     let mut controller = serialport::new(port, 9600)
         .timeout(Duration::from_millis(10))
         .open()?;

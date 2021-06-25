@@ -56,11 +56,6 @@ fn encode_header(configs: &Vec<PlatformConfig>) -> Result<Vec<u8>> {
     if positions.len() * 2 < masks.len() {
         positions.push(curr_positions);
     }
-    println!("platform_bitmap = {}", platform_bitmap);
-    println!("positions len = {}", positions.len());
-    for position in &positions {
-        println!("position = {}", position);
-    }
     let mut encoded = Vec::new();
     encoded.push(platform_bitmap);
     encoded.append(&mut positions);
