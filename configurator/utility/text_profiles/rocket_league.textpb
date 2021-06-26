@@ -14,9 +14,9 @@ layout: {
     thumb_top: { digital: R2 }                  # Forward
     ring_bottom: { digital: L3 }                # Use item
     middle_bottom: { digital: R3 }              # Look behind
-    ring_top: { digital: R_STICK_UP }           # Look up
+    pinky_bottom: { digital: R_STICK_UP }       # Look up
     thumb_bottom: { digital: R_STICK_DOWN }     # Look down
-    pinky_bottom: { digital: R_STICK_LEFT }     # Look left
+    ring_top: { digital: R_STICK_LEFT }         # Look left
     pinky_top: { digital: R_STICK_RIGHT }       # Look right
     left_middle_extra: { digital: D_PAD_UP }    # Quick chat
     right_middle_extra: { digital: D_PAD_DOWN } # Quick chat
