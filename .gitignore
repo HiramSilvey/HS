@@ -5,3 +5,4 @@ configurator/target/
 __pycache__
 configurator/utility/profiles/serialized/
 *\.pb\.*
+.DS_Store
