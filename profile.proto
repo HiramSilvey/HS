@@ -10,6 +10,7 @@ message Profile {
   enum Platform {
     UNKNOWN = 0;
     PC = 1;
+    SWITCH = 2;
   }
 
   // Next available ID: 3

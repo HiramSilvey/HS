@@ -3,16 +3,23 @@
 #include <memory>
 
 #include "controller.h"
+#include "ns_controller.h"
 #include "usb_controller.h"
 
 std::unique_ptr<Controller> controller;
 
 void setup() {
-  auto usb_controller = std::make_unique<USBController>();
+  // Order by priority.
+  std::vector<std::unique_ptr<Controller>> controllers = {
+    std::make_unique<USBController>(),
+    std::make_unique<NSController>(),
+  };
   while(true) {
-    if (usb_controller->Init()) {
-      controller = std::move(usb_controller);
-      return;
+    for (auto& c : controllers) {
+      if (c->Init()) {
+        controller = std::move(c);
+        return;
+      }
     }
     delay(50);
   }

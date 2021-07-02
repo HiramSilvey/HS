@@ -1,6 +1,6 @@
 // Copyright 2021 Hiram Silvey
 
-#include "usb_controller.h"
+#include "ns_controller.h"
 
 #include <memory>
 
@@ -9,64 +9,65 @@
 #include "pins.h"
 #include "profiles.h"
 #include "profile.pb.h"
+#include "usb_nsgamepad.h"
 
 using Layout = hs_profile_Profile_Layout;
 using Action = hs_profile_Profile_Layout_Action;
 
 extern volatile uint8_t usb_configuration;
 
-// DPad degrees with neutral SOCD.
-const int kDPadAngle[16] = {
+// DPad direction with neutral SOCD.
+const int kDPadDirection[16] = {
   // Bit order: Up, Down, Left, Right
-  -1,   // 0000 None
-  90,   // 0001 Right
-  270,  // 0010 Left
-  -1,   // 0011 Left + Right cancel
-  180,  // 0100 Down
-  135,  // 0101 Down + Right
-  225,  // 0110 Down + Left
-  180,  // 0111 Down; Left + Right cancel
-  0,    // 1000 Up
-  45,   // 1001 Up + Right
-  315,  // 1010 Up + Left
-  0,    // 1011 Up; Left + Right cancel
-  -1,   // 1100 Up + Down cancel
-  90,   // 1101 Right; Up + Down cancel
-  270,  // 1110 Left; Up + Down cancel
-  -1,   // 1111 Up + Down cancel; Left + Right cancel
+  NSGAMEPAD_DPAD_CENTERED,    // 0000 None
+  NSGAMEPAD_DPAD_RIGHT,       // 0001
+  NSGAMEPAD_DPAD_LEFT,        // 0010
+  NSGAMEPAD_DPAD_CENTERED,    // 0011 Left + Right cancel
+  NSGAMEPAD_DPAD_DOWN,        // 0100
+  NSGAMEPAD_DPAD_DOWN_RIGHT,  // 0101
+  NSGAMEPAD_DPAD_DOWN_LEFT,   // 0110
+  NSGAMEPAD_DPAD_DOWN,        // 0111 Left + Right cancel
+  NSGAMEPAD_DPAD_UP,          // 1000
+  NSGAMEPAD_DPAD_UP_RIGHT,    // 1001
+  NSGAMEPAD_DPAD_UP_LEFT,     // 1010
+  NSGAMEPAD_DPAD_UP,          // 1011 Left + Right cancel
+  NSGAMEPAD_DPAD_CENTERED,    // 1100 Up + Down cancel
+  NSGAMEPAD_DPAD_RIGHT,       // 1101 Up + Down cancel
+  NSGAMEPAD_DPAD_LEFT,        // 1110 Up + Down cancel
+  NSGAMEPAD_DPAD_CENTERED,    // 1111 Up + Down cancel; Left + Right cancel
 };
 
-USBController::USBController() {
+NSController::NSController() {
   joystick_ = std::make_unique<HallJoystick>(0, 1023);
   joystick_->Init();
   button_id_to_pins_ = {};
   z_x_ = {};
   z_y_ = {};
-  slider_left_ = {};
-  slider_right_ = {};
-  hat_up_ = {};
-  hat_down_ = {};
-  hat_left_ = {};
-  hat_right_ = {};
+  dpad_up_ = {};
+  dpad_down_ = {};
+  dpad_left_ = {};
+  dpad_right_ = {};
 }
 
-void USBController::LoadProfile() {
-  Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_PC);
+void NSController::LoadProfile() {
+  Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_SWITCH);
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
 
   std::unordered_map<int, int> action_to_button_id = {
-    {hs_profile_Profile_Layout_DigitalAction_X, 2},
-    {hs_profile_Profile_Layout_DigitalAction_CIRCLE, 3},
-    {hs_profile_Profile_Layout_DigitalAction_TRIANGLE, 4},
-    {hs_profile_Profile_Layout_DigitalAction_SQUARE, 1},
-    {hs_profile_Profile_Layout_DigitalAction_L1, 5},
-    {hs_profile_Profile_Layout_DigitalAction_L2, 7},
-    {hs_profile_Profile_Layout_DigitalAction_L3, 11},
-    {hs_profile_Profile_Layout_DigitalAction_R1, 6},
-    {hs_profile_Profile_Layout_DigitalAction_R2, 8},
-    {hs_profile_Profile_Layout_DigitalAction_R3, 12},
-    {hs_profile_Profile_Layout_DigitalAction_OPTIONS, 10},
-    {hs_profile_Profile_Layout_DigitalAction_SHARE, 9}
+    {hs_profile_Profile_Layout_DigitalAction_X, 1},
+    {hs_profile_Profile_Layout_DigitalAction_CIRCLE, 2},
+    {hs_profile_Profile_Layout_DigitalAction_TRIANGLE, 3},
+    {hs_profile_Profile_Layout_DigitalAction_SQUARE, 0},
+    {hs_profile_Profile_Layout_DigitalAction_L1, 4},
+    {hs_profile_Profile_Layout_DigitalAction_L2, 6},
+    {hs_profile_Profile_Layout_DigitalAction_L3, 10},
+    {hs_profile_Profile_Layout_DigitalAction_R1, 5},
+    {hs_profile_Profile_Layout_DigitalAction_R2, 7},
+    {hs_profile_Profile_Layout_DigitalAction_R3, 11},
+    {hs_profile_Profile_Layout_DigitalAction_OPTIONS, 9},
+    {hs_profile_Profile_Layout_DigitalAction_SHARE, 8},
+    {hs_profile_Profile_Layout_DigitalAction_HOME, 12},
+    {hs_profile_Profile_Layout_DigitalAction_CAPTURE, 13},
   };
 
   for (const auto& action_pin : action_pins) {
@@ -95,18 +96,6 @@ void USBController::LoadProfile() {
         case hs_profile_Profile_Layout_DigitalAction_R_STICK_RIGHT:
           z_x_.push_back({joystick_->get_max(), pin});
           break;
-        case hs_profile_Profile_Layout_DigitalAction_SLIDER_LEFT_MIN:
-          slider_left_.push_back({joystick_->get_min(), pin});
-          break;
-        case hs_profile_Profile_Layout_DigitalAction_SLIDER_LEFT_MAX:
-          slider_left_.push_back({joystick_->get_max(), pin});
-          break;
-        case hs_profile_Profile_Layout_DigitalAction_SLIDER_RIGHT_MIN:
-          slider_right_.push_back({joystick_->get_min(), pin});
-          break;
-        case hs_profile_Profile_Layout_DigitalAction_SLIDER_RIGHT_MAX:
-          slider_right_.push_back({joystick_->get_max(), pin});
-          break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_UP:
           hat_up_.push_back(pin);
           break;
@@ -133,12 +122,6 @@ void USBController::LoadProfile() {
       case hs_profile_Profile_Layout_AnalogAction_ID_R_STICK_Y:
         z_y_.push_back({value, pin});
         break;
-      case hs_profile_Profile_Layout_AnalogAction_ID_SLIDER_LEFT:
-        slider_left_.push_back({value, pin});
-        break;
-      case hs_profile_Profile_Layout_AnalogAction_ID_SLIDER_RIGHT:
-        slider_right_.push_back({value, pin});
-        break;
       default:
         break;
       }
@@ -146,7 +129,7 @@ void USBController::LoadProfile() {
   }
 }
 
-bool USBController::Init() {
+bool NSController::Init() {
   if (!usb_configuration) {
     return false;
   }
@@ -154,11 +137,10 @@ bool USBController::Init() {
   Pins::Init();
   Profiles::Store();  // Handle configuration mode start, no-op otherwise.
   LoadProfile();
-  Joystick.useManualSend(true);
   return true;
 }
 
-int USBController::ResolveSOCD(std::vector<AnalogButton> buttons) {
+int NSController::ResolveSOCD(std::vector<AnalogButton> buttons) {
   int neutral = joystick_->get_neutral();
   int min_value = neutral;
   int max_value = neutral;
@@ -179,55 +161,54 @@ int USBController::ResolveSOCD(std::vector<AnalogButton> buttons) {
   return max_value;
 }
 
-int USBController::GetDPadAngle() {
+int NSController::GetDPadDirection() {
   int bits = 0;
-  for (const int pin : hat_up_) {
+  for (const int pin : dpad_up_) {
     if (digitalRead(pin) == LOW) {
       bits |= 8;  // 1000
       break;
     }
   }
-  for (const int pin : hat_down_) {
+  for (const int pin : dpad_down_) {
     if (digitalRead(pin) == LOW) {
       bits |= 4;  // 0100
       break;
     }
   }
-  for (const int pin : hat_left_) {
+  for (const int pin : dpad_left_) {
     if (digitalRead(pin) == LOW) {
       bits |= 2;  // 0010
       break;
     }
   }
-  for (const int pin : hat_right_) {
+  for (const int pin : dpad_right_) {
     if (digitalRead(pin) == LOW) {
       bits |= 1;  // 1000
       break;
     }
   }
-  return kDPadAngle[bits];
+  return kDPadDirection[bits];
 }
 
-void USBController::Loop() {
+void NSController::Loop() {
+  NSGamepad.releaseAll();
   HallJoystick::Coordinates coords = joystick_->GetCoordinates();
-  Joystick.X(coords.x);
-  Joystick.Y(joystick_->get_max()-coords.y);
-  Joystick.Z(ResolveSOCD(z_y_));
-  Joystick.Zrotate(ResolveSOCD(z_x_));
-  Joystick.sliderLeft(ResolveSOCD(slider_left_));
-  Joystick.sliderRight(ResolveSOCD(slider_right_));
 
   for (const auto& element : button_id_to_pins_) {
-    bool active = 0;
     for (const auto& pin : element.second) {
       if (digitalRead(pin) == LOW) {
-        active = 1;
+        NSGamepad.press(element.first);
         break;
       }
     }
-    Joystick.button(element.first, active);
   }
 
-  Joystick.hat(GetDPadAngle());
-  Joystick.send_now();
+  NSGamepad.dPad(GetDPadDirection());
+
+  NSGamepad.leftYAxis(joystick_->get_max()-coords.y);
+  NSGamepad.leftXAxis(coords.x);
+  NSGamepad.rightYAxis(ResolveSOCD(z_y_));
+  NSGamepad.rightXAxis(ResolveSOCD(z_x_));
+
+  NSGamepad.loop();
 }
