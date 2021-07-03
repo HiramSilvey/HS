@@ -38,7 +38,7 @@ const int kDPadDirection[16] = {
 };
 
 NSController::NSController() {
-  joystick_ = std::make_unique<HallJoystick>(0, 1023);
+  joystick_ = std::make_unique<HallJoystick>(0, 255);
   joystick_->Init();
   button_id_to_pins_ = {};
   z_x_ = {};
