@@ -1,4 +1,4 @@
-name: "Melee"
+name: "Super Smash Bros. Melee"
 platform_config: {
     platform: PC
     position: 1  # Left hand ring finger extra button

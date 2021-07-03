@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build script to compile the profiles protobuf to minimal code size .c and .h
+# Build script to compile the profile protobuf to minimal code size .c and .h
 # files using nanopb protoc. This script expects the first argument to be the
 # path to the directory containing the nanopb protoc binary.
 

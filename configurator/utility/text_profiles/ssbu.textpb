@@ -1,0 +1,27 @@
+name: "Super Smash Bros. Ultimate"
+platform_config: {
+    platform: SWITCH
+    position: 0  # Default
+}
+layout: {
+    index_top: { digital: R_STICK_LEFT }     # left tilt
+    middle_top: { digital: R_STICK_UP }      # up tilt
+    ring_top: { digital: R_STICK_RIGHT }     # right tilt
+    pinky_top: { digital: D_PAD_UP }         # up taunt
+    index_middle: { digital: R2 }            # shield, dodge, tech
+    middle_middle: { digital: SQUARE }       # jump
+    ring_middle: { digital: X }              # special
+    pinky_middle: { digital: R1 }            # grab
+    thumb_bottom: { digital: L1 }            # grab
+    thumb_middle: { digital: R_STICK_DOWN }  # down tilt
+    thumb_top: { digital: CIRCLE }           # normal
+    middle_bottom: { digital: D_PAD_LEFT }   # left taunt
+    ring_bottom: { digital: D_PAD_DOWN }     # down taunt
+    pinky_bottom: { digital: D_PAD_RIGHT }   # right taunt
+    left_ring_extra: { digital: SHARE }      # minus
+    left_middle_extra: { digital: CAPTURE }  # capture
+    left_index_extra: { digital: NO_OP }
+    right_index_extra: { digital: NO_OP }
+    right_middle_extra: { digital: HOME }    # home
+    right_ring_extra: { digital: OPTIONS }   # plus
+}

@@ -1,9 +1,10 @@
 use std::io::Result;
+use std::env;
 
 fn main() -> Result<()> {
     prost_build::compile_protos(
-        &["/home/hiram/Projects/HS/src/profile.proto"],
-        &["/home/hiram/Projects/HS/src/"],
+        &[env::var("HS_PATH_TO_PROTO").unwrap()],
+        &[env::var("HS_PATH").unwrap()],
     )?;
     Ok(())
 }

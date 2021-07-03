@@ -1,0 +1,3 @@
+[env]
+HS_PATH_TO_PROTO = { value = "profile.proto", relative = true, force = true }
+HS_PATH = { value = "", relative = true, force = true }
