@@ -21,6 +21,7 @@ private:
 
   void LoadProfile() override;
   int ResolveSOCD(std::vector<AnalogButton> buttons);
+  int GetDPadDirection();
 
   std::unique_ptr<HallJoystick> joystick_;
   std::unordered_map<int, std::vector<int>> button_id_to_pins_;

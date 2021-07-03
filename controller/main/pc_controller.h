@@ -1,15 +1,15 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef USB_CONTROLLER_H_
-#define USB_CONTROLLER_H_
+#ifndef PC_CONTROLLER_H_
+#define PC_CONTROLLER_H_
 
 #include <unordered_map>
 #include <vector>
 #include "controller.h"
 
-class USBController: public Controller {
+class PCController: public Controller {
 public:
-  USBController();
+  PCController();
   bool Init() override;
   void Loop() override;
 
@@ -35,4 +35,4 @@ private:
   std::vector<int> hat_right_;
 };
 
-#endif  // USB_CONTROLLER_H_
+#endif  // PC_CONTROLLER_H_

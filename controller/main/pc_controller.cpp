@@ -1,6 +1,6 @@
 // Copyright 2021 Hiram Silvey
 
-#include "usb_controller.h"
+#include "pc_controller.h"
 
 #include <memory>
 
@@ -36,7 +36,7 @@ const int kDPadAngle[16] = {
   -1,   // 1111 Up + Down cancel; Left + Right cancel
 };
 
-USBController::USBController() {
+PCController::PCController() {
   joystick_ = std::make_unique<HallJoystick>(0, 1023);
   joystick_->Init();
   button_id_to_pins_ = {};
@@ -50,7 +50,7 @@ USBController::USBController() {
   hat_right_ = {};
 }
 
-void USBController::LoadProfile() {
+void PCController::LoadProfile() {
   Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_PC);
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
 
@@ -146,7 +146,7 @@ void USBController::LoadProfile() {
   }
 }
 
-bool USBController::Init() {
+bool PCController::Init() {
   if (!usb_configuration) {
     return false;
   }
@@ -158,7 +158,7 @@ bool USBController::Init() {
   return true;
 }
 
-int USBController::ResolveSOCD(std::vector<AnalogButton> buttons) {
+int PCController::ResolveSOCD(std::vector<AnalogButton> buttons) {
   int neutral = joystick_->get_neutral();
   int min_value = neutral;
   int max_value = neutral;
@@ -179,7 +179,7 @@ int USBController::ResolveSOCD(std::vector<AnalogButton> buttons) {
   return max_value;
 }
 
-int USBController::GetDPadAngle() {
+int PCController::GetDPadAngle() {
   int bits = 0;
   for (const int pin : hat_up_) {
     if (digitalRead(pin) == LOW) {
@@ -208,7 +208,7 @@ int USBController::GetDPadAngle() {
   return kDPadAngle[bits];
 }
 
-void USBController::Loop() {
+void PCController::Loop() {
   HallJoystick::Coordinates coords = joystick_->GetCoordinates();
   Joystick.X(coords.x);
   Joystick.Y(joystick_->get_max()-coords.y);

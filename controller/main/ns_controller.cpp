@@ -97,16 +97,16 @@ void NSController::LoadProfile() {
           z_x_.push_back({joystick_->get_max(), pin});
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_UP:
-          hat_up_.push_back(pin);
+          dpad_up_.push_back(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_DOWN:
-          hat_down_.push_back(pin);
+          dpad_down_.push_back(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_LEFT:
-          hat_left_.push_back(pin);
+          dpad_left_.push_back(pin);
           break;
         case hs_profile_Profile_Layout_DigitalAction_D_PAD_RIGHT:
-          hat_right_.push_back(pin);
+          dpad_right_.push_back(pin);
           break;
         default:
           break;
