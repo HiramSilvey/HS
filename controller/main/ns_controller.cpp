@@ -207,7 +207,7 @@ void NSController::Loop() {
 
   NSGamepad.leftYAxis(joystick_->get_max()-coords.y);
   NSGamepad.leftXAxis(coords.x);
-  NSGamepad.rightYAxis(ResolveSOCD(z_y_));
+  NSGamepad.rightYAxis(joystick_->get_max()-ResolveSOCD(z_y_));
   NSGamepad.rightXAxis(ResolveSOCD(z_x_));
 
   NSGamepad.loop();
