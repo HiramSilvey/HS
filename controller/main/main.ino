@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "pins.h"
 #include "controller.h"
 #include "ns_controller.h"
 #include "pc_controller.h"
@@ -9,10 +10,14 @@
 std::unique_ptr<Controller> controller;
 
 void setup() {
-  // Order by priority.
+  Pins::Init();
+
   std::vector<std::unique_ptr<Controller>> controllers;
-  controllers.push_back(std::make_unique<PCController>());
-  controllers.push_back(std::make_unique<NSController>());
+  if (digitalRead(kLeftIndexExtra) == LOW) {
+    controllers.push_back(std::make_unique<NSController>());
+  } else {
+    controllers.push_back(std::make_unique<PCController>());
+  }
 
   while(true) {
     for (auto& c : controllers) {

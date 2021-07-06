@@ -151,7 +151,6 @@ bool PCController::Init() {
     return false;
   }
 
-  Pins::Init();
   Profiles::Store();  // Handle configuration mode start, no-op otherwise.
   LoadProfile();
   Joystick.useManualSend(true);

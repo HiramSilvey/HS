@@ -134,7 +134,6 @@ bool NSController::Init() {
     return false;
   }
 
-  Pins::Init();
   Profiles::Store();  // Handle configuration mode start, no-op otherwise.
   LoadProfile();
   return true;
