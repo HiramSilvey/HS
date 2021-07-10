@@ -43,7 +43,7 @@ int GetAverageY(bool down) {
   }
   Serial.println(" calibration complete!");
   if (points.size() > 0) {
-    return std::accumulate(points.begin(), points.end(), 0.0) / points.size() * 1000000;
+    return std::accumulate(points.begin(), points.end(), 0.0) / points.size() * 100000;
   }
   return 0;
 }
@@ -71,7 +71,7 @@ int GetAverageX(bool left) {
   }
   Serial.println(" calibration complete!");
   if (points.size() > 0) {
-    return std::accumulate(points.begin(), points.end(), 0.0) / points.size() * 1000000;
+    return std::accumulate(points.begin(), points.end(), 0.0) / points.size() * 100000;
   }
   return 0;
 }

@@ -34,8 +34,8 @@ int HallJoystick::Normalize(int val, const Bounds& in) {
 HallJoystick::Coordinates HallJoystick::GetCoordinates() {
   sensor_.updateData();
   float z = sensor_.getZ();
-  int x = sensor_.getX() / z * 1000000;
-  int y = sensor_.getY() / z * 1000000;
+  int x = sensor_.getX() / z * 100000;
+  int y = sensor_.getY() / z * 100000;
   return {Normalize(x, x_in_), Normalize(y, y_in_)};
 }
 

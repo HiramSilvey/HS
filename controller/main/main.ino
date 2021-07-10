@@ -4,7 +4,7 @@
 
 #include "pins.h"
 #include "controller.h"
-#include "ns_controller.h"
+// #include "ns_controller.h"
 #include "pc_controller.h"
 
 std::unique_ptr<Controller> controller;
@@ -14,7 +14,7 @@ void setup() {
 
   std::vector<std::unique_ptr<Controller>> controllers;
   if (digitalRead(kLeftIndexExtra) == LOW) {
-    controllers.push_back(std::make_unique<NSController>());
+    // controllers.push_back(std::make_unique<NSController>());
   } else {
     controllers.push_back(std::make_unique<PCController>());
   }
