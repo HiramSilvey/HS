@@ -35,9 +35,6 @@ public:
     int pin;
   };
 
-  // Initialize all button pins.
-  static void Init();
-
   // Get pins associated with each profile layout action.
   static std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layout& layout);
 };

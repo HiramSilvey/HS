@@ -5,32 +5,6 @@
 
 using Layout = hs_profile_Profile_Layout;
 
-void Pins::Init() {
-  pinMode(kThumbTop, INPUT_PULLUP);
-  pinMode(kThumbMiddle, INPUT_PULLUP);
-  pinMode(kThumbBottom, INPUT_PULLUP);
-  pinMode(kIndexTop, INPUT_PULLUP);
-  pinMode(kIndexMiddle, INPUT_PULLUP);
-  pinMode(kMiddleTop, INPUT_PULLUP);
-  pinMode(kMiddleMiddle, INPUT_PULLUP);
-  pinMode(kMiddleBottom, INPUT_PULLUP);
-  pinMode(kRingTop, INPUT_PULLUP);
-  pinMode(kRingMiddle, INPUT_PULLUP);
-  pinMode(kRingBottom, INPUT_PULLUP);
-  pinMode(kPinkyTop, INPUT_PULLUP);
-  pinMode(kPinkyMiddle, INPUT_PULLUP);
-  pinMode(kPinkyBottom, INPUT_PULLUP);
-  pinMode(kLeftRingExtra, INPUT_PULLUP);
-  pinMode(kLeftMiddleExtra, INPUT_PULLUP);
-  pinMode(kLeftIndexExtra, INPUT_PULLUP);
-  pinMode(kRightIndexExtra, INPUT_PULLUP);
-  pinMode(kRightMiddleExtra, INPUT_PULLUP);
-  pinMode(kRightRingExtra, INPUT_PULLUP);
-
-  // Ensure button states are settled before relying on them.
-  delay(100);
-}
-
 std::vector<Pins::ActionPin> Pins::GetActionPins(const Layout& layout) {
   return {
           {layout.thumb_top, kThumbTop},
