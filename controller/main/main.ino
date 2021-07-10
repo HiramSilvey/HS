@@ -12,7 +12,6 @@ extern uint8_t nsgamepad_active;
 
 void setup() {
   delay(100);
-  Pins::Init();
 
   std::vector<std::unique_ptr<Controller>> controllers;
   if (nsgamepad_active) {
