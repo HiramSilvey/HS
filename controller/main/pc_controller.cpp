@@ -7,7 +7,6 @@
 #include "Arduino.h"
 #include "hall_joystick.h"
 #include "pins.h"
-#include "profiles.h"
 #include "profile.pb.h"
 
 using Layout = hs_profile_Profile_Layout;
@@ -51,7 +50,7 @@ PCController::PCController() {
 }
 
 void PCController::LoadProfile() {
-  Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_PC);
+  Layout layout = FetchProfile(hs_profile_Profile_Platform_PC);
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
 
   std::unordered_map<int, int> action_to_button_id = {
@@ -150,8 +149,6 @@ bool PCController::Init() {
   if (!usb_configuration) {
     return false;
   }
-
-  Profiles::Store();  // Handle configuration mode start, no-op otherwise.
   LoadProfile();
   Joystick.useManualSend(true);
   return true;

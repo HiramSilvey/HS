@@ -7,7 +7,6 @@
 #include "Arduino.h"
 #include "hall_joystick.h"
 #include "pins.h"
-#include "profiles.h"
 #include "profile.pb.h"
 #include "usb_nsgamepad.h"
 
@@ -50,7 +49,7 @@ NSController::NSController() {
 }
 
 void NSController::LoadProfile() {
-  Layout layout = Profiles::Fetch(hs_profile_Profile_Platform_SWITCH);
+  Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH);
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
 
   std::unordered_map<int, int> action_to_button_id = {
@@ -133,8 +132,6 @@ bool NSController::Init() {
   if (!usb_configuration) {
     return false;
   }
-
-  Profiles::Store();  // Handle configuration mode start, no-op otherwise.
   LoadProfile();
   return true;
 }

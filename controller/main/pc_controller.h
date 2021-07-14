@@ -3,9 +3,11 @@
 #ifndef PC_CONTROLLER_H_
 #define PC_CONTROLLER_H_
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include "controller.h"
+#include "hall_joystick.h"
 
 class PCController: public Controller {
 public:

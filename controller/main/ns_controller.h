@@ -3,9 +3,11 @@
 #ifndef NS_CONTROLLER_H_
 #define NS_CONTROLLER_H_
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include "controller.h"
+#include "hall_joystick.h"
 
 class NSController: public Controller {
 public:
