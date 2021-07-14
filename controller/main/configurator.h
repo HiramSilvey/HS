@@ -13,5 +13,4 @@ private:
   static void CalibrateJoystick();
 };
 
-
 #endif  // CONFIGURATOR_H_

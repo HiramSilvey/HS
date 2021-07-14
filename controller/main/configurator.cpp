@@ -62,8 +62,7 @@ void Configurator::CalibrateJoystick() {
     } else if (y < max_y) {
       max_y = y;
     }
-  }
-  
+  }  
 
   SaveToEEPROM(min_x, 0);
   SaveToEEPROM(max_x, 4);
