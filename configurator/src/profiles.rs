@@ -1,14 +1,10 @@
-use crate::encoder;
 use crate::profile::Profile;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use prost::Message;
 use std::fs;
 use std::io::Cursor;
 use std::path::Path;
-use std::time::Duration;
 use std::vec::Vec;
-
-const MAX_EEPROM_BYTES: usize = 1064;
 
 pub fn load_all(path: &Path) -> Result<Vec<Profile>> {
     let mut profiles = Vec::new();
@@ -44,22 +40,6 @@ pub fn find(profiles: &Vec<Profile>, name: &str) -> Option<usize> {
         }
     }
     None
-}
-
-pub fn upload(profiles: &Vec<Profile>, port: &str) -> Result<()> {
-    let encoded = encoder::encode(profiles)?;
-    if encoded.len() > MAX_EEPROM_BYTES {
-        return Err(anyhow!(
-            "Encoded length of {} bytes exceeds controller maximum of {} bytes.",
-            encoded.len(),
-            MAX_EEPROM_BYTES,
-        ));
-    }
-    let mut controller = serialport::new(port, 9600)
-        .timeout(Duration::from_millis(10))
-        .open()?;
-    controller.write_all(&encoded)?;
-    Ok(())
 }
 
 #[cfg(test)]

@@ -7,6 +7,7 @@
 #include <Tlv493d.h>
 
 void Configurator::StoreProfiles() {
+  Serial.write(0);  // OK.
   while (Serial.available() < 2) {}
   int num_bytes = Serial.read() << 8 | Serial.read();
   int base_address = 16;  // 0-15 are reserved for joystick calibration values.
@@ -18,6 +19,7 @@ void Configurator::StoreProfiles() {
       curr_address++;
     }
   }
+  Serial.write(0);  // Done.
 }
 
 void SaveToEEPROM(int val, int address) {
@@ -33,12 +35,12 @@ void SaveToEEPROM(int val, int address) {
 }
 
 void Configurator::CalibrateJoystick() {
+  Serial.write(0);  // OK.
+
   Tlv493d sensor = Tlv493d();
   sensor.begin();
   sensor.setAccessMode(sensor.LOWPOWERMODE);
   sensor.disableTemp();
-
-  Serial.write(0);  // Begin calibration.
 
   int min_x = 0;
   int max_x = 0;
@@ -69,7 +71,7 @@ void Configurator::CalibrateJoystick() {
   SaveToEEPROM(min_y, 8);
   SaveToEEPROM(max_y, 12);
 
-  Serial.write(0);  // End calibration;
+  Serial.write(0);  // Done.
 }
 
 void Configurator::Configure() {
