@@ -2,7 +2,6 @@
 
 #include "hall_joystick.h"
 
-#include <Wire.h>
 #include <Tlv493d.h>
 #include <EEPROM.h>
 
@@ -27,15 +26,16 @@ void HallJoystick::Init() {
 }
 
 int HallJoystick::Normalize(int val, const Bounds& in) {
-  return constrain(map(val, in.min, in.max, out_.min, out_.max),
-                   out_.min, out_.max);
+  int mapped = static_cast<float>(val - in.min) /
+    static_cast<float>(in.max - in.min) * (out_.max - out_.min) + out_.min;
+  return constrain(mapped, out_.min, out_.max);
 }
 
 HallJoystick::Coordinates HallJoystick::GetCoordinates() {
   sensor_.updateData();
   float z = sensor_.getZ();
-  int x = sensor_.getX() / z * 100000;
-  int y = sensor_.getY() / z * 100000;
+  int x = sensor_.getX() / z * 1000000;
+  int y = sensor_.getY() / z * 1000000;
   return {Normalize(x, x_in_), Normalize(y, y_in_)};
 }
 

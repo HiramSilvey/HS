@@ -6,7 +6,7 @@
 #include "profile.pb.h"
 
 class Decoder {
- public:
+public:
   static hs_profile_Profile_Layout Decode(hs_profile_Profile_Platform Platform, int position);
 };
 

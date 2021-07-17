@@ -4,7 +4,7 @@ use profile::profile::Layout;
 use profile::Profile;
 use std::fmt;
 
-mod encoder;
+pub mod encoder;
 pub mod profile {
     include!(concat!(env!("OUT_DIR"), "/hs.profile.rs"));
 }

@@ -3,9 +3,6 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#include <memory>
-
-#include "hall_joystick.h"
 #include "profile.pb.h"
 
 class Controller {
@@ -16,6 +13,10 @@ public:
 
   // Main loop to be run each tick.
   virtual void Loop() = 0;
+
+protected:
+  // Fetch the specified profile given the platform.
+  static hs_profile_Profile_Layout FetchProfile(hs_profile_Profile_Platform Platform);
 
 private:
   // Load the controller profile settings based on the button held.
