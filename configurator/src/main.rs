@@ -6,7 +6,8 @@ use druid::widget::{Button, Flex};
 use druid::{AppLauncher, PlatformError, WindowDesc};
 use serialport::SerialPort;
 use std::path::Path;
-use std::time::Duration;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
 const MAX_EEPROM_BYTES: usize = 1064;
 
@@ -41,11 +42,24 @@ fn build_ui() -> impl Widget<()> {
 }
 
 fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
+    println!("Waiting for ACK.");
+    let now = Instant::now();
+    let timeout = Duration::new(70, 0);
     let mut buf = vec![0u8; 1];
-    match hs.read_exact(&mut buf) {
-        Ok(()) => Ok(()),
-        Err(e) => Err(anyhow!("Failure waiting for OK from HS: {}", e)),
+    let mut ack = hs.read_exact(&mut buf);
+    while ack.is_err() && now.elapsed() < timeout {
+        println!("Waiting...");
+        sleep(Duration::new(5, 0));
+        ack = hs.read_exact(&mut buf);
     }
+    if ack.is_err() {
+        return Err(anyhow!(
+            "Failure waiting for OK from HS: {}",
+            ack.unwrap_err()
+        ));
+    }
+    println!("ACK received.");
+    Ok(())
 }
 
 fn connect() -> Result<Box<dyn SerialPort>> {
@@ -82,6 +96,8 @@ fn store_profiles() -> Result<()> {
     let mut hs = connect()?;
     hs.write_all(&[1])?;
     wait_for_ack(&mut hs)?;
+    let size = encoded.len();
+    hs.write_all(&[(size >> 8) as u8, (size & 255) as u8])?;
     hs.write_all(&encoded)?;
     wait_for_ack(&mut hs)?;
     Ok(())

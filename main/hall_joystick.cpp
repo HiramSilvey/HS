@@ -26,7 +26,8 @@ void HallJoystick::Init() {
 }
 
 int HallJoystick::Normalize(int val, const Bounds& in) {
-  int mapped = (val - in.min) / (in.max - in.min) * (out_.max - out_.min) + out_.min;
+  int mapped = static_cast<float>(val - in.min) /
+    static_cast<float>(in.max - in.min) * (out_.max - out_.min) + out_.min;
   return constrain(mapped, out_.min, out_.max);
 }
 

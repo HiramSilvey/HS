@@ -42,34 +42,39 @@ void Configurator::CalibrateJoystick() {
   sensor.setAccessMode(sensor.LOWPOWERMODE);
   sensor.disableTemp();
 
-  int min_x = 0;
-  int max_x = 0;
-  int min_y = 0;
-  int max_y = 0;
+  float min_x = 0;
+  float max_x = 0;
+  float min_y = 0;
+  float max_y = 0;
 
   uint64_t end_time = millis() + 60000;  // 1 minute from now.
   while (millis() < end_time) {
     sensor.updateData();
     float z = sensor.getZ();
-    int x = sensor.getX() / z * 1000000;
-    int y = sensor.getY() / z * 1000000;
+    float x = sensor.getX() / z;
+    float y = sensor.getY() / z;
 
     if (x < min_x) {
       min_x = x;
-    } else if (x < max_x) {
+    } else if (x > max_x) {
       max_x = x;
     }
     if (y < min_y) {
       min_y = y;
-    } else if (y < max_y) {
+    } else if (y > max_y) {
       max_y = y;
     }
-  }  
+  }
 
-  SaveToEEPROM(min_x, 0);
-  SaveToEEPROM(max_x, 4);
-  SaveToEEPROM(min_y, 8);
-  SaveToEEPROM(max_y, 12);
+  min_x *= 0.80;
+  max_x *= 0.80;
+  min_y *= 0.80;
+  max_y *= 0.80;
+
+  SaveToEEPROM(min_x*1000000, 0);
+  SaveToEEPROM(max_x*1000000, 4);
+  SaveToEEPROM(min_y*1000000, 8);
+  SaveToEEPROM(max_y*1000000, 12);
 
   Serial.write(0);  // Done.
 }
