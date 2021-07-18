@@ -66,15 +66,13 @@ void Configurator::CalibrateJoystick() {
     }
   }
 
-  min_x *= 0.80;
-  max_x *= 0.80;
-  min_y *= 0.80;
-  max_y *= 0.80;
+  int x_diff = (max_x - min_x) * 100000;
+  int y_diff = (max_y - min_y) * 100000;
 
-  SaveToEEPROM(min_x*1000000, 0);
-  SaveToEEPROM(max_x*1000000, 4);
-  SaveToEEPROM(min_y*1000000, 8);
-  SaveToEEPROM(max_y*1000000, 12);
+  SaveToEEPROM(min_x*1000000+x_diff, 0);
+  SaveToEEPROM(max_x*1000000-x_diff, 4);
+  SaveToEEPROM(min_y*1000000+y_diff, 8);
+  SaveToEEPROM(max_y*1000000-y_diff, 12);
 
   Serial.write(0);  // Done.
 }

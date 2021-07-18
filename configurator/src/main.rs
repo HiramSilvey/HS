@@ -63,7 +63,7 @@ fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
 }
 
 fn connect() -> Result<Box<dyn SerialPort>> {
-    let port = "/dev/ttyACM0";
+    let port = "/dev/cu.usbmodem75752701";
     match serialport::new(port, 9600)
         .timeout(Duration::from_millis(10))
         .open()
