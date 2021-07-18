@@ -1,3 +1,5 @@
+// Copyright 2021 Hiram Silvey
+
 use anyhow::{anyhow, Result};
 use configurator::encoder;
 use configurator::profiles;

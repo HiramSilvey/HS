@@ -1,3 +1,5 @@
+// Copyright 2021 Hiram Silvey
+
 use crate::profile::Profile;
 use anyhow::Result;
 use prost::Message;

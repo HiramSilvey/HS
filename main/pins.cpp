@@ -1,3 +1,5 @@
+// Copyright 2021 Hiram Silvey
+
 #include "pins.h"
 
 #include "Arduino.h"

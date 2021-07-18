@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright 2021 Hiram Silvey
+
 # Build script to compile the profile protobuf to minimal code size .c and .h
 # files using nanopb protoc. This script expects the first argument to be the
 # path to the directory containing the nanopb protoc binary.

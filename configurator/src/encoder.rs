@@ -1,3 +1,5 @@
+// Copyright 2021 Hiram Silvey
+
 use crate::profile::profile::layout::action::ActionType::{Analog, Digital};
 use crate::profile::profile::layout::Action;
 use crate::profile::profile::layout::DigitalAction;

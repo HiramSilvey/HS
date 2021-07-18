@@ -1,3 +1,5 @@
+// Copyright 2021 Hiram Silvey
+
 use profile::profile::layout::action::ActionType::{Analog, Digital};
 use profile::profile::layout::Action;
 use profile::profile::Layout;
