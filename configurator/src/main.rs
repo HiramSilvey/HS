@@ -3,44 +3,106 @@
 use anyhow::{anyhow, Result};
 use configurator::encoder;
 use configurator::profiles;
+use druid::kurbo::Circle;
 use druid::widget::prelude::*;
 use druid::widget::{Button, Flex};
-use druid::{AppLauncher, PlatformError, WindowDesc};
+use druid::{AppLauncher, Color, Lens, PlatformError, WindowDesc};
 use serialport::SerialPort;
 use std::path::Path;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 const MAX_EEPROM_BYTES: usize = 1064;
+const JOYSTICK_POINT_RADIUS: f64 = 5.0;
+const JOYSTICK_DISPLAY_RADIUS: f64 = 125.0;
 
-pub fn main() -> Result<(), PlatformError> {
-    AppLauncher::with_window(
-        WindowDesc::new(build_ui())
-            .title("HS Configurator")
-            .window_size((200.0, 50.0)),
-    )
-    .launch(())?;
-    Ok(())
+#[derive(Clone, Data, Lens)]
+struct JoystickCoords {
+    x: i32,
+    y: i32,
 }
 
-fn build_ui() -> impl Widget<()> {
-    Flex::column()
-        .with_flex_child(
-            Button::new("Calibrate Joystick").on_click(|_event, _data, _env| {
-                match calibrate_joystick() {
-                    Ok(()) => println!("Calibration complete!"),
-                    Err(e) => println!("Calibration failed: {}", e),
-                }
-            }),
-            1.0,
-        )
-        .with_flex_child(
-            Button::new("Store Profiles").on_click(|_event, _data, _env| match store_profiles() {
-                Ok(()) => println!("All profiles stored successfully!"),
-                Err(e) => println!("Storing profiles failed: {}", e),
-            }),
-            1.0,
-        )
+struct JoystickDisplay;
+
+impl JoystickDisplay {
+    fn new() -> JoystickDisplay {
+        JoystickDisplay {}
+    }
+}
+
+impl Widget<JoystickCoords> for JoystickDisplay {
+    fn event(
+        &mut self,
+        _ctx: &mut EventCtx,
+        _event: &Event,
+        _data: &mut JoystickCoords,
+        _env: &Env,
+    ) {
+    }
+
+    fn lifecycle(
+        &mut self,
+        _ctx: &mut LifeCycleCtx,
+        _event: &LifeCycle,
+        _data: &JoystickCoords,
+        _env: &Env,
+    ) {
+    }
+
+    fn update(
+        &mut self,
+        _ctx: &mut UpdateCtx,
+        _old_data: &JoystickCoords,
+        _data: &JoystickCoords,
+        _env: &Env,
+    ) {
+    }
+
+    fn layout(
+        &mut self,
+        _layout_ctx: &mut LayoutCtx,
+        bc: &BoxConstraints,
+        _data: &JoystickCoords,
+        _env: &Env,
+    ) -> Size {
+        if bc.is_width_bounded() | bc.is_height_bounded() {
+            let size = Size::new(250.0, 250.0);
+            bc.constrain(size)
+        } else {
+            bc.max()
+        }
+    }
+
+    fn paint(&mut self, ctx: &mut PaintCtx, data: &JoystickCoords, env: &Env) {
+        let size = ctx.size();
+        let rect = size.to_rect();
+        ctx.fill(rect, &Color::WHITE);
+
+        ctx.paint_with_z_index(1, move |ctx| {
+            let cursor = Circle::new(rect.center(), JOYSTICK_POINT_RADIUS);
+            let color = Color::rgb8(255, 0, 0);
+            ctx.fill(cursor, &color);
+        });
+
+        let bounding_ring = Circle::new(rect.center(), JOYSTICK_DISPLAY_RADIUS);
+        let color = Color::rgb8(0, 0, 128);
+        ctx.fill(bounding_ring, &color);
+    }
+}
+
+fn connect() -> Result<Box<dyn SerialPort>> {
+    let port = "/dev/cu.usbmodem75752701";
+    match serialport::new(port, 9600)
+        .timeout(Duration::from_millis(10))
+        .open()
+    {
+        Ok(x) => Ok(x),
+        Err(e) => Err(anyhow!(
+            "Unable to connect to HS via serial port {}: {}",
+            port,
+            e
+        )),
+    }
 }
 
 fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
@@ -64,19 +126,12 @@ fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
     Ok(())
 }
 
-fn connect() -> Result<Box<dyn SerialPort>> {
-    let port = "/dev/cu.usbmodem75752701";
-    match serialport::new(port, 9600)
-        .timeout(Duration::from_millis(10))
-        .open()
-    {
-        Ok(x) => Ok(x),
-        Err(e) => Err(anyhow!(
-            "Unable to connect to HS via serial port {}: {}",
-            port,
-            e
-        )),
-    }
+fn calibrate_joystick() -> Result<()> {
+    let mut hs = connect()?;
+    hs.write_all(&[2])?;
+    wait_for_ack(&mut hs)?;
+    wait_for_ack(&mut hs)?;
+    Ok(())
 }
 
 fn store_profiles() -> Result<()> {
@@ -105,10 +160,33 @@ fn store_profiles() -> Result<()> {
     Ok(())
 }
 
-fn calibrate_joystick() -> Result<()> {
-    let mut hs = connect()?;
-    hs.write_all(&[2])?;
-    wait_for_ack(&mut hs)?;
-    wait_for_ack(&mut hs)?;
+fn build_ui() -> impl Widget<JoystickCoords> {
+    Flex::column()
+        .with_flex_child(
+            Button::new("Calibrate Joystick").on_click(|_event, _data, _env| {
+                match calibrate_joystick() {
+                    Ok(()) => println!("Calibration complete!"),
+                    Err(e) => println!("Calibration failed: {}", e),
+                }
+            }),
+            1.0,
+        )
+        .with_flex_child(
+            Button::new("Store Profiles").on_click(|_event, _data, _env| match store_profiles() {
+                Ok(()) => println!("All profiles stored successfully!"),
+                Err(e) => println!("Storing profiles failed: {}", e),
+            }),
+            1.0,
+        )
+        .with_child(JoystickDisplay::new())
+}
+
+pub fn main() -> Result<(), PlatformError> {
+    AppLauncher::with_window(
+        WindowDesc::new(build_ui())
+            .title("HS Configurator")
+            .window_size((600.0, 600.0)),
+    )
+    .launch(JoystickCoords { x: 5, y: 5 })?;
     Ok(())
 }
