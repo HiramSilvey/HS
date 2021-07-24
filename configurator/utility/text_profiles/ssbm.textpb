@@ -1,7 +1,7 @@
 name: "Super Smash Bros. Melee"
 platform_config: {
     platform: PC
-    position: 1  # Left hand ring finger extra button
+    position: 3  # Right hand middle finger extra button
 }
 layout: {
     index_top: { digital: R_STICK_LEFT }     # C left

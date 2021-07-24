@@ -91,7 +91,7 @@ impl Widget<JoystickCoords> for JoystickDisplay {
 }
 
 fn connect() -> Result<Box<dyn SerialPort>> {
-    let port = "/dev/cu.usbmodem75752701";
+    let port = "/dev/ttyACM0";
     match serialport::new(port, 9600)
         .timeout(Duration::from_millis(10))
         .open()

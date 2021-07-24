@@ -15,7 +15,7 @@ Layout Controller::FetchProfile(Platform platform) {
                                               std::make_pair(kLeftRingExtra, 1),
                                               std::make_pair(kLeftMiddleExtra, 2),
                                               std::make_pair(kRightMiddleExtra, 3),
-                                              std::make_pair(kRightMiddleExtra, 4),
+                                              std::make_pair(kRightRingExtra, 4),
   };
   int position = 0;
   for (const auto& element : button_to_position) {
