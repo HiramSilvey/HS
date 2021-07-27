@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package hs.profile;
 
-// Next available ID: 5
+// Next available ID: 4
 message Profile {
   string name = 1;
 
@@ -21,8 +21,20 @@ message Profile {
 
   repeated PlatformConfig platform_config = 2;
 
-  // Next available ID: 21
+  // Next available ID: 22
   message Layout {
+    // If set, the joystick will behave as a DIGITAL joystick rather than an
+    // ANALOG one. This threshold represents the percentage [0-100] of tilt
+    // required for the joystick to output a fully pressed value in a given
+    // cardinal direction. For example, if threshold is set to 100, the joystick
+    // must be fully tilted up, down, left, or right to output a fully pressed
+    // value in that direction. If it's set to 50, the joystick must be tilted
+    // halfway (or more) between the neutral position and fully pressed position
+    // up, down, left, or right to output a fully pressed value in that
+    // direction. Any tilt below the threshold will output a neutral joystick
+    // position.
+    int32 joystick_threshold = 21;
+
     // Next available ID: 25
     enum DigitalAction {
       NO_OP = 0;
@@ -100,16 +112,4 @@ message Profile {
   }
 
   Layout layout = 3;
-
-  // If set, the joystick will behave as a DIGITAL joystick rather than an
-  // ANALOG one. This threshold represents the percentage [0-100] of tilt
-  // required for the joystick to output a fully pressed value in a given
-  // cardinal direction. For example, if threshold is set to 100, the joystick
-  // must be fully tilted up, down, left, or right to output a fully pressed
-  // value in that direction. If it's set to 50, the joystick must be tilted
-  // halfway (or more) between the neutral position and fully pressed position
-  // up, down, left, or right to output a fully pressed value in that
-  // direction. Any tilt below the threshold will output a neutral joystick
-  // position.
-  float digital_threshold = 4;
 }

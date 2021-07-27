@@ -72,6 +72,8 @@ namespace {
 
   Layout DecodeBody(int addr) {
     Layout layout;
+    layout.joystick_threshold = EEPROM.read(addr++);
+
     Action* actions[20] = {
                            &layout.thumb_top,
                            &layout.thumb_middle,

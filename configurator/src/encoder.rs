@@ -85,6 +85,12 @@ fn get_button(action: &Action) -> Option<Button> {
 }
 
 fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
+    if layout.joystick_threshold < 0 || layout.joystick_threshold > 100 {
+        return Err(anyhow!(
+            "Digital threshold {} outside of [0-100] range.",
+            layout.joystick_threshold
+        ));
+    }
     let actions = [
         layout.thumb_top.as_ref(),
         layout.thumb_middle.as_ref(),
@@ -107,7 +113,7 @@ fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
         layout.right_middle_extra.as_ref(),
         layout.right_ring_extra.as_ref(),
     ];
-    let mut encoded: Vec<u8> = Vec::new();
+    let mut encoded: Vec<u8> = vec![layout.joystick_threshold as u8];
     let mut curr_byte: u8 = 0;
     let mut available = 8;
     for action in actions.iter() {
