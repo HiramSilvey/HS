@@ -23,6 +23,7 @@ message Profile {
 
   // Next available ID: 22
   message Layout {
+    // Joystick digital activation threshold.
     // If set, the joystick will behave as a DIGITAL joystick rather than an
     // ANALOG one. This threshold represents the percentage [0-100] of tilt
     // required for the joystick to output a fully pressed value in a given
