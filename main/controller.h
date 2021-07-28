@@ -3,6 +3,8 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include <vector>
+
 #include "profile.pb.h"
 
 class Controller {
@@ -15,8 +17,16 @@ public:
   virtual void Loop() = 0;
 
 protected:
+  struct AnalogButton {
+    int value;
+    int pin;
+  };
+
   // Fetch the specified profile given the platform.
   static hs_profile_Profile_Layout FetchProfile(hs_profile_Profile_Platform Platform);
+
+  // Resolve simultaneous opposing cardinal directions from button inputs.
+  static int ResolveSOCD(std::vector<AnalogButton> buttons, int joystick_neutral);
 
 private:
   // Load the controller profile settings based on the button held.

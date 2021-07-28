@@ -26,3 +26,23 @@ Layout Controller::FetchProfile(Platform platform) {
   }
   return Decoder::Decode(platform, position);
 }
+
+int Controller::ResolveSOCD(std::vector<AnalogButton> buttons, int joystick_neutral) {
+  int min_value = joystick_neutral;
+  int max_value = joystick_neutral;
+  for (const auto& button : buttons) {
+    if (digitalRead(button.pin) == LOW) {
+      if (button.value < min_value) {
+        min_value = button.value;
+      } else if (button.value > max_value) {
+        max_value = button.value;
+      }
+    }
+  }
+  if (min_value != joystick_neutral && max_value != joystick_neutral) {
+    return joystick_neutral;
+  } else if (min_value != joystick_neutral) {
+    return min_value;
+  }
+  return max_value;
+}

@@ -36,8 +36,6 @@ const int kDPadAngle[16] = {
 };
 
 PCController::PCController() {
-  joystick_ = std::make_unique<HallJoystick>(0, 1023);
-  joystick_->Init();
   button_id_to_pins_ = {};
   z_x_ = {};
   z_y_ = {};
@@ -51,6 +49,9 @@ PCController::PCController() {
 
 void PCController::LoadProfile() {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_PC);
+  joystick_ = std::make_unique<HallJoystick>(0, 1023, layout.joystick_threshold);
+  joystick_->Init();
+
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
 
   std::unordered_map<int, int> action_to_button_id = {
@@ -154,27 +155,6 @@ bool PCController::Init() {
   return true;
 }
 
-int PCController::ResolveSOCD(std::vector<AnalogButton> buttons) {
-  int neutral = joystick_->get_neutral();
-  int min_value = neutral;
-  int max_value = neutral;
-  for (const auto& button : buttons) {
-    if (digitalRead(button.pin) == LOW) {
-      if (button.value < min_value) {
-        min_value = button.value;
-      } else if (button.value > max_value) {
-        max_value = button.value;
-      }
-    }
-  }
-  if (min_value != neutral && max_value != neutral) {
-    return neutral;
-  } else if (min_value != neutral) {
-    return min_value;
-  }
-  return max_value;
-}
-
 int PCController::GetDPadAngle() {
   int bits = 0;
   for (const int pin : hat_up_) {
@@ -208,10 +188,10 @@ void PCController::Loop() {
   HallJoystick::Coordinates coords = joystick_->GetCoordinates();
   Joystick.X(coords.x);
   Joystick.Y(joystick_->get_max()-coords.y);
-  Joystick.Z(ResolveSOCD(z_y_));
-  Joystick.Zrotate(ResolveSOCD(z_x_));
-  Joystick.sliderLeft(ResolveSOCD(slider_left_));
-  Joystick.sliderRight(ResolveSOCD(slider_right_));
+  Joystick.Z(Controller::ResolveSOCD(z_y_, joystick_->get_neutral()));
+  Joystick.Zrotate(Controller::ResolveSOCD(z_x_, joystick_->get_neutral()));
+  Joystick.sliderLeft(Controller::ResolveSOCD(slider_left_, joystick_->get_neutral()));
+  Joystick.sliderRight(Controller::ResolveSOCD(slider_right_, joystick_->get_neutral()));
 
   for (const auto& element : button_id_to_pins_) {
     bool active = 0;

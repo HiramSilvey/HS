@@ -37,8 +37,6 @@ const int kDPadDirection[16] = {
 };
 
 NSController::NSController() {
-  joystick_ = std::make_unique<HallJoystick>(0, 255);
-  joystick_->Init();
   button_id_to_pins_ = {};
   z_x_ = {};
   z_y_ = {};
@@ -50,6 +48,9 @@ NSController::NSController() {
 
 void NSController::LoadProfile() {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH);
+  joystick_ = std::make_unique<HallJoystick>(0, 255, layout.joystick_threshold);
+  joystick_->Init();
+
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layout);
 
   std::unordered_map<int, int> action_to_button_id = {
@@ -136,27 +137,6 @@ bool NSController::Init() {
   return true;
 }
 
-int NSController::ResolveSOCD(std::vector<AnalogButton> buttons) {
-  int neutral = joystick_->get_neutral();
-  int min_value = neutral;
-  int max_value = neutral;
-  for (const auto& button : buttons) {
-    if (digitalRead(button.pin) == LOW) {
-      if (button.value < min_value) {
-        min_value = button.value;
-      } else if (button.value > max_value) {
-        max_value = button.value;
-      }
-    }
-  }
-  if (min_value != neutral && max_value != neutral) {
-    return neutral;
-  } else if (min_value != neutral) {
-    return min_value;
-  }
-  return max_value;
-}
-
 int NSController::GetDPadDirection() {
   int bits = 0;
   for (const int pin : dpad_up_) {
@@ -203,8 +183,8 @@ void NSController::Loop() {
 
   NSGamepad.leftYAxis(joystick_->get_max()-coords.y);
   NSGamepad.leftXAxis(coords.x);
-  NSGamepad.rightYAxis(joystick_->get_max()-ResolveSOCD(z_y_));
-  NSGamepad.rightXAxis(ResolveSOCD(z_x_));
+  NSGamepad.rightYAxis(joystick_->get_max()-Controller::ResolveSOCD(z_y_, joystick_->get_neutral()));
+  NSGamepad.rightXAxis(Controller::ResolveSOCD(z_x_, joystick_->get_neutral()));
 
   NSGamepad.loop();
 }

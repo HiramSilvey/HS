@@ -17,19 +17,13 @@ public:
   void Loop() override;
 
 private:
-  struct AnalogButton {
-    int value;
-    int pin;
-  };
-
   void LoadProfile() override;
-  int ResolveSOCD(std::vector<AnalogButton> buttons);
   int GetDPadDirection();
 
   std::unique_ptr<HallJoystick> joystick_;
   std::unordered_map<int, std::vector<int>> button_id_to_pins_;
-  std::vector<AnalogButton> z_y_;
-  std::vector<AnalogButton> z_x_;
+  std::vector<Controller::AnalogButton> z_y_;
+  std::vector<Controller::AnalogButton> z_x_;
   std::vector<int> dpad_up_;
   std::vector<int> dpad_down_;
   std::vector<int> dpad_left_;

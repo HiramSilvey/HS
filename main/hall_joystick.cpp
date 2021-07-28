@@ -5,11 +5,12 @@
 #include <Tlv493d.h>
 #include <EEPROM.h>
 
-HallJoystick::HallJoystick(int min, int max)
+HallJoystick::HallJoystick(int min, int max, int threshold)
   : x_in_({.min = GetIntFromEEPROM(0), .max = GetIntFromEEPROM(4)}),
     y_in_({.min = GetIntFromEEPROM(8), .max = GetIntFromEEPROM(12)}),
     out_({.min = min, .max = max}),
-    out_neutral_((max - min + 1) / 2 + min) {}
+    out_neutral_((max - min + 1) / 2 + min),
+    threshold_({threshold * -1, threshold}) {}
 
 int HallJoystick::GetIntFromEEPROM(int address) {
   byte one = EEPROM.read(address);
@@ -31,12 +32,32 @@ int HallJoystick::Normalize(int val, const Bounds& in) {
   return constrain(mapped, out_.min, out_.max);
 }
 
+int HallJoystick::ResolveDigitalCoord(int coord) {
+  const int percent_tilted = ((coord - out_neutral_) * 100) / out_neutral_;
+  if (percent_tilted <= threshold_.first) {
+    return out_.min;
+  }
+  if (percent_tilted >= threshold_.second) {
+    return out_.max;
+  }
+  return out_neutral_;
+}
+
 HallJoystick::Coordinates HallJoystick::GetCoordinates() {
   sensor_.updateData();
   float z = sensor_.getZ();
   int x = sensor_.getX() / z * 1000000;
   int y = sensor_.getY() / z * 1000000;
-  return {Normalize(x, x_in_), Normalize(y, y_in_)};
+
+  x = Normalize(x, x_in_);
+  y = Normalize(y, y_in_);
+
+  if (threshold_.first < 0) {
+    // DIGITAL
+    return {ResolveDigitalCoord(x), ResolveDigitalCoord(y)};
+  }
+  // ANALOG
+  return {x, y};
 }
 
 int HallJoystick::get_min() {
