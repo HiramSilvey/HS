@@ -7,7 +7,6 @@ layout: {
     index_top: { digital: R_STICK_LEFT }     # C left
     middle_top: { digital: R_STICK_UP }      # C up
     ring_top: { digital: R_STICK_RIGHT }     # C right
-    pinky_top: { digital: NO_OP }            
     index_middle: { digital: L2 }            # L
     middle_middle: { digital: TRIANGLE }     # Y
     ring_middle: { digital: CIRCLE }         # B
@@ -20,9 +19,6 @@ layout: {
     thumb_bottom: { digital: R_STICK_DOWN }  # C down
     thumb_middle: { digital: R1 }            # Z
     thumb_top: { digital: X }                # A
-    middle_bottom: { digital: NO_OP }
-    ring_bottom: { digital: NO_OP }    
-    pinky_bottom: { digital: NO_OP }
     left_ring_extra: { digital: D_PAD_LEFT }
     left_middle_extra: { digital: D_PAD_UP }
     left_index_extra: { digital: SHARE }

@@ -119,7 +119,9 @@ fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
     for action in actions.iter() {
         let action = match action {
             Some(x) => x,
-            None => return Err(anyhow!("Unable to get action.")),
+            None => &&Action {
+                action_type: Some(Digital(DigitalAction::NoOp as i32)),
+            },
         };
         let button = match get_button(action) {
             Some(x) => x,
