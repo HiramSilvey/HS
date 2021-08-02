@@ -13,81 +13,91 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 const MAX_EEPROM_BYTES: usize = 1064;
-const JOYSTICK_POINT_RADIUS: f64 = 5.0;
-const JOYSTICK_DISPLAY_RADIUS: f64 = 125.0;
+const JOYSTICK_CURSOR_RADIUS: f64 = 5.0;
+
+struct Bounds {
+    center: Point,
+    range: f64,
+}
+
+impl Bounds {
+    pub fn new() -> Bounds {
+        Bounds {
+            center: Point::new(0., 0.),
+            range: 0.,
+        }
+    }
+}
+
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+    In,
+    Out,
+}
 
 #[derive(Clone, Data, Lens)]
-struct JoystickCoords {
-    x: i32,
-    y: i32,
+struct JoystickState {
+    pointer: Point,
+    default_bounds: Bounds,
+    custom_bounds: Bounds,
+    tick: f64,
 }
 
-struct JoystickDisplay;
-
-impl JoystickDisplay {
-    fn new() -> JoystickDisplay {
-        JoystickDisplay {}
-    }
-}
-
-impl Widget<JoystickCoords> for JoystickDisplay {
-    fn event(
-        &mut self,
-        _ctx: &mut EventCtx,
-        _event: &Event,
-        _data: &mut JoystickCoords,
-        _env: &Env,
-    ) {
-    }
-
-    fn lifecycle(
-        &mut self,
-        _ctx: &mut LifeCycleCtx,
-        _event: &LifeCycle,
-        _data: &JoystickCoords,
-        _env: &Env,
-    ) {
-    }
-
-    fn update(
-        &mut self,
-        _ctx: &mut UpdateCtx,
-        _old_data: &JoystickCoords,
-        _data: &JoystickCoords,
-        _env: &Env,
-    ) {
-    }
-
-    fn layout(
-        &mut self,
-        _layout_ctx: &mut LayoutCtx,
-        bc: &BoxConstraints,
-        _data: &JoystickCoords,
-        _env: &Env,
-    ) -> Size {
-        if bc.is_width_bounded() | bc.is_height_bounded() {
-            let size = Size::new(250.0, 250.0);
-            bc.constrain(size)
-        } else {
-            bc.max()
+impl JoystickState {
+    pub fn new() -> JoystickState {
+        JoystickState {
+            pointer: Point::new(0., 0.),
+            default_bounds: Bounds::new(),
+            custom_bounds: Bounds::new(),
+            tick: 0.,
         }
     }
 
-    fn paint(&mut self, ctx: &mut PaintCtx, data: &JoystickCoords, env: &Env) {
+    fn set_pointer(&mut self, x: f64, y: f64) {
+        self.pointer.x = x;
+        self.pointer.y = y;
+    }
+
+    fn set_bounds(&mut self, x: f64, y: f64, range: f64) {
+        self.default_bounds.center.x = x;
+        self.default_bounds.center.y = y;
+        self.default_bounds.range = range;
+        self.custom_bounds = self.default_bounds;
+        self.tick = range / 1000.;
+    }
+
+    fn shift_bounds(&mut self, direction: Direction) {
+        match direction {
+            Direction::Up => self.custom_bounds.center.y += self.tick,
+            Direction::Down => self.custom_bounds.center.y -= self.tick,
+            Direction::Left => self.custom_bounds.center.x -= self.tick,
+            Direction::Right => self.custom_bounds.center.x += self.tick,
+            Direction::In => self.custom_bounds.range -= self.tick,
+            Direction::Out => self.custom_bounds.range += self.tick,
+        }
+    }
+}
+
+fn joystick() -> impl Widget<JoystickState> {
+    let painter = Painter::new(|ctx, _, env| {
         let size = ctx.size();
         let rect = size.to_rect();
-        ctx.fill(rect, &Color::WHITE);
+        ctx.fill(rect, &env.get(theme::BACKGROUND_DARK));
 
         ctx.paint_with_z_index(1, move |ctx| {
-            let cursor = Circle::new(rect.center(), JOYSTICK_POINT_RADIUS);
-            let color = Color::rgb8(255, 0, 0);
-            ctx.fill(cursor, &color);
+            let cursor = Circle::new(rect.center(), JOYSTICK_CURSOR_RADIUS);
+            ctx.fill(cursor, &env.get(theme::PRIMARY_LIGHT));
         });
 
-        let bounding_ring = Circle::new(rect.center(), JOYSTICK_DISPLAY_RADIUS);
-        let color = Color::rgb8(0, 0, 128);
-        ctx.fill(bounding_ring, &color);
-    }
+        let mut bounds_size = size;
+        bounds_size.width -= size.width * .125;
+        bounds_size.height -= size.height * .125;
+        let bounds = Square::from_center_size(rect.center(), bounds_size);
+        ctx.fill(bounding_ring, &env.get(theme::PRIMARY_LIGHT));
+    });
 }
 
 fn connect() -> Result<Box<dyn SerialPort>> {
@@ -160,7 +170,7 @@ fn store_profiles() -> Result<()> {
     Ok(())
 }
 
-fn build_ui() -> impl Widget<JoystickCoords> {
+fn build_ui() -> impl Widget<JoystickState> {
     Flex::column()
         .with_flex_child(
             Button::new("Calibrate Joystick").on_click(|_event, _data, _env| {
@@ -187,6 +197,6 @@ pub fn main() -> Result<(), PlatformError> {
             .title("HS Configurator")
             .window_size((600.0, 600.0)),
     )
-    .launch(JoystickCoords { x: 5, y: 5 })?;
+    .launch(JoystickState { x: 5, y: 5 })?;
     Ok(())
 }
