@@ -17,6 +17,7 @@ use std::time::{Duration, Instant};
 
 const MAX_EEPROM_BYTES: usize = 1064;
 const JOYSTICK_CURSOR_RADIUS: f64 = 3.0;
+const JOYSTICK_BOX_LENGTH: f64 = 400.;
 
 #[derive(Clone, Copy, Data, Lens)]
 struct Bounds {
@@ -76,8 +77,8 @@ impl JoystickState {
 
     fn shift_bounds(&mut self, direction: Direction) {
         match direction {
-            Direction::Up => self.custom_bounds.center.y += self.tick,
-            Direction::Down => self.custom_bounds.center.y -= self.tick,
+            Direction::Up => self.custom_bounds.center.y -= self.tick,
+            Direction::Down => self.custom_bounds.center.y += self.tick,
             Direction::Left => self.custom_bounds.center.x -= self.tick,
             Direction::Right => self.custom_bounds.center.x += self.tick,
             Direction::In => self.custom_bounds.range -= self.tick,
@@ -155,7 +156,7 @@ impl Widget<JoystickState> for JoystickState {
         _env: &Env,
     ) -> Size {
         if bc.is_width_bounded() | bc.is_height_bounded() {
-            let size = Size::new(250.0, 250.0);
+            let size = Size::new(JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH);
             bc.constrain(size)
         } else {
             bc.max()
@@ -170,9 +171,10 @@ impl Widget<JoystickState> for JoystickState {
         ctx.stroke(rect, &env.get(theme::BACKGROUND_LIGHT), 1.0);
 
         // Mutable bounds.
-        let mut bounds_size =
-            Size::new(data.custom_bounds.range * 2., data.custom_bounds.range * 2.);
-        let bounds = Rect::from_center_size(data.custom_bounds.center, bounds_size);
+        //let mut bounds_size =
+        //    Size::new(data.custom_bounds.range * 2., data.custom_bounds.range * 2.);
+        //let bounds = Rect::from_center_size(data.custom_bounds.center, bounds_size);
+        let bounds = Rect::from_center_size(rect.center(), Size::new(size.width * 0.875, size.height * 0.875));
         ctx.stroke(bounds, &env.get(theme::PRIMARY_LIGHT), 1.0);
 
         // Mutable bound guidelines.
