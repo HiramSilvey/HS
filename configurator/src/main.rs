@@ -4,6 +4,7 @@ use anyhow::{anyhow, Result};
 use configurator::encoder;
 use configurator::profiles;
 use druid::kurbo::{Circle, Line};
+use druid::piet::StrokeStyle;
 use druid::widget::prelude::*;
 use druid::widget::{Button, Flex, Label, Painter};
 use druid::{
@@ -31,6 +32,22 @@ impl Bounds {
             center: Point::new(0., 0.),
             range: 0.,
         }
+    }
+
+    fn get_x_min(&self) -> f64 {
+        self.center.x - self.range
+    }
+
+    fn get_x_max(&self) -> f64 {
+        self.center.x + self.range
+    }
+
+    fn get_y_min(&self) -> f64 {
+        self.center.y - self.range
+    }
+
+    fn get_y_max(&self) -> f64 {
+        self.center.y + self.range
     }
 }
 
@@ -119,6 +136,10 @@ fn symbol_button(direction: Direction) -> impl Widget<JoystickState> {
         .on_click(move |_ctx, data: &mut JoystickState, _env| data.shift_bounds(direction))
 }
 
+fn map(x: f64, in_min: f64, in_max: f64, out_min: f64, out_max: f64) -> f64 {
+    (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+}
+
 impl Widget<JoystickState> for JoystickState {
     fn event(
         &mut self,
@@ -170,46 +191,132 @@ impl Widget<JoystickState> for JoystickState {
         ctx.fill(rect, &env.get(theme::BACKGROUND_DARK));
         ctx.stroke(rect, &env.get(theme::BACKGROUND_LIGHT), 1.0);
 
-        // Mutable bounds.
-        //let mut bounds_size =
-        //    Size::new(data.custom_bounds.range * 2., data.custom_bounds.range * 2.);
-        //let bounds = Rect::from_center_size(data.custom_bounds.center, bounds_size);
-        let bounds = Rect::from_center_size(rect.center(), Size::new(size.width * 0.875, size.height * 0.875));
-        ctx.stroke(bounds, &env.get(theme::PRIMARY_LIGHT), 1.0);
+        let default_range = (size.width * 0.875) / 2.;
+        let default_x_min = rect.center().x - default_range;
+        let default_x_max = rect.center().x + default_range;
+        let default_y_min = rect.center().y - default_range;
+        let default_y_max = rect.center().y + default_range;
 
-        // Mutable bound guidelines.
-        let min_x = bounds.min_x();
-        let max_x = bounds.max_x();
-        let min_y = bounds.min_y();
-        let max_y = bounds.max_y();
-        let center_x = bounds.center().x;
-        let center_y = bounds.center().y;
+        // Default bounds.
+        let default_bounds = Rect::from_points(
+            Point::new(default_x_min, default_y_min),
+            Point::new(default_x_max, default_y_max),
+        );
+        ctx.stroke(default_bounds, &env.get(theme::BACKGROUND_LIGHT), 1.0);
 
-        ctx.stroke(
-            Line::new(Point::new(min_x, min_y), Point::new(max_x, max_y)),
-            &env.get(theme::BACKGROUND_LIGHT),
-            1.0,
+        // Mutable bounds & guidelines.
+        let mutable_x_min = map(
+            data.custom_bounds.get_x_min(),
+            data.default_bounds.get_x_min(),
+            data.default_bounds.get_x_max(),
+            default_x_min,
+            default_x_max,
         );
-        ctx.stroke(
-            Line::new(Point::new(min_x, max_y), Point::new(max_x, min_y)),
-            &env.get(theme::BACKGROUND_LIGHT),
-            1.0,
+        let mutable_x_max = map(
+            data.custom_bounds.get_x_max(),
+            data.default_bounds.get_x_min(),
+            data.default_bounds.get_x_max(),
+            default_x_min,
+            default_x_max,
         );
-        ctx.stroke(
-            Line::new(Point::new(min_x, center_y), Point::new(max_x, center_y)),
-            &env.get(theme::BACKGROUND_LIGHT),
-            1.0,
+        let mutable_x_center = mutable_x_min + (mutable_x_max - mutable_x_min) / 2.;
+        let mutable_y_min = map(
+            data.custom_bounds.get_y_min(),
+            data.default_bounds.get_y_min(),
+            data.default_bounds.get_y_max(),
+            default_y_min,
+            default_y_max,
         );
-        ctx.stroke(
-            Line::new(Point::new(center_x, min_y), Point::new(center_x, max_y)),
-            &env.get(theme::BACKGROUND_LIGHT),
+        let mutable_y_max = map(
+            data.custom_bounds.get_y_max(),
+            data.default_bounds.get_y_min(),
+            data.default_bounds.get_y_max(),
+            default_y_min,
+            default_y_max,
+        );
+        let mutable_y_center = mutable_y_min + (mutable_y_max - mutable_y_min) / 2.;
+
+        let mutable_top_left = Point::new(mutable_x_min, mutable_y_min);
+        let mutable_top_right = Point::new(mutable_x_max, mutable_y_min);
+        let mutable_bottom_left = Point::new(mutable_x_min, mutable_y_max);
+        let mutable_bottom_right = Point::new(mutable_x_max, mutable_y_max);
+        let mutable_center = Point::new(mutable_x_center, mutable_y_center);
+        let mutable_center_left = Point::new(mutable_x_min, mutable_y_center);
+        let mutable_center_right = Point::new(mutable_x_max, mutable_y_center);
+        let mutable_center_top = Point::new(mutable_x_center, mutable_y_min);
+        let mutable_center_bottom = Point::new(mutable_x_center, mutable_y_max);
+
+        let mutable_bounds = Rect::from_points(mutable_top_left, mutable_bottom_right);
+        ctx.stroke(mutable_bounds, &env.get(theme::PRIMARY_LIGHT), 1.0);
+
+        let stroke_style = StrokeStyle::new().dash_pattern(&[1., 4.]);
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_left),
+            &env.get(theme::PRIMARY_DARK),
             1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_top_left),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_top),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_top_right),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_right),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_bottom_right),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_bottom),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_bottom_left),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
         );
 
         // Cursor.
+        let cursor_x = map(
+            data.cursor.x,
+            data.default_bounds.get_x_min(),
+            data.default_bounds.get_x_max(),
+            default_x_min,
+            default_x_max,
+        );
+        let cursor_y = map(
+            data.cursor.y,
+            data.default_bounds.get_y_min(),
+            data.default_bounds.get_y_max(),
+            default_y_min,
+            default_y_max,
+        );
         let cursor_color = env.get(theme::CURSOR_COLOR);
         ctx.paint_with_z_index(1, move |ctx| {
-            let cursor = Circle::new(rect.center(), JOYSTICK_CURSOR_RADIUS);
+            let cursor = Circle::new(Point::new(cursor_x, cursor_y), JOYSTICK_CURSOR_RADIUS);
             ctx.stroke(cursor, &cursor_color, 2.0);
         });
     }
@@ -327,13 +434,12 @@ fn build_ui() -> impl Widget<JoystickState> {
 
 pub fn main() -> Result<(), PlatformError> {
     let mut state = JoystickState::new();
-    state.set_cursor(50., 50.);
-    state.set_bounds(100., 100., 100.);
 
     AppLauncher::with_window(
         WindowDesc::new(build_ui())
             .title("HS Configurator")
-            .window_size((600.0, 600.0)),
+            .window_size((600., 600.))
+            .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
     )
     .launch(state)?;
     Ok(())
