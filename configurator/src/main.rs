@@ -337,31 +337,74 @@ fn connect() -> Result<Box<dyn SerialPort>> {
     }
 }
 
-fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
-    println!("Waiting for ACK.");
+fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> {
+    println!("Waiting for data.");
     let now = Instant::now();
     let timeout = Duration::new(70, 0);
-    let mut buf = vec![0u8; 1];
-    let mut ack = hs.read_exact(&mut buf);
-    while ack.is_err() && now.elapsed() < timeout {
+    let mut status = hs.read_exact(buf);
+    while status.is_err() && now.elapsed() < timeout {
         println!("Waiting...");
-        sleep(Duration::new(5, 0));
-        ack = hs.read_exact(&mut buf);
+        sleep(Duration::new(1, 0));
+        status = hs.read_exact(buf);
     }
-    if ack.is_err() {
+    if status.is_err() {
         return Err(anyhow!(
-            "Failure waiting for OK from HS: {}",
-            ack.unwrap_err()
+            "Failure waiting for data from HS: {}",
+            status.unwrap_err()
         ));
     }
-    println!("ACK received.");
+    println!("Data received.");
     Ok(())
 }
 
-fn calibrate_joystick() -> Result<()> {
+fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
+    println!("Waiting for ACK data.");
+    let mut buf = vec![0u8; 1];
+    wait_for_data(hs, &mut buf)
+}
+
+fn bytes_to_float(bytes: &Vec<u8>) -> Result<f64> {
+    if bytes.len() != 4 {
+        return Err(anyhow!("Expected 4 bytes, found {} bytes.", bytes.len()));
+    }
+    Ok((((bytes[0] as i32) << 24)
+        | ((bytes[1] as i32) << 16)
+        | ((bytes[2] as i32) << 8)
+        | bytes[3] as i32) as f64)
+}
+
+fn calibrate_joystick(state: &mut JoystickState) -> Result<()> {
     let mut hs = connect()?;
     hs.write_all(&[2])?;
     wait_for_ack(&mut hs)?;
+    wait_for_ack(&mut hs)?;
+
+    let mut center_x_buf = vec![0u8; 4];
+    let mut center_y_buf = vec![0u8; 4];
+    let mut range_buf = vec![0u8; 4];
+    wait_for_data(&mut hs, &mut center_x_buf)?;
+    wait_for_data(&mut hs, &mut center_y_buf)?;
+    wait_for_data(&mut hs, &mut range_buf)?;
+
+    state.set_bounds(
+        bytes_to_float(&center_x_buf)?,
+        bytes_to_float(&center_y_buf)?,
+        bytes_to_float(&range_buf)?,
+    );
+
+    loop {
+        hs.write_all(&[0])?;
+        wait_for_ack(&mut hs)?;
+        let mut x_buf = vec![0u8; 4];
+        let mut y_buf = vec![0u8; 4];
+        wait_for_data(&mut hs, &mut x_buf)?;
+        wait_for_data(&mut hs, &mut y_buf)?;
+        state.set_cursor(bytes_to_float(&x_buf)?, bytes_to_float(&y_buf)?);
+        println!("{}", state.cursor.x);
+        println!("{}", state.cursor.y);
+        sleep(Duration::new(1, 0));
+    }
+
     wait_for_ack(&mut hs)?;
     Ok(())
 }
@@ -415,12 +458,12 @@ fn build_ui() -> impl Widget<JoystickState> {
             1.0,
         )
         .with_flex_child(
-            Button::new("Calibrate Joystick").on_click(|_event, _data, _env| {
-                match calibrate_joystick() {
+            Button::new("Calibrate Joystick").on_click(
+                |_event, data, _env| match calibrate_joystick(data) {
                     Ok(()) => println!("Calibration complete!"),
                     Err(e) => println!("Calibration failed: {}", e),
-                }
-            }),
+                },
+            ),
             1.0,
         )
         .with_flex_child(
@@ -433,14 +476,12 @@ fn build_ui() -> impl Widget<JoystickState> {
 }
 
 pub fn main() -> Result<(), PlatformError> {
-    let mut state = JoystickState::new();
-
     AppLauncher::with_window(
         WindowDesc::new(build_ui())
             .title("HS Configurator")
             .window_size((600., 600.))
             .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
     )
-    .launch(state)?;
+    .launch(JoystickState::new())?;
     Ok(())
 }
