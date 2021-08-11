@@ -6,22 +6,6 @@
 #include <EEPROM.h>
 #include <Tlv493d.h>
 
-void Configurator::StoreProfiles() {
-  Serial.write(0);  // OK.
-  while (Serial.available() < 2) {}
-  int num_bytes = Serial.read() << 8 | Serial.read();
-  int base_address = 16;  // 0-15 are reserved for joystick calibration values.
-  int curr_address = base_address;
-  while (curr_address < base_address + num_bytes) {
-    if (Serial.available()) {
-      byte data = Serial.read();
-      EEPROM.update(curr_address, data);
-      curr_address++;
-    }
-  }
-  Serial.write(0);  // Done.
-}
-
 void WriteToSerial(int val) {
   byte bytes[4] = {val >> 24,
                    val >> 16 & 0xFF,
@@ -42,14 +26,24 @@ void SaveToEEPROM(int val, int address) {
   EEPROM.update(address+3, four);
 }
 
+Configurator::Configurator() {
+  sensor_ = Tlv493d();
+  sensor_.begin();
+  sensor_.setAccessMode(sensor_.LOWPOWERMODE);
+  sensor_.disableTemp();
+}
+
+void Configurator::FetchJoystickCoords() {
+  sensor_.updateData();
+  float z = sensor_.getZ();
+  int x = sensor_.getX() / z * 1000000;
+  int y = sensor_.getY() / z * 1000000;
+
+  WriteToSerial(x);
+  WriteToSerial(y);
+}
+
 void Configurator::CalibrateJoystick() {
-  Serial.write(0);  // OK.
-
-  Tlv493d sensor = Tlv493d();
-  sensor.begin();
-  sensor.setAccessMode(sensor.LOWPOWERMODE);
-  sensor.disableTemp();
-
   float min_x = 0;
   float max_x = 0;
   float min_y = 0;
@@ -57,10 +51,10 @@ void Configurator::CalibrateJoystick() {
 
   uint64_t end_time = millis() + 15000;  // 15 seconds from now.
   while (millis() < end_time) {
-    sensor.updateData();
-    float z = sensor.getZ();
-    float x = sensor.getX() / z;
-    float y = sensor.getY() / z;
+    sensor_.updateData();
+    float z = sensor_.getZ();
+    float x = sensor_.getX() / z;
+    float y = sensor_.getY() / z;
 
     if (x < min_x) {
       min_x = x;
@@ -81,54 +75,59 @@ void Configurator::CalibrateJoystick() {
   int center_y = (min_y + range_y) * 1000000;
   int range = range_x >= range_y ? range_x * 1000000 : range_y * 1000000;
 
-  Serial.write(0);  // Done.
-
   WriteToSerial(center_x);
   WriteToSerial(center_y);
   WriteToSerial(range);
+}
 
-  while(true) {
-    if (Serial.available() > 0) {
-      byte cmd = Serial.read();
-      switch(cmd) {
-      case 0:
-        Serial.write(0);
-        sensor.updateData();
-        float z = sensor.getZ();
-        int x = sensor.getX() / z * 1000000;
-        int y = sensor.getY() / z * 1000000;
-        WriteToSerial(x);
-        WriteToSerial(y);
-        break;
-      case 1:
-        Serial.write(0);
-        int bytes_to_read = 12;
-        int address = 0;
-        while (address < bytes_to_read) {
-          if (Serial.available()) {
-            EEPROM.update(address, Serial.read());
-            address++;
-          }
-        }
-        Serial.write(0);
-        return;
-      }
+void Configurator::SaveCalibration() {
+  int bytes_to_read = 12;
+  int address = 0;
+  while (address < bytes_to_read) {
+    if (Serial.available()) {
+      EEPROM.update(address, Serial.read());
+      address++;
     }
   }
+  Serial.write(0);  // Done.
+}
+
+void Configurator::StoreProfiles() {
+  while (Serial.available() < 2) {}
+  int num_bytes = Serial.read() << 8 | Serial.read();
+  int base_address = 16;  // 0-15 are reserved for joystick calibration values.
+  int curr_address = base_address;
+  while (curr_address < base_address + num_bytes) {
+    if (Serial.available()) {
+      byte data = Serial.read();
+      EEPROM.update(curr_address, data);
+      curr_address++;
+    }
+  }
+  Serial.write(0);  // Done.
 }
 
 void Configurator::Configure() {
   while(true) {
     if (Serial.available() > 0) {
       byte data = Serial.read();
+      if (data > 3) {
+        Serial.write(1);  // Error.
+        continue;
+      }
+      Serial.write(0);  // OK.
       switch(data) {
       case 0:
-        return;
+        FetchJoystickCoords();
+        break;
       case 1:
-        StoreProfiles();
+        CalibrateJoystick();
         break;
       case 2:
-        CalibrateJoystick();
+        SaveCalibration();
+        break;
+      case 3:
+        StoreProfiles();
         break;
       }
     }

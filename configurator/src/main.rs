@@ -9,8 +9,8 @@ use druid::piet::StrokeStyle;
 use druid::widget::prelude::*;
 use druid::widget::{Button, Flex, Label, Painter};
 use druid::{
-    theme, AppLauncher, Color, Data, Lens, PlatformError, Point, Rect, RenderContext, Selector,
-    Widget, WidgetExt, WindowDesc,
+    theme, AppLauncher, Color, Data, ExtEventSink, Lens, PlatformError, Point, Rect, RenderContext,
+    Selector, Target, Widget, WidgetExt, WindowDesc,
 };
 use serialport::SerialPort;
 use std::path::Path;
@@ -27,6 +27,7 @@ const SET_CURSOR: Selector<Point> = Selector::new("hs.set-cursor");
 enum Command {
     FetchJoystickCoords,
     CalibrateJoystick,
+    SaveCalibration,
     StoreProfiles,
 }
 
@@ -151,13 +152,14 @@ fn map(x: f64, in_min: f64, in_max: f64, out_min: f64, out_max: f64) -> f64 {
 }
 
 impl Widget<JoystickState> for JoystickState {
-    fn event(
-        &mut self,
-        _ctx: &mut EventCtx,
-        _event: &Event,
-        _data: &mut JoystickState,
-        _env: &Env,
-    ) {
+    fn event(&mut self, _ctx: &mut EventCtx, event: &Event, data: &mut JoystickState, _env: &Env) {
+        match event {
+            Event::Command(cmd) if cmd.is(SET_CURSOR) => {
+                let point = cmd.get_unchecked(SET_CURSOR).clone();
+                data.set_cursor(point.x, point.y);
+            }
+            _ => (),
+        }
     }
 
     fn lifecycle(
@@ -370,7 +372,11 @@ fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> 
 fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
     println!("Waiting for ACK data.");
     let mut buf = vec![0u8; 1];
-    wait_for_data(hs, &mut buf)
+    wait_for_data(hs, &mut buf)?;
+    if buf[0] != 0 {
+        return Err(anyhow!("Failed to receive ACK. Wanted 0, got {}.", buf[0]));
+    }
+    Ok(())
 }
 
 fn bytes_to_float(bytes: &Vec<u8>) -> Result<f64> {
@@ -386,6 +392,31 @@ fn bytes_to_float(bytes: &Vec<u8>) -> Result<f64> {
         | bytes[3] as i32) as f64)
 }
 
+fn float_to_bytes(data: f64) -> Vec<u8> {
+    let i32_data = data as i32;
+    vec![
+        (i32_data >> 24) as u8,
+        (i32_data >> 16 & 0xFF) as u8,
+        (i32_data >> 8 & 0xFF) as u8,
+        (i32_data & 0xFF) as u8,
+    ]
+}
+
+fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
+    let mut x = vec![0u8; 4];
+    let mut y = vec![0u8; 4];
+    wait_for_data(hs, &mut x)?;
+    wait_for_data(hs, &mut y)?;
+
+    event_sink.submit_command(
+        SET_CURSOR,
+        Point::new(bytes_to_float(&x)?, bytes_to_float(&y)?),
+        Target::Auto,
+    )?;
+
+    Ok(())
+}
+
 fn calibrate_joystick(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<()> {
     let mut center_x_buf = vec![0u8; 4];
     let mut center_y_buf = vec![0u8; 4];
@@ -398,6 +429,25 @@ fn calibrate_joystick(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Res
     sender.send(bytes_to_float(&center_y_buf)?)?;
     sender.send(bytes_to_float(&range_buf)?)?;
 
+    Ok(())
+}
+
+fn save_calibration(
+    hs: &mut Box<dyn SerialPort>,
+    sender: &Sender<f64>,
+    receiver: &Receiver<f64>,
+) -> Result<()> {
+    let center_x = receiver.recv()?;
+    let center_y = receiver.recv()?;
+    let range = receiver.recv()?;
+
+    hs.write_all(&float_to_bytes(center_x))?;
+    hs.write_all(&float_to_bytes(center_y))?;
+    hs.write_all(&float_to_bytes(range))?;
+
+    wait_for_ack(hs)?;
+
+    sender.send(0.0)?;
     Ok(())
 }
 
@@ -417,20 +467,24 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
             MAX_EEPROM_BYTES,
         ));
     }
-    hs.write_all(&[1])?;
-    wait_for_ack(hs)?;
+
     let size = encoded.len();
     hs.write_all(&[(size >> 8) as u8, (size & 255) as u8])?;
     hs.write_all(&encoded)?;
     wait_for_ack(hs)?;
 
     sender.send(0.0)?;
-
     Ok(())
 }
 
-fn build_ui(sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget<JoystickState> {
-    let (sender2, receiver2) = (sender.clone(), receiver.clone());
+fn build_ui(
+    cmd_sender: Sender<Command>,
+    data_sender: Sender<f64>,
+    receiver: Receiver<f64>,
+) -> impl Widget<JoystickState> {
+    let (cmd_sender2, receiver2) = (cmd_sender.clone(), receiver.clone());
+    let (cmd_sender3, receiver3) = (cmd_sender.clone(), receiver.clone());
+
     Flex::column()
         .with_child(JoystickState::new())
         .with_flex_child(
@@ -455,29 +509,32 @@ fn build_ui(sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget<Joy
         .with_flex_child(
             Button::new("Calibrate Joystick").on_click(
                 move |_event, data: &mut JoystickState, _env| {
-                    match sender.send(Command::CalibrateJoystick) {
+                    match cmd_sender.send(Command::CalibrateJoystick) {
                         Ok(()) => println!("Calibration starting..."),
-                        Err(e) => println!("Failed issuing 'calibrate joystick' command: {}", e),
+                        Err(e) => {
+                            println!("Failed issuing 'calibrate joystick' command: {}", e);
+                            return;
+                        }
                     }
                     let center_x = match receiver.recv() {
                         Ok(x) => x,
                         Err(e) => {
                             println!("Failed getting joystick center x value: {}", e);
-                            0.0
+                            return;
                         }
                     };
                     let center_y = match receiver.recv() {
                         Ok(y) => y,
                         Err(e) => {
                             println!("Failed getting joystick center y value: {}", e);
-                            0.0
+                            return;
                         }
                     };
                     let range = match receiver.recv() {
                         Ok(r) => r,
                         Err(e) => {
                             println!("Failed getting joystick range value: {}", e);
-                            0.0
+                            return;
                         }
                     };
                     data.set_bounds(center_x, center_y, range);
@@ -486,12 +543,54 @@ fn build_ui(sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget<Joy
             1.0,
         )
         .with_flex_child(
+            Button::new("Save Calibration").on_click(
+                move |_event, data: &mut JoystickState, _env| {
+                    match cmd_sender2.send(Command::SaveCalibration) {
+                        Ok(()) => println!("Saving calibration..."),
+                        Err(e) => {
+                            println!("Failed issuing 'save calibration' command: {}", e);
+                            return;
+                        }
+                    }
+                    match data_sender.send(data.custom_bounds.center.x) {
+                        Ok(()) => println!("Sent center x coordinate."),
+                        Err(e) => {
+                            println!("Failed to send center x coordinate: {}", e);
+                            return;
+                        }
+                    }
+                    match data_sender.send(data.custom_bounds.center.y) {
+                        Ok(()) => println!("Sent center y coordinate."),
+                        Err(e) => {
+                            println!("Failed to send center y coordinate: {}", e);
+                            return;
+                        }
+                    }
+                    match data_sender.send(data.custom_bounds.range) {
+                        Ok(()) => println!("Sent range value."),
+                        Err(e) => {
+                            println!("Failed to send range value: {}", e);
+                            return;
+                        }
+                    }
+
+                    if let Err(e) = receiver2.recv() {
+                        println!("Failed to save calibration: {}", e);
+                    };
+                },
+            ),
+            1.0,
+        )
+        .with_flex_child(
             Button::new("Store Profiles").on_click(move |_event, _data, _env| {
-                match sender2.send(Command::StoreProfiles) {
+                match cmd_sender3.send(Command::StoreProfiles) {
                     Ok(()) => println!("Storing profiles..."),
-                    Err(e) => println!("Failed issuing 'store profiles' command: {}", e),
+                    Err(e) => {
+                        println!("Failed issuing 'store profiles' command: {}", e);
+                        return;
+                    }
                 }
-                if let Err(e) = receiver2.recv() {
+                if let Err(e) = receiver3.recv() {
                     println!("Failed to store profiles: {}", e);
                 };
             }),
@@ -499,28 +598,26 @@ fn build_ui(sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget<Joy
         )
 }
 
-fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<()> {
-    Ok(())
-}
-
 fn drive(
-    sender: &Sender<f64>,
-    receiver: &Receiver<Command>,
-    event_sink: druid::ExtEventSink,
+    sender: Sender<f64>,
+    data_receiver: Receiver<f64>,
+    command_receiver: Receiver<Command>,
+    event_sink: ExtEventSink,
 ) -> Result<()> {
     let mut hs = connect()?;
 
     loop {
-        let cmd = match receiver.try_recv() {
+        let cmd = match command_receiver.try_recv() {
             Ok(x) => x,
-            Err(e) => Command::FetchJoystickCoords,
+            Err(_) => Command::FetchJoystickCoords,
         };
 
         hs.write_all(&[cmd as u8])?;
         wait_for_ack(&mut hs)?;
         match cmd {
-            Command::FetchJoystickCoords => fetch_joystick_coords(&mut hs, &sender)?,
+            Command::FetchJoystickCoords => fetch_joystick_coords(&mut hs, &event_sink)?,
             Command::CalibrateJoystick => calibrate_joystick(&mut hs, &sender)?,
+            Command::SaveCalibration => save_calibration(&mut hs, &sender, &data_receiver)?,
             Command::StoreProfiles => store_profiles(&mut hs, &sender)?,
         };
     }
@@ -528,17 +625,29 @@ fn drive(
 
 pub fn main() -> Result<(), PlatformError> {
     let (cmd_sender, cmd_receiver) = unbounded();
-    let (data_sender, data_receiver) = unbounded();
+    let (child_data_sender, parent_data_receiver) = unbounded();
+    let (parent_data_sender, child_data_receiver) = unbounded();
 
     let launcher = AppLauncher::with_window(
-        WindowDesc::new(build_ui(cmd_sender, data_receiver))
-            .title("HS Configurator")
-            .window_size((600.0, 600.0))
-            .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
+        WindowDesc::new(build_ui(
+            cmd_sender,
+            parent_data_sender,
+            child_data_receiver,
+        ))
+        .title("HS Configurator")
+        .window_size((600.0, 600.0))
+        .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
     );
 
     let event_sink = launcher.get_external_handle();
-    thread::spawn(move || -> Result<()> { drive(&data_sender, &cmd_receiver, event_sink) });
+    thread::spawn(move || -> Result<()> {
+        drive(
+            child_data_sender,
+            parent_data_receiver,
+            cmd_receiver,
+            event_sink,
+        )
+    });
 
     launcher.launch(JoystickState::new())?;
 
