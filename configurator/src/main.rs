@@ -3,90 +3,349 @@
 use anyhow::{anyhow, Result};
 use configurator::encoder;
 use configurator::profiles;
-use druid::kurbo::Circle;
+use crossbeam_channel::{unbounded, Receiver, Sender};
+use druid::kurbo::{Circle, Line};
+use druid::piet::StrokeStyle;
 use druid::widget::prelude::*;
-use druid::widget::{Button, Flex};
-use druid::{AppLauncher, Color, Lens, PlatformError, WindowDesc};
+use druid::widget::{Button, Flex, Label, Painter};
+use druid::{
+    theme, AppLauncher, Color, Data, ExtEventSink, Lens, PlatformError, Point, Rect, RenderContext,
+    Selector, Target, Widget, WidgetExt, WindowDesc,
+};
 use serialport::SerialPort;
 use std::path::Path;
+use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 const MAX_EEPROM_BYTES: usize = 1064;
-const JOYSTICK_POINT_RADIUS: f64 = 5.0;
-const JOYSTICK_DISPLAY_RADIUS: f64 = 125.0;
+const JOYSTICK_CURSOR_RADIUS: f64 = 3.0;
+const JOYSTICK_BOX_LENGTH: f64 = 400.;
+const SET_CURSOR: Selector<Point> = Selector::new("hs.set-cursor");
+const SET_DEFAULT_BOUNDS: Selector<Bounds> = Selector::new("hs.set-default-bounds");
 
-#[derive(Clone, Data, Lens)]
-struct JoystickCoords {
-    x: i32,
-    y: i32,
+#[derive(Clone, Copy)]
+enum Command {
+    FetchStoredBounds,
+    FetchJoystickCoords,
+    CalibrateJoystick,
+    SaveCalibration,
+    StoreProfiles,
 }
 
-struct JoystickDisplay;
+#[derive(Clone, Copy, Data, Lens)]
+struct Bounds {
+    center: Point,
+    range: f64,
+}
 
-impl JoystickDisplay {
-    fn new() -> JoystickDisplay {
-        JoystickDisplay {}
+impl Bounds {
+    pub fn new() -> Bounds {
+        Bounds {
+            center: Point::new(0.0, 0.0),
+            range: 0.0,
+        }
+    }
+
+    pub fn from_parts(center_x: f64, center_y: f64, range: f64) -> Bounds {
+        Bounds {
+            center: Point::new(center_x, center_y),
+            range: range,
+        }
+    }
+
+    fn get_x_min(&self) -> f64 {
+        self.center.x - self.range
+    }
+
+    fn get_x_max(&self) -> f64 {
+        self.center.x + self.range
+    }
+
+    fn get_y_min(&self) -> f64 {
+        self.center.y + self.range
+    }
+
+    fn get_y_max(&self) -> f64 {
+        self.center.y - self.range
     }
 }
 
-impl Widget<JoystickCoords> for JoystickDisplay {
-    fn event(
-        &mut self,
-        _ctx: &mut EventCtx,
-        _event: &Event,
-        _data: &mut JoystickCoords,
-        _env: &Env,
-    ) {
+#[derive(Clone, Copy)]
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+    In,
+    Out,
+}
+
+#[derive(Clone, Data, Lens)]
+struct JoystickState {
+    cursor: Point,
+    default_bounds: Bounds,
+    custom_bounds: Bounds,
+    tick: f64,
+}
+
+impl JoystickState {
+    pub fn new() -> JoystickState {
+        JoystickState {
+            cursor: Point::new(0.0, 0.0),
+            default_bounds: Bounds::new(),
+            custom_bounds: Bounds::new(),
+            tick: 0.0,
+        }
+    }
+
+    fn set_cursor(&mut self, point: &Point) {
+        self.cursor = *point;
+    }
+
+    fn set_bounds(&mut self, bounds: &Bounds) {
+        self.default_bounds = *bounds;
+        self.custom_bounds = *bounds;
+        self.tick = bounds.range / 1000.0;
+
+        println!(
+            "Set bounds to {}, {}, {}",
+            self.default_bounds.center.x, self.default_bounds.center.y, self.default_bounds.range
+        );
+    }
+
+    fn shift_bounds(&mut self, direction: Direction) {
+        match direction {
+            Direction::Up => self.custom_bounds.center.y += self.tick,
+            Direction::Down => self.custom_bounds.center.y -= self.tick,
+            Direction::Left => self.custom_bounds.center.x -= self.tick,
+            Direction::Right => self.custom_bounds.center.x += self.tick,
+            Direction::In => self.custom_bounds.range -= self.tick,
+            Direction::Out => self.custom_bounds.range += self.tick,
+        }
+    }
+}
+
+fn symbol_button(direction: Direction) -> impl Widget<JoystickState> {
+    let painter = Painter::new(|ctx, _, env| {
+        let bounds = ctx.size().to_rect();
+
+        ctx.fill(bounds, &env.get(theme::PRIMARY_DARK));
+
+        if ctx.is_hot() {
+            ctx.stroke(bounds.inset(-0.5), &Color::WHITE, 1.0);
+        }
+
+        if ctx.is_active() {
+            ctx.fill(bounds, &env.get(theme::PRIMARY_LIGHT));
+        }
+    });
+
+    let symbol = match direction {
+        Direction::Up => 'ᐱ',
+        Direction::Down => 'ᐯ',
+        Direction::Left => 'ᐸ',
+        Direction::Right => 'ᐳ',
+        Direction::In => '-',
+        Direction::Out => '+',
+    };
+
+    Label::new(format!("{}", symbol))
+        .with_text_size(24.0)
+        .center()
+        .background(painter)
+        .expand()
+        .on_click(move |_ctx, data: &mut JoystickState, _env| data.shift_bounds(direction))
+}
+
+fn map(x: f64, in_min: f64, in_max: f64, out_min: f64, out_max: f64) -> f64 {
+    (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+}
+
+impl Widget<JoystickState> for JoystickState {
+    fn event(&mut self, _ctx: &mut EventCtx, event: &Event, data: &mut JoystickState, _env: &Env) {
+        match event {
+            Event::Command(cmd) if cmd.is(SET_CURSOR) => {
+                let point = cmd.get_unchecked(SET_CURSOR).clone();
+                data.set_cursor(&point);
+            }
+            Event::Command(cmd) if cmd.is(SET_DEFAULT_BOUNDS) => {
+                let bounds = cmd.get_unchecked(SET_DEFAULT_BOUNDS).clone();
+                data.set_bounds(&bounds);
+            }
+            _ => (),
+        }
     }
 
     fn lifecycle(
         &mut self,
         _ctx: &mut LifeCycleCtx,
         _event: &LifeCycle,
-        _data: &JoystickCoords,
+        _data: &JoystickState,
         _env: &Env,
     ) {
     }
 
     fn update(
         &mut self,
-        _ctx: &mut UpdateCtx,
-        _old_data: &JoystickCoords,
-        _data: &JoystickCoords,
+        ctx: &mut UpdateCtx,
+        _old_data: &JoystickState,
+        _data: &JoystickState,
         _env: &Env,
     ) {
+        ctx.request_paint();
     }
 
     fn layout(
         &mut self,
         _layout_ctx: &mut LayoutCtx,
         bc: &BoxConstraints,
-        _data: &JoystickCoords,
+        _data: &JoystickState,
         _env: &Env,
     ) -> Size {
         if bc.is_width_bounded() | bc.is_height_bounded() {
-            let size = Size::new(250.0, 250.0);
+            let size = Size::new(JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH);
             bc.constrain(size)
         } else {
             bc.max()
         }
     }
 
-    fn paint(&mut self, ctx: &mut PaintCtx, data: &JoystickCoords, env: &Env) {
+    fn paint(&mut self, ctx: &mut PaintCtx, data: &JoystickState, env: &Env) {
+        // Absolute bounds.
         let size = ctx.size();
         let rect = size.to_rect();
-        ctx.fill(rect, &Color::WHITE);
+        ctx.fill(rect, &env.get(theme::BACKGROUND_DARK));
+        ctx.stroke(rect, &env.get(theme::BACKGROUND_LIGHT), 1.0);
 
+        let default_range = (size.width * 0.875) / 2.0;
+        let default_x_min = rect.center().x - default_range;
+        let default_x_max = rect.center().x + default_range;
+        let default_y_min = rect.center().y - default_range;
+        let default_y_max = rect.center().y + default_range;
+
+        // Default bounds.
+        let default_bounds = Rect::from_points(
+            Point::new(default_x_min, default_y_min),
+            Point::new(default_x_max, default_y_max),
+        );
+        ctx.stroke(default_bounds, &env.get(theme::BACKGROUND_LIGHT), 1.0);
+
+        // Mutable bounds & guidelines.
+        let mutable_x_min = map(
+            data.custom_bounds.get_x_min(),
+            data.default_bounds.get_x_min(),
+            data.default_bounds.get_x_max(),
+            default_x_min,
+            default_x_max,
+        );
+        let mutable_x_max = map(
+            data.custom_bounds.get_x_max(),
+            data.default_bounds.get_x_min(),
+            data.default_bounds.get_x_max(),
+            default_x_min,
+            default_x_max,
+        );
+        let mutable_x_center = mutable_x_min + (mutable_x_max - mutable_x_min) / 2.0;
+        let mutable_y_min = map(
+            data.custom_bounds.get_y_min(),
+            data.default_bounds.get_y_min(),
+            data.default_bounds.get_y_max(),
+            default_y_min,
+            default_y_max,
+        );
+        let mutable_y_max = map(
+            data.custom_bounds.get_y_max(),
+            data.default_bounds.get_y_min(),
+            data.default_bounds.get_y_max(),
+            default_y_min,
+            default_y_max,
+        );
+        let mutable_y_center = mutable_y_min + (mutable_y_max - mutable_y_min) / 2.0;
+
+        let mutable_top_left = Point::new(mutable_x_min, mutable_y_min);
+        let mutable_top_right = Point::new(mutable_x_max, mutable_y_min);
+        let mutable_bottom_left = Point::new(mutable_x_min, mutable_y_max);
+        let mutable_bottom_right = Point::new(mutable_x_max, mutable_y_max);
+        let mutable_center = Point::new(mutable_x_center, mutable_y_center);
+        let mutable_center_left = Point::new(mutable_x_min, mutable_y_center);
+        let mutable_center_right = Point::new(mutable_x_max, mutable_y_center);
+        let mutable_center_top = Point::new(mutable_x_center, mutable_y_min);
+        let mutable_center_bottom = Point::new(mutable_x_center, mutable_y_max);
+
+        let mutable_bounds = Rect::from_points(mutable_top_left, mutable_bottom_right);
+        ctx.stroke(mutable_bounds, &env.get(theme::PRIMARY_LIGHT), 1.0);
+
+        let stroke_style = StrokeStyle::new().dash_pattern(&[1.0, 4.0]);
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_left),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_top_left),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_top),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_top_right),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_right),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_bottom_right),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_center_bottom),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+        ctx.stroke_styled(
+            Line::new(mutable_center, mutable_bottom_left),
+            &env.get(theme::PRIMARY_DARK),
+            1.0,
+            &stroke_style,
+        );
+
+        // Cursor.
+        let cursor_x = map(
+            data.cursor.x,
+            data.default_bounds.get_x_min(),
+            data.default_bounds.get_x_max(),
+            default_x_min,
+            default_x_max,
+        );
+        let cursor_y = map(
+            data.cursor.y,
+            data.default_bounds.get_y_min(),
+            data.default_bounds.get_y_max(),
+            default_y_min,
+            default_y_max,
+        );
+        let cursor_color = env.get(theme::CURSOR_COLOR);
         ctx.paint_with_z_index(1, move |ctx| {
-            let cursor = Circle::new(rect.center(), JOYSTICK_POINT_RADIUS);
-            let color = Color::rgb8(255, 0, 0);
-            ctx.fill(cursor, &color);
+            let cursor = Circle::new(Point::new(cursor_x, cursor_y), JOYSTICK_CURSOR_RADIUS);
+            ctx.stroke(cursor, &cursor_color, 2.0);
         });
-
-        let bounding_ring = Circle::new(rect.center(), JOYSTICK_DISPLAY_RADIUS);
-        let color = Color::rgb8(0, 0, 128);
-        ctx.fill(bounding_ring, &color);
     }
 }
 
@@ -105,36 +364,127 @@ fn connect() -> Result<Box<dyn SerialPort>> {
     }
 }
 
-fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
-    println!("Waiting for ACK.");
+fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> {
     let now = Instant::now();
     let timeout = Duration::new(70, 0);
-    let mut buf = vec![0u8; 1];
-    let mut ack = hs.read_exact(&mut buf);
-    while ack.is_err() && now.elapsed() < timeout {
+    let mut status = hs.read_exact(buf);
+    while status.is_err() && now.elapsed() < timeout {
         println!("Waiting...");
-        sleep(Duration::new(5, 0));
-        ack = hs.read_exact(&mut buf);
+        sleep(Duration::new(1, 0));
+        status = hs.read_exact(buf);
     }
-    if ack.is_err() {
+    if status.is_err() {
         return Err(anyhow!(
-            "Failure waiting for OK from HS: {}",
-            ack.unwrap_err()
+            "Failed waiting for data from HS: {}",
+            status.unwrap_err()
         ));
     }
-    println!("ACK received.");
     Ok(())
 }
 
-fn calibrate_joystick() -> Result<()> {
-    let mut hs = connect()?;
-    hs.write_all(&[2])?;
-    wait_for_ack(&mut hs)?;
-    wait_for_ack(&mut hs)?;
+fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
+    let mut buf = vec![0u8; 1];
+    wait_for_data(hs, &mut buf)?;
+    if buf[0] != 0 {
+        return Err(anyhow!("Failed to receive ACK. Wanted 0, got {}.", buf[0]));
+    }
     Ok(())
 }
 
-fn store_profiles() -> Result<()> {
+fn bytes_to_float(bytes: &Vec<u8>) -> Result<f64> {
+    if bytes.len() != 4 {
+        return Err(anyhow!(
+            "Failed converting bytes to float. Expected 4 bytes, found {} bytes.",
+            bytes.len()
+        ));
+    }
+    Ok((((bytes[0] as i32) << 24)
+        | ((bytes[1] as i32) << 16)
+        | ((bytes[2] as i32) << 8)
+        | bytes[3] as i32) as f64)
+}
+
+fn float_to_bytes(data: f64) -> Vec<u8> {
+    let i32_data = data as i32;
+    vec![
+        (i32_data >> 24) as u8,
+        (i32_data >> 16 & 0xFF) as u8,
+        (i32_data >> 8 & 0xFF) as u8,
+        (i32_data & 0xFF) as u8,
+    ]
+}
+
+fn fetch_stored_bounds(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
+    let mut center_x = vec![0u8; 4];
+    let mut center_y = vec![0u8; 4];
+    let mut range = vec![0u8; 4];
+    wait_for_data(hs, &mut center_x)?;
+    wait_for_data(hs, &mut center_y)?;
+    wait_for_data(hs, &mut range)?;
+
+    event_sink.submit_command(
+        SET_DEFAULT_BOUNDS,
+        Bounds::from_parts(
+            bytes_to_float(&center_x)?,
+            bytes_to_float(&center_y)?,
+            bytes_to_float(&range)?,
+        ),
+        Target::Auto,
+    )?;
+
+    Ok(())
+}
+
+fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
+    let mut x = vec![0u8; 4];
+    let mut y = vec![0u8; 4];
+    wait_for_data(hs, &mut x)?;
+    wait_for_data(hs, &mut y)?;
+
+    event_sink.submit_command(
+        SET_CURSOR,
+        Point::new(bytes_to_float(&x)?, bytes_to_float(&y)?),
+        Target::Auto,
+    )?;
+
+    Ok(())
+}
+
+fn calibrate_joystick(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<()> {
+    let mut center_x_buf = vec![0u8; 4];
+    let mut center_y_buf = vec![0u8; 4];
+    let mut range_buf = vec![0u8; 4];
+    wait_for_data(hs, &mut center_x_buf)?;
+    wait_for_data(hs, &mut center_y_buf)?;
+    wait_for_data(hs, &mut range_buf)?;
+
+    sender.send(bytes_to_float(&center_x_buf)?)?;
+    sender.send(bytes_to_float(&center_y_buf)?)?;
+    sender.send(bytes_to_float(&range_buf)?)?;
+
+    Ok(())
+}
+
+fn save_calibration(
+    hs: &mut Box<dyn SerialPort>,
+    sender: &Sender<f64>,
+    receiver: &Receiver<f64>,
+) -> Result<()> {
+    let center_x = receiver.recv()?;
+    let center_y = receiver.recv()?;
+    let range = receiver.recv()?;
+
+    hs.write_all(&float_to_bytes(center_x))?;
+    hs.write_all(&float_to_bytes(center_y))?;
+    hs.write_all(&float_to_bytes(range))?;
+
+    wait_for_ack(hs)?;
+
+    sender.send(0.0)?;
+    Ok(())
+}
+
+fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<()> {
     let profiles = match profiles::load_all(&Path::new("../profiles")) {
         Ok(x) => x,
         Err(e) => return Err(anyhow!("Unable to load profiles: {}", e)),
@@ -150,43 +500,198 @@ fn store_profiles() -> Result<()> {
             MAX_EEPROM_BYTES,
         ));
     }
-    let mut hs = connect()?;
-    hs.write_all(&[1])?;
-    wait_for_ack(&mut hs)?;
+
     let size = encoded.len();
     hs.write_all(&[(size >> 8) as u8, (size & 255) as u8])?;
     hs.write_all(&encoded)?;
-    wait_for_ack(&mut hs)?;
+    wait_for_ack(hs)?;
+
+    sender.send(0.0)?;
     Ok(())
 }
 
-fn build_ui() -> impl Widget<JoystickCoords> {
+fn build_ui(
+    cmd_sender: Sender<Command>,
+    data_sender: Sender<f64>,
+    receiver: Receiver<f64>,
+) -> impl Widget<JoystickState> {
+    let (cmd_sender2, receiver2) = (cmd_sender.clone(), receiver.clone());
+    let (cmd_sender3, receiver3) = (cmd_sender.clone(), receiver.clone());
+
     Flex::column()
+        .with_child(JoystickState::new())
         .with_flex_child(
-            Button::new("Calibrate Joystick").on_click(|_event, _data, _env| {
-                match calibrate_joystick() {
-                    Ok(()) => println!("Calibration complete!"),
-                    Err(e) => println!("Calibration failed: {}", e),
+            Flex::row()
+                .with_flex_child(symbol_button(Direction::Left), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(
+                    Flex::column()
+                        .with_flex_child(symbol_button(Direction::Up), 1.0)
+                        .with_spacer(1.0)
+                        .with_flex_child(symbol_button(Direction::Down), 1.0),
+                    1.0,
+                )
+                .with_spacer(1.0)
+                .with_flex_child(symbol_button(Direction::Right), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(symbol_button(Direction::In), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(symbol_button(Direction::Out), 1.0),
+            1.0,
+        )
+        .with_flex_child(
+            Button::new("Calibrate Joystick").on_click(
+                move |_event, data: &mut JoystickState, _env| {
+                    match cmd_sender.send(Command::CalibrateJoystick) {
+                        Ok(()) => println!("Calibration starting..."),
+                        Err(e) => {
+                            println!("Failed issuing 'calibrate joystick' command: {}", e);
+                            return;
+                        }
+                    }
+                    let center_x = match receiver.recv() {
+                        Ok(x) => x,
+                        Err(e) => {
+                            println!("Failed getting joystick center x value: {}", e);
+                            return;
+                        }
+                    };
+                    let center_y = match receiver.recv() {
+                        Ok(y) => y,
+                        Err(e) => {
+                            println!("Failed getting joystick center y value: {}", e);
+                            return;
+                        }
+                    };
+                    let range = match receiver.recv() {
+                        Ok(r) => r,
+                        Err(e) => {
+                            println!("Failed getting joystick range value: {}", e);
+                            return;
+                        }
+                    };
+                    println!("Setting bounds to {}, {}, {}", center_x, center_y, range);
+                    data.set_bounds(&Bounds {
+                        center: Point::new(center_x, center_y),
+                        range: range,
+                    });
+                },
+            ),
+            1.0,
+        )
+        .with_flex_child(
+            Button::new("Save Calibration").on_click(
+                move |_event, data: &mut JoystickState, _env| {
+                    match cmd_sender2.send(Command::SaveCalibration) {
+                        Ok(()) => println!("Saving calibration..."),
+                        Err(e) => {
+                            println!("Failed issuing 'save calibration' command: {}", e);
+                            return;
+                        }
+                    }
+                    match data_sender.send(data.custom_bounds.center.x) {
+                        Ok(()) => println!("Sent center x coordinate."),
+                        Err(e) => {
+                            println!("Failed to send center x coordinate: {}", e);
+                            return;
+                        }
+                    }
+                    match data_sender.send(data.custom_bounds.center.y) {
+                        Ok(()) => println!("Sent center y coordinate."),
+                        Err(e) => {
+                            println!("Failed to send center y coordinate: {}", e);
+                            return;
+                        }
+                    }
+                    match data_sender.send(data.custom_bounds.range) {
+                        Ok(()) => println!("Sent range value."),
+                        Err(e) => {
+                            println!("Failed to send range value: {}", e);
+                            return;
+                        }
+                    }
+
+                    if let Err(e) = receiver2.recv() {
+                        println!("Failed to save calibration: {}", e);
+                    };
+                },
+            ),
+            1.0,
+        )
+        .with_flex_child(
+            Button::new("Store Profiles").on_click(move |_event, _data, _env| {
+                match cmd_sender3.send(Command::StoreProfiles) {
+                    Ok(()) => println!("Storing profiles..."),
+                    Err(e) => {
+                        println!("Failed issuing 'store profiles' command: {}", e);
+                        return;
+                    }
                 }
+                if let Err(e) = receiver3.recv() {
+                    println!("Failed to store profiles: {}", e);
+                };
             }),
             1.0,
         )
-        .with_flex_child(
-            Button::new("Store Profiles").on_click(|_event, _data, _env| match store_profiles() {
-                Ok(()) => println!("All profiles stored successfully!"),
-                Err(e) => println!("Storing profiles failed: {}", e),
-            }),
-            1.0,
-        )
-        .with_child(JoystickDisplay::new())
+}
+
+fn drive(
+    sender: Sender<f64>,
+    data_receiver: Receiver<f64>,
+    command_receiver: Receiver<Command>,
+    event_sink: ExtEventSink,
+) -> Result<()> {
+    let mut hs = connect()?;
+
+    hs.write_all(&[Command::FetchStoredBounds as u8])?;
+    wait_for_ack(&mut hs)?;
+    fetch_stored_bounds(&mut hs, &event_sink)?;
+
+    loop {
+        let cmd = match command_receiver.try_recv() {
+            Ok(x) => x,
+            Err(_) => Command::FetchJoystickCoords,
+        };
+
+        hs.write_all(&[cmd as u8])?;
+        wait_for_ack(&mut hs)?;
+        match cmd {
+            Command::FetchStoredBounds => fetch_stored_bounds(&mut hs, &event_sink)?,
+            Command::FetchJoystickCoords => fetch_joystick_coords(&mut hs, &event_sink)?,
+            Command::CalibrateJoystick => calibrate_joystick(&mut hs, &sender)?,
+            Command::SaveCalibration => save_calibration(&mut hs, &sender, &data_receiver)?,
+            Command::StoreProfiles => store_profiles(&mut hs, &sender)?,
+        };
+    }
 }
 
 pub fn main() -> Result<(), PlatformError> {
-    AppLauncher::with_window(
-        WindowDesc::new(build_ui())
-            .title("HS Configurator")
-            .window_size((600.0, 600.0)),
-    )
-    .launch(JoystickCoords { x: 5, y: 5 })?;
+    let (cmd_sender, cmd_receiver) = unbounded();
+    let (child_data_sender, parent_data_receiver) = unbounded();
+    let (parent_data_sender, child_data_receiver) = unbounded();
+
+    let launcher = AppLauncher::with_window(
+        WindowDesc::new(build_ui(
+            cmd_sender,
+            parent_data_sender,
+            parent_data_receiver,
+        ))
+        .title("HS Configurator")
+        .window_size((600.0, 600.0))
+        .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
+    );
+
+    let event_sink = launcher.get_external_handle();
+    thread::spawn(move || -> Result<()> {
+        drive(
+            child_data_sender,
+            child_data_receiver,
+            cmd_receiver,
+            event_sink,
+        )
+    });
+
+    launcher.launch(JoystickState::new())?;
+
     Ok(())
 }

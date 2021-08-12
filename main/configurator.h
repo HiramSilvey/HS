@@ -9,8 +9,11 @@ class Configurator {
 public:
   static void Configure();
 private:
+  static void FetchStoredBounds();
+  static void FetchJoystickCoords(Tlv493d& sensor);
+  static void CalibrateJoystick(Tlv493d& sensor);
+  static void SaveCalibration();
   static void StoreProfiles();
-  static void CalibrateJoystick();
 };
 
 #endif  // CONFIGURATOR_H_
