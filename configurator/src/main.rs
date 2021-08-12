@@ -22,9 +22,11 @@ const MAX_EEPROM_BYTES: usize = 1064;
 const JOYSTICK_CURSOR_RADIUS: f64 = 3.0;
 const JOYSTICK_BOX_LENGTH: f64 = 400.;
 const SET_CURSOR: Selector<Point> = Selector::new("hs.set-cursor");
+const SET_DEFAULT_BOUNDS: Selector<Bounds> = Selector::new("hs.set-default-bounds");
 
 #[derive(Clone, Copy)]
 enum Command {
+    FetchStoredBounds,
     FetchJoystickCoords,
     CalibrateJoystick,
     SaveCalibration,
@@ -45,6 +47,13 @@ impl Bounds {
         }
     }
 
+    pub fn from_parts(center_x: f64, center_y: f64, range: f64) -> Bounds {
+        Bounds {
+            center: Point::new(center_x, center_y),
+            range: range,
+        }
+    }
+
     fn get_x_min(&self) -> f64 {
         self.center.x - self.range
     }
@@ -54,11 +63,11 @@ impl Bounds {
     }
 
     fn get_y_min(&self) -> f64 {
-        self.center.y - self.range
+        self.center.y + self.range
     }
 
     fn get_y_max(&self) -> f64 {
-        self.center.y + self.range
+        self.center.y - self.range
     }
 }
 
@@ -90,23 +99,25 @@ impl JoystickState {
         }
     }
 
-    fn set_cursor(&mut self, x: f64, y: f64) {
-        self.cursor.x = x;
-        self.cursor.y = y;
+    fn set_cursor(&mut self, point: &Point) {
+        self.cursor = *point;
     }
 
-    fn set_bounds(&mut self, x: f64, y: f64, range: f64) {
-        self.default_bounds.center.x = x;
-        self.default_bounds.center.y = y;
-        self.default_bounds.range = range;
-        self.custom_bounds = self.default_bounds;
-        self.tick = range / 1000.;
+    fn set_bounds(&mut self, bounds: &Bounds) {
+        self.default_bounds = *bounds;
+        self.custom_bounds = *bounds;
+        self.tick = bounds.range / 1000.0;
+
+        println!(
+            "Set bounds to {}, {}, {}",
+            self.default_bounds.center.x, self.default_bounds.center.y, self.default_bounds.range
+        );
     }
 
     fn shift_bounds(&mut self, direction: Direction) {
         match direction {
-            Direction::Up => self.custom_bounds.center.y -= self.tick,
-            Direction::Down => self.custom_bounds.center.y += self.tick,
+            Direction::Up => self.custom_bounds.center.y += self.tick,
+            Direction::Down => self.custom_bounds.center.y -= self.tick,
             Direction::Left => self.custom_bounds.center.x -= self.tick,
             Direction::Right => self.custom_bounds.center.x += self.tick,
             Direction::In => self.custom_bounds.range -= self.tick,
@@ -156,7 +167,11 @@ impl Widget<JoystickState> for JoystickState {
         match event {
             Event::Command(cmd) if cmd.is(SET_CURSOR) => {
                 let point = cmd.get_unchecked(SET_CURSOR).clone();
-                data.set_cursor(point.x, point.y);
+                data.set_cursor(&point);
+            }
+            Event::Command(cmd) if cmd.is(SET_DEFAULT_BOUNDS) => {
+                let bounds = cmd.get_unchecked(SET_DEFAULT_BOUNDS).clone();
+                data.set_bounds(&bounds);
             }
             _ => (),
         }
@@ -350,7 +365,6 @@ fn connect() -> Result<Box<dyn SerialPort>> {
 }
 
 fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> {
-    println!("Waiting for data.");
     let now = Instant::now();
     let timeout = Duration::new(70, 0);
     let mut status = hs.read_exact(buf);
@@ -365,12 +379,10 @@ fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> 
             status.unwrap_err()
         ));
     }
-    println!("Data received.");
     Ok(())
 }
 
 fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
-    println!("Waiting for ACK data.");
     let mut buf = vec![0u8; 1];
     wait_for_data(hs, &mut buf)?;
     if buf[0] != 0 {
@@ -400,6 +412,27 @@ fn float_to_bytes(data: f64) -> Vec<u8> {
         (i32_data >> 8 & 0xFF) as u8,
         (i32_data & 0xFF) as u8,
     ]
+}
+
+fn fetch_stored_bounds(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
+    let mut center_x = vec![0u8; 4];
+    let mut center_y = vec![0u8; 4];
+    let mut range = vec![0u8; 4];
+    wait_for_data(hs, &mut center_x)?;
+    wait_for_data(hs, &mut center_y)?;
+    wait_for_data(hs, &mut range)?;
+
+    event_sink.submit_command(
+        SET_DEFAULT_BOUNDS,
+        Bounds::from_parts(
+            bytes_to_float(&center_x)?,
+            bytes_to_float(&center_y)?,
+            bytes_to_float(&range)?,
+        ),
+        Target::Auto,
+    )?;
+
+    Ok(())
 }
 
 fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
@@ -537,7 +570,11 @@ fn build_ui(
                             return;
                         }
                     };
-                    data.set_bounds(center_x, center_y, range);
+                    println!("Setting bounds to {}, {}, {}", center_x, center_y, range);
+                    data.set_bounds(&Bounds {
+                        center: Point::new(center_x, center_y),
+                        range: range,
+                    });
                 },
             ),
             1.0,
@@ -606,6 +643,10 @@ fn drive(
 ) -> Result<()> {
     let mut hs = connect()?;
 
+    hs.write_all(&[Command::FetchStoredBounds as u8])?;
+    wait_for_ack(&mut hs)?;
+    fetch_stored_bounds(&mut hs, &event_sink)?;
+
     loop {
         let cmd = match command_receiver.try_recv() {
             Ok(x) => x,
@@ -615,6 +656,7 @@ fn drive(
         hs.write_all(&[cmd as u8])?;
         wait_for_ack(&mut hs)?;
         match cmd {
+            Command::FetchStoredBounds => fetch_stored_bounds(&mut hs, &event_sink)?,
             Command::FetchJoystickCoords => fetch_joystick_coords(&mut hs, &event_sink)?,
             Command::CalibrateJoystick => calibrate_joystick(&mut hs, &sender)?,
             Command::SaveCalibration => save_calibration(&mut hs, &sender, &data_receiver)?,
@@ -632,7 +674,7 @@ pub fn main() -> Result<(), PlatformError> {
         WindowDesc::new(build_ui(
             cmd_sender,
             parent_data_sender,
-            child_data_receiver,
+            parent_data_receiver,
         ))
         .title("HS Configurator")
         .window_size((600.0, 600.0))
@@ -643,7 +685,7 @@ pub fn main() -> Result<(), PlatformError> {
     thread::spawn(move || -> Result<()> {
         drive(
             child_data_sender,
-            parent_data_receiver,
+            child_data_receiver,
             cmd_receiver,
             event_sink,
         )

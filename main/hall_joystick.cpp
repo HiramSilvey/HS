@@ -4,20 +4,17 @@
 
 #include <Tlv493d.h>
 #include <EEPROM.h>
+#include "util.h"
 
 HallJoystick::HallJoystick(int min, int max, int threshold)
-  : x_in_({.min = GetIntFromEEPROM(0), .max = GetIntFromEEPROM(4)}),
-    y_in_({.min = GetIntFromEEPROM(8), .max = GetIntFromEEPROM(12)}),
-    out_({.min = min, .max = max}),
+  : out_({.min = min, .max = max}),
     out_neutral_((max - min + 1) / 2 + min),
-    threshold_({threshold * -1, threshold}) {}
-
-int HallJoystick::GetIntFromEEPROM(int address) {
-  byte one = EEPROM.read(address);
-  byte two = EEPROM.read(address+1);
-  byte three = EEPROM.read(address+2);
-  byte four = EEPROM.read(address+3);
-  return one << 24 | two << 16 | three << 8 | four;
+    threshold_({threshold * -1, threshold}) {
+  int neutral_x = Util::GetIntFromEEPROM(0);
+  int neutral_y = Util::GetIntFromEEPROM(4);
+  int range = Util::GetIntFromEEPROM(8);
+  x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
+  y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
 }
 
 void HallJoystick::Init() {

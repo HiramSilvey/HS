@@ -7,15 +7,13 @@
 
 class Configurator {
 public:
-  Configurator();
-  void Configure();
+  static void Configure();
 private:
-  void FetchJoystickCoords();
-  void CalibrateJoystick();
-  void SaveCalibration();
-  void StoreProfiles();
-
-  Tlv493d sensor_;
+  static void FetchStoredBounds();
+  static void FetchJoystickCoords(Tlv493d& sensor);
+  static void CalibrateJoystick(Tlv493d& sensor);
+  static void SaveCalibration();
+  static void StoreProfiles();
 };
 
 #endif  // CONFIGURATOR_H_

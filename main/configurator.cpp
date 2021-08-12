@@ -5,6 +5,7 @@
 #include "Arduino.h"
 #include <EEPROM.h>
 #include <Tlv493d.h>
+#include "util.h"
 
 void WriteToSerial(int val) {
   byte bytes[4] = {val >> 24,
@@ -26,24 +27,27 @@ void SaveToEEPROM(int val, int address) {
   EEPROM.update(address+3, four);
 }
 
-Configurator::Configurator() {
-  sensor_ = Tlv493d();
-  sensor_.begin();
-  sensor_.setAccessMode(sensor_.LOWPOWERMODE);
-  sensor_.disableTemp();
+void Configurator::FetchStoredBounds() {
+  int center_x = Util::GetIntFromEEPROM(0);
+  int center_y = Util::GetIntFromEEPROM(4);
+  int range = Util::GetIntFromEEPROM(8);
+
+  WriteToSerial(center_x);
+  WriteToSerial(center_y);
+  WriteToSerial(range);
 }
 
-void Configurator::FetchJoystickCoords() {
-  sensor_.updateData();
-  float z = sensor_.getZ();
-  int x = sensor_.getX() / z * 1000000;
-  int y = sensor_.getY() / z * 1000000;
+void Configurator::FetchJoystickCoords(Tlv493d& sensor) {
+  sensor.updateData();
+  float z = sensor.getZ();
+  int x = sensor.getX() / z * 1000000;
+  int y = sensor.getY() / z * 1000000;
 
   WriteToSerial(x);
   WriteToSerial(y);
 }
 
-void Configurator::CalibrateJoystick() {
+void Configurator::CalibrateJoystick(Tlv493d& sensor) {
   float min_x = 0;
   float max_x = 0;
   float min_y = 0;
@@ -51,10 +55,10 @@ void Configurator::CalibrateJoystick() {
 
   uint64_t end_time = millis() + 15000;  // 15 seconds from now.
   while (millis() < end_time) {
-    sensor_.updateData();
-    float z = sensor_.getZ();
-    float x = sensor_.getX() / z;
-    float y = sensor_.getY() / z;
+    sensor.updateData();
+    float z = sensor.getZ();
+    float x = sensor.getX() / z;
+    float y = sensor.getY() / z;
 
     if (x < min_x) {
       min_x = x;
@@ -95,7 +99,7 @@ void Configurator::SaveCalibration() {
 void Configurator::StoreProfiles() {
   while (Serial.available() < 2) {}
   int num_bytes = Serial.read() << 8 | Serial.read();
-  int base_address = 16;  // 0-15 are reserved for joystick calibration values.
+  int base_address = 12;  // 0-11 are reserved for joystick calibration values.
   int curr_address = base_address;
   while (curr_address < base_address + num_bytes) {
     if (Serial.available()) {
@@ -108,25 +112,33 @@ void Configurator::StoreProfiles() {
 }
 
 void Configurator::Configure() {
+  Tlv493d sensor = Tlv493d();
+  sensor.begin();
+  sensor.setAccessMode(sensor.LOWPOWERMODE);
+  sensor.disableTemp();
+
   while(true) {
     if (Serial.available() > 0) {
       byte data = Serial.read();
-      if (data > 3) {
+      if (data > 4) {
         Serial.write(1);  // Error.
         continue;
       }
       Serial.write(0);  // OK.
       switch(data) {
       case 0:
-        FetchJoystickCoords();
+        FetchStoredBounds();
         break;
       case 1:
-        CalibrateJoystick();
+        FetchJoystickCoords(sensor);
         break;
       case 2:
-        SaveCalibration();
+        CalibrateJoystick(sensor);
         break;
       case 3:
+        SaveCalibration();
+        break;
+      case 4:
         StoreProfiles();
         break;
       }

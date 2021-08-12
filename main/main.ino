@@ -15,8 +15,7 @@ void setup() {
   delay(100);
 
   if (digitalRead(kRightIndexExtra) == LOW) {
-    Configurator configurator = Configurator::Configurator();
-    configurator.Configure();
+    Configurator::Configure();
   }
 
   std::vector<std::unique_ptr<Controller>> controllers;
