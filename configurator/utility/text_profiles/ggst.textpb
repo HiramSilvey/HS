@@ -10,7 +10,7 @@ layout: {
     middle_middle: { digital: TRIANGLE }        # Slash
     ring_middle: { digital: CIRCLE }            # Heavy Slash
     pinky_middle: { digital: R1 }               # Dust
-    thumb_middle: { digital: L3 }               # Dash
+    index_top: { digital: L3 }                  # Dash
     middle_top: { digital: L1 }                 # Roman Cancel
     pinky_top: { digital: L2 }                  # Taunt
     left_index_extra: { digital: SHARE }        # Start 1
