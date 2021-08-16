@@ -86,6 +86,7 @@ struct JoystickState {
     cursor: Point,
     default_bounds: Bounds,
     custom_bounds: Bounds,
+    digital_threshold: f64,
     tick: f64,
 }
 
@@ -95,6 +96,7 @@ impl JoystickState {
             cursor: Point::new(0.0, 0.0),
             default_bounds: Bounds::new(),
             custom_bounds: Bounds::new(),
+            digital_threshold: 0.0,
             tick: 0.0,
         }
     }
@@ -126,8 +128,8 @@ impl JoystickState {
     }
 }
 
-fn symbol_button(direction: Direction) -> impl Widget<JoystickState> {
-    let painter = Painter::new(|ctx, _, env| {
+fn get_button_painter() -> Painter<JoystickState> {
+    Painter::new(|ctx, _, env| {
         let bounds = ctx.size().to_rect();
 
         ctx.fill(bounds, &env.get(theme::PRIMARY_DARK));
@@ -139,8 +141,10 @@ fn symbol_button(direction: Direction) -> impl Widget<JoystickState> {
         if ctx.is_active() {
             ctx.fill(bounds, &env.get(theme::PRIMARY_LIGHT));
         }
-    });
+    })
+}
 
+fn edit_bounds_button(direction: Direction) -> impl Widget<JoystickState> {
     let symbol = match direction {
         Direction::Up => 'ᐱ',
         Direction::Down => 'ᐯ',
@@ -151,11 +155,26 @@ fn symbol_button(direction: Direction) -> impl Widget<JoystickState> {
     };
 
     Label::new(format!("{}", symbol))
-        .with_text_size(24.0)
+        .with_text_size(14.0)
         .center()
-        .background(painter)
+        .background(get_button_painter())
         .expand()
         .on_click(move |_ctx, data: &mut JoystickState, _env| data.shift_bounds(direction))
+}
+
+fn edit_threshold_button(direction: Direction) -> impl Widget<JoystickState> {
+    let (symbol, val) = match direction {
+        Direction::In => ("D-", -1.0),
+        Direction::Out => ("D+", 1.0),
+        _ => ("", 0.0),
+    };
+
+    Label::new(format!("{}", symbol))
+        .with_text_size(14.0)
+        .center()
+        .background(get_button_painter())
+        .expand()
+        .on_click(move |_ctx, data: &mut JoystickState, _env| data.digital_threshold += val)
 }
 
 fn map(x: f64, in_min: f64, in_max: f64, out_min: f64, out_max: f64) -> f64 {
@@ -231,7 +250,7 @@ impl Widget<JoystickState> for JoystickState {
         );
         ctx.stroke(default_bounds, &env.get(theme::BACKGROUND_LIGHT), 1.0);
 
-        // Mutable bounds & guidelines.
+        // Mutable bounds.
         let mutable_x_min = map(
             data.custom_bounds.get_x_min(),
             data.default_bounds.get_x_min(),
@@ -276,6 +295,7 @@ impl Widget<JoystickState> for JoystickState {
         let mutable_bounds = Rect::from_points(mutable_top_left, mutable_bottom_right);
         ctx.stroke(mutable_bounds, &env.get(theme::PRIMARY_LIGHT), 1.0);
 
+        // Mutable bounds' guidelines.
         let stroke_style = StrokeStyle::new().dash_pattern(&[1.0, 4.0]);
         ctx.stroke_styled(
             Line::new(mutable_center, mutable_center_left),
@@ -325,6 +345,23 @@ impl Widget<JoystickState> for JoystickState {
             1.0,
             &stroke_style,
         );
+
+        // Mutable digital threshold.
+        let threshold_x_range =
+            (mutable_x_max - mutable_x_center) * (data.digital_threshold / 100.0);
+        let threshold_y_range =
+            (mutable_y_max - mutable_y_center) * (data.digital_threshold / 100.0);
+        let threshold = Rect::from_points(
+            Point::new(
+                mutable_x_center - threshold_x_range,
+                mutable_y_center - threshold_y_range,
+            ),
+            Point::new(
+                mutable_x_center + threshold_x_range,
+                mutable_y_center + threshold_y_range,
+            ),
+        );
+        ctx.stroke(threshold, &env.get(theme::PRIMARY_LIGHT), 1.0);
 
         // Cursor.
         let cursor_x = map(
@@ -518,25 +555,35 @@ fn build_ui(
     let (cmd_sender2, receiver2) = (cmd_sender.clone(), receiver.clone());
     let (cmd_sender3, receiver3) = (cmd_sender.clone(), receiver.clone());
 
+    let threshold_display = Label::new(|data: &f64, _env: &_| format!("{}%", data))
+        .with_text_size(14.0)
+        .lens(JoystickState::digital_threshold);
+
     Flex::column()
         .with_child(JoystickState::new())
         .with_flex_child(
             Flex::row()
-                .with_flex_child(symbol_button(Direction::Left), 1.0)
+                .with_flex_child(edit_bounds_button(Direction::Left), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(
                     Flex::column()
-                        .with_flex_child(symbol_button(Direction::Up), 1.0)
+                        .with_flex_child(edit_bounds_button(Direction::Up), 1.0)
                         .with_spacer(1.0)
-                        .with_flex_child(symbol_button(Direction::Down), 1.0),
+                        .with_flex_child(edit_bounds_button(Direction::Down), 1.0),
                     1.0,
                 )
                 .with_spacer(1.0)
-                .with_flex_child(symbol_button(Direction::Right), 1.0)
+                .with_flex_child(edit_bounds_button(Direction::Right), 1.0)
                 .with_spacer(1.0)
-                .with_flex_child(symbol_button(Direction::In), 1.0)
+                .with_flex_child(edit_bounds_button(Direction::In), 1.0)
                 .with_spacer(1.0)
-                .with_flex_child(symbol_button(Direction::Out), 1.0),
+                .with_flex_child(edit_bounds_button(Direction::Out), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(threshold_display, 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(edit_threshold_button(Direction::In), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(edit_threshold_button(Direction::Out), 1.0),
             1.0,
         )
         .with_flex_child(
@@ -677,7 +724,7 @@ pub fn main() -> Result<(), PlatformError> {
             parent_data_receiver,
         ))
         .title("HS Configurator")
-        .window_size((600.0, 600.0))
+        .window_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH + 150.0))
         .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
     );
 
