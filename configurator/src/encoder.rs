@@ -11,6 +11,7 @@ use std::cmp;
 
 const BUTTON_ID_BITS: i32 = 5;
 const BUTTON_VALUE_BITS: i32 = 10;
+const MAX_DIGITAL_ACTION_VALUE: i32 = DigitalAction::Mod as i32;
 
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 struct PlatformMask {
@@ -76,8 +77,7 @@ fn get_button(action: &Action) -> Option<Button> {
         Analog(x) => {
             if x.id != 0 {
                 encoded.num_bits = BUTTON_ID_BITS + BUTTON_VALUE_BITS;
-                encoded.data =
-                    ((x.id + DigitalAction::SliderRightMax as i32) << BUTTON_VALUE_BITS) | x.value;
+                encoded.data = ((x.id + MAX_DIGITAL_ACTION_VALUE) << BUTTON_VALUE_BITS) | x.value;
             }
         }
     }
@@ -152,16 +152,22 @@ fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
 }
 
 fn encode_profile(profile: &Profile) -> Result<Vec<u8>> {
-    let mut header = encode_header(&profile.platform_config)?;
-    let layout = match profile.layout.as_ref() {
+    let base_layout = match profile.base_layout.as_ref() {
         Some(x) => x,
-        None => return Err(anyhow!("Unable to get layout.")),
+        None => return Err(anyhow!("Unable to get base layout.")),
     };
-    let mut body = encode_body(layout)?;
+    let mod_layout = match profile.mod_layout.as_ref() {
+        Some(x) => x,
+        None => return Err(anyhow!("Unable to get base layout.")),
+    };
+    let mut header = encode_header(&profile.platform_config)?;
+    let mut base_body = encode_body(base_layout)?;
+    let mut mod_body = encode_body(mod_layout)?;
     let mut encoded: Vec<u8> = Vec::new();
     encoded.append(&mut header);
-    encoded.push(body.len() as u8);
-    encoded.append(&mut body);
+    encoded.push(base_body.len() as u8 + mod_body.len() as u8);
+    encoded.append(&mut base_body);
+    encoded.append(&mut mod_body);
     Ok(encoded)
 }
 

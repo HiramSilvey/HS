@@ -69,11 +69,16 @@ impl fmt::Display for Profile {
             writeln!(f, "\tplatform: {}", platform_config.platform)?;
             writeln!(f, "\tposition: {}", platform_config.position)?;
         }
-        let layout = match &self.layout {
+        let base_layout = match &self.base_layout {
             Some(x) => x,
             None => return Err(fmt::Error),
         };
-        write!(f, "{}", layout)?;
+        let mod_layout = match &self.mod_layout {
+            Some(x) => x,
+            None => return Err(fmt::Error),
+        };
+        write!(f, "{}", base_layout)?;
+        write!(f, "{}", mod_layout)?;
         writeln!(f, "}}")?;
         Ok(())
     }
