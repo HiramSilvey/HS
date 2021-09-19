@@ -36,7 +36,7 @@ message Profile {
     // position.
     int32 joystick_threshold = 21;
 
-    // Next available ID: 25
+    // Next available ID: 27
     enum DigitalAction {
       NO_OP = 0;
       X = 1;
