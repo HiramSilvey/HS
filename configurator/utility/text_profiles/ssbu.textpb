@@ -3,11 +3,11 @@ platform_config: {
     platform: SWITCH
     position: 0  # Default
 }
-layout: {
+base_layout: {
     index_top: { digital: R_STICK_LEFT }     # left tilt
     middle_top: { digital: R_STICK_UP }      # up tilt
     ring_top: { digital: R_STICK_RIGHT }     # right tilt
-    pinky_top: { digital: D_PAD_UP }         # up taunt
+    pinky_top: { digital: MOD }              # mod layout
     index_middle: { digital: R2 }            # shield, dodge, tech
     middle_middle: { digital: SQUARE }       # jump
     ring_middle: { digital: X }              # special
@@ -15,11 +15,14 @@ layout: {
     thumb_bottom: { digital: L1 }            # grab
     thumb_middle: { digital: R_STICK_DOWN }  # down tilt
     thumb_top: { digital: CIRCLE }           # normal
-    middle_bottom: { digital: D_PAD_LEFT }   # left taunt
-    ring_bottom: { digital: D_PAD_DOWN }     # down taunt
-    pinky_bottom: { digital: D_PAD_RIGHT }   # right taunt
     left_ring_extra: { digital: SHARE }      # minus
     left_middle_extra: { digital: CAPTURE }  # capture
     right_middle_extra: { digital: HOME }    # home
     right_ring_extra: { digital: OPTIONS }   # plus
+}
+mod_layout {
+    index_top: { digital: D_PAD_LEFT }       # left taunt
+    middle_top: { digital: D_PAD_UP }        # up taunt
+    ring_top: { digital: D_PAD_RIGHT }       # right taunt
+    thumb_middle: { digital: D_PAD_DOWN }    # down taunt
 }

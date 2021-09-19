@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package hs.profile;
 
-// Next available ID: 4
+// Next available ID: 5
 message Profile {
   string name = 1;
 
@@ -36,7 +36,7 @@ message Profile {
     // position.
     int32 joystick_threshold = 21;
 
-    // Next available ID: 27
+    // Next available ID: 28
     enum DigitalAction {
       NO_OP = 0;
       X = 1;
@@ -65,13 +65,14 @@ message Profile {
       SLIDER_LEFT_MAX = 24;
       SLIDER_RIGHT_MIN = 25;
       SLIDER_RIGHT_MAX = 26;
+      MOD = 27;
     }
 
     // Next available ID: 3
     message AnalogAction {
       // Next available ID: 5
       enum ID {
-        NO_OP = 0; 
+        DO_NOT_USE = 0;
         R_STICK_Y = 1;
         R_STICK_X = 2;
         SLIDER_LEFT = 3;
@@ -112,5 +113,6 @@ message Profile {
     Action right_ring_extra = 20;
   }
 
-  Layout layout = 3;
+  Layout base_layout = 3;
+  Layout mod_layout = 4;
 }

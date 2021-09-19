@@ -3,7 +3,7 @@ platform_config: {
     platform: PC
     position: 4  # Right hand ring finger extra button
 }
-layout: {
+base_layout: {
     joystick_threshold: 45                      # Digital joystick
     thumb_top: { digital: SQUARE }              # Punch
     index_middle: { digital: X }                # Kick
