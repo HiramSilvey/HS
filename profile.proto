@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package hs.profile;
 
-// Next available ID: 5
+// Next available ID: 4
 message Profile {
   string name = 1;
 
@@ -22,20 +22,7 @@ message Profile {
   repeated PlatformConfig platform_config = 2;
 
   // Next available ID: 22
-  message Layout {
-    // Joystick digital activation threshold.
-    // If set, the joystick will behave as a DIGITAL joystick rather than an
-    // ANALOG one. This threshold represents the percentage [0-100] of tilt
-    // required for the joystick to output a fully pressed value in a given
-    // cardinal direction. For example, if threshold is set to 100, the joystick
-    // must be fully tilted up, down, left, or right to output a fully pressed
-    // value in that direction. If it's set to 50, the joystick must be tilted
-    // halfway (or more) between the neutral position and fully pressed position
-    // up, down, left, or right to output a fully pressed value in that
-    // direction. Any tilt below the threshold will output a neutral joystick
-    // position.
-    int32 joystick_threshold = 21;
-
+  message Layer {
     // Next available ID: 28
     enum DigitalAction {
       NO_OP = 0;
@@ -113,6 +100,29 @@ message Profile {
     Action right_ring_extra = 20;
   }
 
-  Layout base_layout = 3;
-  Layout mod_layout = 4;
+  // Next available ID: 4
+  message Layout {
+    // Joystick digital activation threshold.
+    // If set, the joystick will behave as a DIGITAL joystick rather than an
+    // ANALOG one. This threshold represents the percentage [0-100] of tilt
+    // required for the joystick to output a fully pressed value in a given
+    // cardinal direction. For example, if threshold is set to 100, the joystick
+    // must be fully tilted up, down, left, or right to output a fully pressed
+    // value in that direction. If it's set to 50, the joystick must be tilted
+    // halfway (or more) between the neutral position and fully pressed position
+    // up, down, left, or right to output a fully pressed value in that
+    // direction. Any tilt below the threshold will output a neutral joystick
+    // position.
+    int32 joystick_threshold = 1;
+
+    // Base layout layer. Dictates the functionality of the buttons when the MOD
+    // DigitalAction button is not being pressed.
+    Layer base = 2;
+
+    // Mod layout layer. Overwrites any specified buttons in the base layer when
+    // the MOD DigitalAction button is being pressed.
+    Layer mod = 3;
+  }
+
+  Layout layout = 3;
 }
