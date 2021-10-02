@@ -52,11 +52,11 @@ impl fmt::Display for Layer {
             ("right ring extra", self.right_ring_extra.as_ref()),
         ];
         for action in actions.iter() {
-            let unwrapped = match action.1 {
-                Some(x) => x,
-                None => return Err(fmt::Error),
-            };
-            writeln!(f, "\t{}: {}", action.0, unwrapped)?;
+            if let Some(unwrapped) = action.1 {
+                writeln!(f, "\t\t{}: {}", action.0, unwrapped)?;
+            } else {
+                writeln!(f, "\t\t{}: N/A", action.0)?;
+            }
         }
         Ok(())
     }
@@ -68,9 +68,9 @@ impl fmt::Display for Layout {
             Some(x) => x,
             None => return Err(fmt::Error),
         };
-        writeln!(f, "\tbase: {{{}/n/t}}", base_layer)?;
+        writeln!(f, "\tbase: {{\n{}\n\t}}", base_layer)?;
         if let Some(mod_layer) = &self.r#mod {
-            writeln!(f, "\tmod: {{{}/n/t}}", mod_layer)?;
+            writeln!(f, "\tmod: {{\n{}\n\t}}", mod_layer)?;
         }
         Ok(())
     }

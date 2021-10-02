@@ -526,6 +526,12 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
         Ok(x) => x,
         Err(e) => return Err(anyhow!("Unable to load profiles: {}", e)),
     };
+
+    // Print as useful debug information.
+    for profile in profiles {
+        println!("{}", profile);
+    }
+
     let encoded = match encoder::encode(&profiles) {
         Ok(x) => x,
         Err(e) => return Err(anyhow!("Unable to encode profiles: {}", e)),
