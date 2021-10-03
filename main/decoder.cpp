@@ -9,9 +9,10 @@
 using Platform = hs_profile_Profile_Platform;
 using PlatformConfig = hs_profile_Profile_PlatformConfig;
 using Layout = hs_profile_Profile_Layout;
-using Action = hs_profile_Profile_Layout_Action;
-using AnalogAction_ID = hs_profile_Profile_Layout_AnalogAction_ID;
-using DigitalAction = hs_profile_Profile_Layout_DigitalAction;
+using Layer = hs_profile_Profile_Layer;
+using Action = hs_profile_Profile_Layer_Action;
+using AnalogAction_ID = hs_profile_Profile_Layer_AnalogAction_ID;
+using DigitalAction = hs_profile_Profile_Layer_DigitalAction;
 
 const int kMinAddr = 12;
 const int kMasks[10] = {
@@ -98,25 +99,30 @@ namespace {
     int unread = 8;
     for (Action* action : actions) {
       int button_id = FetchData(kLenActionID, addr, curr_byte, unread);
-      if (button_id > _hs_profile_Profile_Layout_Layer_DigitalAction_MAX) {
+      if (button_id > _hs_profile_Profile_Layer_DigitalAction_MAX) {
         action->action_type.analog.id =
-          static_cast<AnalogAction_ID>(button_id - _hs_profile_Profile_Layout_Layer_DigitalAction_MAX);
+          static_cast<AnalogAction_ID>(button_id - _hs_profile_Profile_Layer_DigitalAction_MAX);
         int button_value = FetchData(kLenAnalogActionValue, addr, curr_byte, unread);
         action->action_type.analog.value = button_value;
-        action->which_action_type = hs_profile_Profile_Layout_Layer_Action_analog_tag;
+        action->which_action_type = hs_profile_Profile_Layer_Action_analog_tag;
       } else {
         action->action_type.digital = static_cast<DigitalAction>(button_id);
-        action->which_action_type = hs_profile_Profile_Layout_Layer_Action_digital_tag;
+        action->which_action_type = hs_profile_Profile_Layer_Action_digital_tag;
       }
     }
     return layer;
   }
 
-  Layout DecodeBody(int addr) {
+  Layout DecodeBody(int& addr) {
+    const int max_addr = addr + EEPROM.read(addr++) + 1;
+
     Layout layout;
     layout.joystick_threshold = EEPROM.read(addr++);
     layout.base = DecodeLayer(addr);
-    layout.mod = DecodeLayer(addr);
+    if (addr < max_addr) {
+      layout.has_mod = true;
+      layout.mod = DecodeLayer(addr);
+    }
     return layout;
   }
 
@@ -144,8 +150,6 @@ Layout Decoder::Decode(Platform platform, int position) {
     // Advance to the header of the next profile.
     curr_addr += EEPROM.read(curr_addr++);
   }
-  // Advance past the body length.
-  curr_addr++;
 
   if (curr_addr >= max_addr) {
     exit(1);
