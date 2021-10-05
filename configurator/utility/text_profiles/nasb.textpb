@@ -1,0 +1,15 @@
+name: "Nickelodeon All-Star Brawl"
+platform_config: {
+    platform: PC
+    position: 1
+}
+layout: {
+    pinky_top: { digital: D_PAD_UP }         # taunt
+    index_middle: { digital: R2 }            # guard, air dash, tech
+    middle_middle: { digital: TRIANGLE }     # jump
+    ring_middle: { digital: X }              # special attack
+    pinky_middle: { digital: R1 }            # grab
+    thumb_middle: { digital: SQUARE }        # strong attack
+    thumb_top: { digital: CIRCLE }           # light attack
+    right_index_extra: { digital: OPTIONS }  # start
+}
