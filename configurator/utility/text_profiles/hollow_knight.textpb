@@ -10,9 +10,8 @@ layout: {
     middle_middle: { digital: X }            # Jump
     ring_middle: { digital: CIRCLE }         # Focus / Cast
     pinky_middle: { digital: R1 }            # Quick Cast
-    index_top: { digital: L1 }               # Quick Map
-    middle_top: { digital: SHARE }           # Inventory
-    ring_top: { digital: R_STICK_UP }        # Look Up
-    pinky_top: { digital: R_STICK_DOWN }     # Look Down
+    index_top: { digital: L2 }               # Super Dash
+    middle_top: { digital: L1 }              # Quick Map
+    ring_top: { digital: SHARE }             # Inventory
     right_index_extra: { digital: OPTIONS }  # Pause Menu
 }
