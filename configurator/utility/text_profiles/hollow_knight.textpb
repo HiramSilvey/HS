@@ -4,6 +4,7 @@ platform_config: {
     position: 0  # Default profile
 }
 layout: {
+    joystick_threshold: 45                   # Digital joystick
     thumb_middle: { digital: TRIANGLE }      # Dream Nail
     thumb_top: { digital: SQUARE }           # Attack
     index_middle: { digital: R2 }            # Dash
