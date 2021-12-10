@@ -1,7 +1,7 @@
 name: "Nickelodeon All-Star Brawl"
 platform_config: {
     platform: PC
-    position: 1
+    position: 4
 }
 layout: {
     joystick_threshold: 45                   # Digital joystick

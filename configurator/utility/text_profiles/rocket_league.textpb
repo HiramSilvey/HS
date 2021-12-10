@@ -1,7 +1,7 @@
 name: "Rocket League"
 platform_config: {
     platform: PC
-    position: 2
+    position: 0  # Default profile
 }
 layout: {
     index_middle: { digital: X }                # Jump
