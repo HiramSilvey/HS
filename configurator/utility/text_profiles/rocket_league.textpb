@@ -13,14 +13,15 @@ layout {
         pinky_middle { digital: R1 }            # Drift
         thumb_middle { digital: L2 }            # Reverse
         thumb_top { digital: R2 }               # Forward
-        ring_bottom { digital: L3 }             # Use item
+        thumb_bottom { digital: L3 }            # Use item
         middle_bottom { digital: R3 }           # Look behind
-        pinky_bottom { digital: R_STICK_DOWN }  # Look up
-        thumb_bottom { digital: MOD }           # Mod layout
+        pinky_bottom { digital: R_STICK_UP }    # Look down
+        ring_bottom { digital: R_STICK_DOWN }   # Look up
         ring_top { digital: R_STICK_LEFT }      # Look left
         pinky_top { digital: R_STICK_RIGHT }    # Look right
         left_index_extra { digital: SHARE }     # Menu
         right_index_extra { digital: OPTIONS }  # Score
+        left_ring_extra { digital: MOD }        # Mod layout
     }
     mod {
         index_top { digital: D_PAD_LEFT }       # Quick chat

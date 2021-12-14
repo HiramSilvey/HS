@@ -528,7 +528,7 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
     };
 
     // Print as useful debug information.
-    for profile in profiles {
+    for profile in &profiles {
         println!("{}", profile);
     }
 
