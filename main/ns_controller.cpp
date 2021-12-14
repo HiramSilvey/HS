@@ -42,8 +42,8 @@ NSController::NSController() {
   mod_mapping_ = {};
 }
 
-NSController::ButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
-  ButtonPinMapping mapping;
+NSController::NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
+  NSButtonPinMapping mapping;
 
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layer);
 
@@ -147,7 +147,7 @@ bool NSController::Init() {
   return true;
 }
 
-int NSController::GetDPadDirection(const ButtonPinMapping& mapping) {
+int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
   int bits = 0;
   for (const int pin : mapping.dpad_up) {
     if (digitalRead(pin) == LOW) {
@@ -176,7 +176,7 @@ int NSController::GetDPadDirection(const ButtonPinMapping& mapping) {
   return kDPadDirection[bits];
 }
 
-void NSController::UpdateButtons(const ButtonPinMapping& mapping) {
+void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
   NSGamepad.rightYAxis(joystick_->get_max()-
                        Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral()));
   NSGamepad.rightXAxis(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral()));

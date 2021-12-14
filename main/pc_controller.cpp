@@ -41,8 +41,8 @@ PCController::PCController() {
   mod_mapping_ = {};
 }
 
-PCController::ButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
-  ButtonPinMapping mapping;
+PCController::PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
+  PCButtonPinMapping mapping;
 
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layer);
 
@@ -163,7 +163,7 @@ bool PCController::Init() {
   return true;
 }
 
-int PCController::GetDPadAngle(const ButtonPinMapping& mapping) {
+int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
   int bits = 0;
   for (const int pin : mapping.hat_up) {
     if (digitalRead(pin) == LOW) {
@@ -192,7 +192,7 @@ int PCController::GetDPadAngle(const ButtonPinMapping& mapping) {
   return kDPadAngle[bits];
 }
 
-void PCController::UpdateButtons(const ButtonPinMapping& mapping) {
+void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
   Joystick.Z(Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral()));
   Joystick.Zrotate(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral()));
   Joystick.sliderLeft(Controller::ResolveSOCD(mapping.slider_left, joystick_->get_neutral()));

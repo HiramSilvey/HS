@@ -17,8 +17,7 @@ public:
   void Loop() override;
 
 private:
-  struct ButtonPinMapping {
-    std::unordered_map<int, std::vector<int>> button_id_to_pins;
+  struct PCButtonPinMapping : Controller::ButtonPinMapping {
     std::vector<Controller::AnalogButton> z_y;
     std::vector<Controller::AnalogButton> z_x;
     std::vector<Controller::AnalogButton> slider_left;
@@ -27,17 +26,16 @@ private:
     std::vector<int> hat_down;
     std::vector<int> hat_left;
     std::vector<int> hat_right;
-    std::vector<int> mod;
   };
 
-  ButtonPinMapping GetButtonPinMapping(const hs_profile_Profile_Layer& layer);
+  PCButtonPinMapping GetButtonPinMapping(const hs_profile_Profile_Layer& layer);
   void LoadProfile() override;
-  int GetDPadAngle(const ButtonPinMapping& mapping);
-  void UpdateButtons(const ButtonPinMapping& mapping);
+  int GetDPadAngle(const PCButtonPinMapping& mapping);
+  void UpdateButtons(const PCButtonPinMapping& mapping);
 
   std::unique_ptr<HallJoystick> joystick_;
-  ButtonPinMapping base_mapping_;
-  ButtonPinMapping mod_mapping_;
+  PCButtonPinMapping base_mapping_;
+  PCButtonPinMapping mod_mapping_;
 };
 
 #endif  // PC_CONTROLLER_H_
