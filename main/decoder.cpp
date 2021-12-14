@@ -9,9 +9,10 @@
 using Platform = hs_profile_Profile_Platform;
 using PlatformConfig = hs_profile_Profile_PlatformConfig;
 using Layout = hs_profile_Profile_Layout;
-using Action = hs_profile_Profile_Layout_Action;
-using AnalogAction_ID = hs_profile_Profile_Layout_AnalogAction_ID;
-using DigitalAction = hs_profile_Profile_Layout_DigitalAction;
+using Layer = hs_profile_Profile_Layer;
+using Action = hs_profile_Profile_Layer_Action;
+using AnalogAction_ID = hs_profile_Profile_Layer_AnalogAction_ID;
+using DigitalAction = hs_profile_Profile_Layer_DigitalAction;
 
 const int kMinAddr = 12;
 const int kMasks[10] = {
@@ -70,46 +71,57 @@ namespace {
     return data;
   }
 
-  Layout DecodeBody(int addr) {
-    Layout layout;
-    layout.joystick_threshold = EEPROM.read(addr++);
-
+  Layer DecodeLayer(int& addr) {
+    Layer layer;
     Action* actions[20] = {
-                           &layout.thumb_top,
-                           &layout.thumb_middle,
-                           &layout.thumb_bottom,
-                           &layout.index_top,
-                           &layout.index_middle,
-                           &layout.middle_top,
-                           &layout.middle_middle,
-                           &layout.middle_bottom,
-                           &layout.ring_top,
-                           &layout.ring_middle,
-                           &layout.ring_bottom,
-                           &layout.pinky_top,
-                           &layout.pinky_middle,
-                           &layout.pinky_bottom,
-                           &layout.left_index_extra,
-                           &layout.left_middle_extra,
-                           &layout.left_ring_extra,
-                           &layout.right_index_extra,
-                           &layout.right_middle_extra,
-                           &layout.right_ring_extra
+                           &layer.thumb_top,
+                           &layer.thumb_middle,
+                           &layer.thumb_bottom,
+                           &layer.index_top,
+                           &layer.index_middle,
+                           &layer.middle_top,
+                           &layer.middle_middle,
+                           &layer.middle_bottom,
+                           &layer.ring_top,
+                           &layer.ring_middle,
+                           &layer.ring_bottom,
+                           &layer.pinky_top,
+                           &layer.pinky_middle,
+                           &layer.pinky_bottom,
+                           &layer.left_index_extra,
+                           &layer.left_middle_extra,
+                           &layer.left_ring_extra,
+                           &layer.right_index_extra,
+                           &layer.right_middle_extra,
+                           &layer.right_ring_extra
     };
     byte curr_byte = EEPROM.read(addr++);
     int unread = 8;
     for (Action* action : actions) {
       int button_id = FetchData(kLenActionID, addr, curr_byte, unread);
-      if (button_id > _hs_profile_Profile_Layout_DigitalAction_MAX) {
+      if (button_id > _hs_profile_Profile_Layer_DigitalAction_MAX) {
         action->action_type.analog.id =
-          static_cast<AnalogAction_ID>(button_id - _hs_profile_Profile_Layout_DigitalAction_MAX);
+          static_cast<AnalogAction_ID>(button_id - _hs_profile_Profile_Layer_DigitalAction_MAX);
         int button_value = FetchData(kLenAnalogActionValue, addr, curr_byte, unread);
         action->action_type.analog.value = button_value;
-        action->which_action_type = hs_profile_Profile_Layout_Action_analog_tag;
+        action->which_action_type = hs_profile_Profile_Layer_Action_analog_tag;
       } else {
         action->action_type.digital = static_cast<DigitalAction>(button_id);
-        action->which_action_type = hs_profile_Profile_Layout_Action_digital_tag;
+        action->which_action_type = hs_profile_Profile_Layer_Action_digital_tag;
       }
+    }
+    return layer;
+  }
+
+  Layout DecodeBody(int& addr) {
+    const int max_addr = addr + EEPROM.read(addr++) + 1;
+
+    Layout layout;
+    layout.joystick_threshold = EEPROM.read(addr++);
+    layout.base = DecodeLayer(addr);
+    if (addr < max_addr) {
+      layout.has_mod = true;
+      layout.mod = DecodeLayer(addr);
     }
     return layout;
   }
@@ -138,8 +150,6 @@ Layout Decoder::Decode(Platform platform, int position) {
     // Advance to the header of the next profile.
     curr_addr += EEPROM.read(curr_addr++);
   }
-  // Advance past the body length.
-  curr_addr++;
 
   if (curr_addr >= max_addr) {
     exit(1);

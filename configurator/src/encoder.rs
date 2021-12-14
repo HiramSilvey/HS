@@ -1,16 +1,17 @@
 // Copyright 2021 Hiram Silvey
 
-use crate::profile::profile::layout::action::ActionType::{Analog, Digital};
-use crate::profile::profile::layout::Action;
-use crate::profile::profile::layout::DigitalAction;
+use crate::profile::profile::layer::action::ActionType::{Analog, Digital};
+use crate::profile::profile::layer::Action;
+use crate::profile::profile::layer::DigitalAction;
 use crate::profile::profile::Platform::Unknown;
-use crate::profile::profile::{Layout, PlatformConfig};
+use crate::profile::profile::{Layer, Layout, PlatformConfig};
 use crate::profile::Profile;
 use anyhow::{anyhow, Result};
 use std::cmp;
 
 const BUTTON_ID_BITS: i32 = 5;
 const BUTTON_VALUE_BITS: i32 = 10;
+const MAX_DIGITAL_ACTION_VALUE: i32 = DigitalAction::Mod as i32;
 
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 struct PlatformMask {
@@ -76,44 +77,37 @@ fn get_button(action: &Action) -> Option<Button> {
         Analog(x) => {
             if x.id != 0 {
                 encoded.num_bits = BUTTON_ID_BITS + BUTTON_VALUE_BITS;
-                encoded.data =
-                    ((x.id + DigitalAction::SliderRightMax as i32) << BUTTON_VALUE_BITS) | x.value;
+                encoded.data = ((x.id + MAX_DIGITAL_ACTION_VALUE) << BUTTON_VALUE_BITS) | x.value;
             }
         }
     }
     Some(encoded)
 }
 
-fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
-    if layout.joystick_threshold < 0 || layout.joystick_threshold > 100 {
-        return Err(anyhow!(
-            "Digital threshold {} outside of [0-100] range.",
-            layout.joystick_threshold
-        ));
-    }
+fn encode_layer(layer: &Layer) -> Result<Vec<u8>> {
     let actions = [
-        layout.thumb_top.as_ref(),
-        layout.thumb_middle.as_ref(),
-        layout.thumb_bottom.as_ref(),
-        layout.index_top.as_ref(),
-        layout.index_middle.as_ref(),
-        layout.middle_top.as_ref(),
-        layout.middle_middle.as_ref(),
-        layout.middle_bottom.as_ref(),
-        layout.ring_top.as_ref(),
-        layout.ring_middle.as_ref(),
-        layout.ring_bottom.as_ref(),
-        layout.pinky_top.as_ref(),
-        layout.pinky_middle.as_ref(),
-        layout.pinky_bottom.as_ref(),
-        layout.left_index_extra.as_ref(),
-        layout.left_middle_extra.as_ref(),
-        layout.left_ring_extra.as_ref(),
-        layout.right_index_extra.as_ref(),
-        layout.right_middle_extra.as_ref(),
-        layout.right_ring_extra.as_ref(),
+        layer.thumb_top.as_ref(),
+        layer.thumb_middle.as_ref(),
+        layer.thumb_bottom.as_ref(),
+        layer.index_top.as_ref(),
+        layer.index_middle.as_ref(),
+        layer.middle_top.as_ref(),
+        layer.middle_middle.as_ref(),
+        layer.middle_bottom.as_ref(),
+        layer.ring_top.as_ref(),
+        layer.ring_middle.as_ref(),
+        layer.ring_bottom.as_ref(),
+        layer.pinky_top.as_ref(),
+        layer.pinky_middle.as_ref(),
+        layer.pinky_bottom.as_ref(),
+        layer.left_index_extra.as_ref(),
+        layer.left_middle_extra.as_ref(),
+        layer.left_ring_extra.as_ref(),
+        layer.right_index_extra.as_ref(),
+        layer.right_middle_extra.as_ref(),
+        layer.right_ring_extra.as_ref(),
     ];
-    let mut encoded: Vec<u8> = vec![layout.joystick_threshold as u8];
+    let mut encoded: Vec<u8> = Vec::new();
     let mut curr_byte: u8 = 0;
     let mut available = 8;
     for action in actions.iter() {
@@ -151,12 +145,30 @@ fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
     Ok(encoded)
 }
 
+fn encode_body(layout: &Layout) -> Result<Vec<u8>> {
+    if layout.joystick_threshold < 0 || layout.joystick_threshold > 100 {
+        return Err(anyhow!(
+            "Digital threshold {} outside of [0-100] range.",
+            layout.joystick_threshold
+        ));
+    }
+    let mut encoded: Vec<u8> = vec![layout.joystick_threshold as u8];
+    match layout.base.as_ref() {
+        Some(x) => encoded.append(&mut encode_layer(x)?),
+        None => return Err(anyhow!("Unable to get base layer.")),
+    };
+    if let Some(mod_layer) = layout.r#mod.as_ref() {
+        encoded.append(&mut encode_layer(mod_layer)?);
+    }
+    Ok(encoded)
+}
+
 fn encode_profile(profile: &Profile) -> Result<Vec<u8>> {
-    let mut header = encode_header(&profile.platform_config)?;
     let layout = match profile.layout.as_ref() {
         Some(x) => x,
         None => return Err(anyhow!("Unable to get layout.")),
     };
+    let mut header = encode_header(&profile.platform_config)?;
     let mut body = encode_body(layout)?;
     let mut encoded: Vec<u8> = Vec::new();
     encoded.append(&mut header);

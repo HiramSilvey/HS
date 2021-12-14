@@ -3,6 +3,7 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include <unordered_map>
 #include <vector>
 
 #include "profile.pb.h"
@@ -20,6 +21,11 @@ protected:
   struct AnalogButton {
     int value;
     int pin;
+  };
+
+  struct ButtonPinMapping {
+    std::unordered_map<int, std::vector<int>> button_id_to_pins;
+    std::vector<int> mod;
   };
 
   // Fetch the specified profile given the platform.

@@ -5,29 +5,29 @@
 #include "Arduino.h"
 #include "profile.pb.h"
 
-using Layout = hs_profile_Profile_Layout;
+using Layer = hs_profile_Profile_Layer;
 
-std::vector<Pins::ActionPin> Pins::GetActionPins(const Layout& layout) {
+std::vector<Pins::ActionPin> Pins::GetActionPins(const Layer& layer) {
   return {
-          {layout.thumb_top, kThumbTop},
-          {layout.thumb_middle, kThumbMiddle},
-          {layout.thumb_bottom, kThumbBottom},
-          {layout.index_top, kIndexTop},
-          {layout.index_middle, kIndexMiddle},
-          {layout.middle_top, kMiddleTop},
-          {layout.middle_middle, kMiddleMiddle},
-          {layout.middle_bottom, kMiddleBottom},
-          {layout.ring_top, kRingTop},
-          {layout.ring_middle, kRingMiddle},
-          {layout.ring_bottom, kRingBottom},
-          {layout.pinky_top, kPinkyTop},
-          {layout.pinky_middle, kPinkyMiddle},
-          {layout.pinky_bottom, kPinkyBottom},
-          {layout.left_ring_extra, kLeftRingExtra},
-          {layout.left_middle_extra, kLeftMiddleExtra},
-          {layout.left_index_extra, kLeftIndexExtra},
-          {layout.right_index_extra, kRightIndexExtra},
-          {layout.right_middle_extra, kRightMiddleExtra},
-          {layout.right_ring_extra, kRightRingExtra}
+          {layer.thumb_top, kThumbTop},
+          {layer.thumb_middle, kThumbMiddle},
+          {layer.thumb_bottom, kThumbBottom},
+          {layer.index_top, kIndexTop},
+          {layer.index_middle, kIndexMiddle},
+          {layer.middle_top, kMiddleTop},
+          {layer.middle_middle, kMiddleMiddle},
+          {layer.middle_bottom, kMiddleBottom},
+          {layer.ring_top, kRingTop},
+          {layer.ring_middle, kRingMiddle},
+          {layer.ring_bottom, kRingBottom},
+          {layer.pinky_top, kPinkyTop},
+          {layer.pinky_middle, kPinkyMiddle},
+          {layer.pinky_bottom, kPinkyBottom},
+          {layer.left_ring_extra, kLeftRingExtra},
+          {layer.left_middle_extra, kLeftMiddleExtra},
+          {layer.left_index_extra, kLeftIndexExtra},
+          {layer.right_index_extra, kRightIndexExtra},
+          {layer.right_middle_extra, kRightMiddleExtra},
+          {layer.right_ring_extra, kRightRingExtra}
   };
 }

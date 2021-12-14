@@ -1,28 +1,32 @@
 name: "Super Smash Bros. Melee"
-platform_config: {
+platform_config {
     platform: PC
     position: 1
 }
-layout: {
-    index_top: { digital: R_STICK_LEFT }     # C left
-    middle_top: { digital: R_STICK_UP }      # C up
-    ring_top: { digital: R_STICK_RIGHT }     # C right
-    index_middle: { digital: L2 }            # L
-    middle_middle: { digital: TRIANGLE }     # Y
-    ring_middle: { digital: CIRCLE }         # B
-    pinky_middle: {
-      analog: {
-        id: SLIDER_LEFT                      # Map to R for light shield, L-cancel
-        value: 661
-      }
+layout {
+    base {
+        index_top { digital: R_STICK_LEFT }     # C left
+        middle_top { digital: R_STICK_UP }      # C up
+        ring_top { digital: R_STICK_RIGHT }     # C right
+        pinky_top { digital: MOD }              # Mod layout
+        index_middle { digital: L2 }            # L
+        middle_middle { digital: TRIANGLE }     # Y
+        ring_middle { digital: CIRCLE }         # B
+        pinky_middle {
+          analog {
+            id: SLIDER_LEFT                     # Map to R for light shield, L-cancel
+            value: 661
+          }
+        }
+        thumb_bottom { digital: R1 }            # Z
+        thumb_middle { digital: R_STICK_DOWN }  # C down
+        thumb_top { digital: X }                # A
+        right_index_extra { digital: OPTIONS }  # Start
     }
-    thumb_bottom: { digital: R_STICK_DOWN }  # C down
-    thumb_middle: { digital: R1 }            # Z
-    thumb_top: { digital: X }                # A
-    left_ring_extra: { digital: D_PAD_LEFT }
-    left_middle_extra: { digital: D_PAD_UP }
-    left_index_extra: { digital: SHARE }
-    right_index_extra: { digital: OPTIONS }  # Start
-    right_middle_extra: { digital: D_PAD_DOWN }
-    right_ring_extra: { digital: D_PAD_RIGHT }
+    mod {
+        index_top { digital: D_PAD_LEFT }
+        middle_top { digital: D_PAD_UP }        # Taunt
+        ring_top { digital: D_PAD_RIGHT }
+        thumb_middle { digital: D_PAD_DOWN }
+    }
 }

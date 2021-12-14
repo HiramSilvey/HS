@@ -1,27 +1,32 @@
 name: "Rocket League"
-platform_config: {
+platform_config {
     platform: PC
     position: 0  # Default profile
 }
-layout: {
-    index_middle: { digital: X }                # Jump
-    index_top: { digital: TRIANGLE }            # Focus on ball
-    middle_middle: { digital: CIRCLE }          # Air roll left
-    middle_top: { digital: SQUARE }             # Air roll right
-    ring_middle: { digital: L1 }                # Boost
-    pinky_middle: { digital: R1 }               # Drift
-    thumb_middle: { digital: L2 }               # Reverse
-    thumb_top: { digital: R2 }                  # Forward
-    ring_bottom: { digital: L3 }                # Use item
-    middle_bottom: { digital: R3 }              # Look behind
-    pinky_bottom: { digital: R_STICK_UP }       # Look up
-    thumb_bottom: { digital: R_STICK_DOWN }     # Look down
-    ring_top: { digital: R_STICK_LEFT }         # Look left
-    pinky_top: { digital: R_STICK_RIGHT }       # Look right
-    left_middle_extra: { digital: D_PAD_UP }    # Quick chat
-    right_middle_extra: { digital: D_PAD_DOWN } # Quick chat
-    left_ring_extra: { digital: D_PAD_LEFT }    # Quick chat
-    right_ring_extra: { digital: D_PAD_RIGHT }  # Quick chat
-    left_index_extra: { digital: SHARE }        # Menu
-    right_index_extra: { digital: OPTIONS }     # Score
+layout {
+    base {
+        index_middle { digital: X }             # Jump
+        index_top { digital: TRIANGLE }         # Focus on ball
+        middle_middle { digital: CIRCLE }       # Air roll left
+        middle_top { digital: SQUARE }          # Air roll right
+        ring_middle { digital: L1 }             # Boost
+        pinky_middle { digital: R1 }            # Drift
+        thumb_middle { digital: L2 }            # Reverse
+        thumb_top { digital: R2 }               # Forward
+        thumb_bottom { digital: L3 }            # Use item
+        middle_bottom { digital: R3 }           # Look behind
+        pinky_bottom { digital: R_STICK_UP }    # Look down
+        ring_bottom { digital: R_STICK_DOWN }   # Look up
+        ring_top { digital: R_STICK_LEFT }      # Look left
+        pinky_top { digital: R_STICK_RIGHT }    # Look right
+        left_index_extra { digital: SHARE }     # Menu
+        right_index_extra { digital: OPTIONS }  # Score
+        left_ring_extra { digital: MOD }        # Mod layout
+    }
+    mod {
+        index_top { digital: D_PAD_LEFT }       # Quick chat
+        middle_top { digital: D_PAD_UP }        # Quick chat
+        ring_top { digital: D_PAD_RIGHT }       # Quick chat
+        thumb_top { digital: D_PAD_DOWN }       # Quick chat
+    }
 }

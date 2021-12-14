@@ -1,7 +1,8 @@
 // Copyright 2021 Hiram Silvey
 
-use profile::profile::layout::action::ActionType::{Analog, Digital};
-use profile::profile::layout::Action;
+use profile::profile::layer::action::ActionType::{Analog, Digital};
+use profile::profile::layer::Action;
+use profile::profile::Layer;
 use profile::profile::Layout;
 use profile::Profile;
 use std::fmt;
@@ -26,7 +27,7 @@ impl fmt::Display for Action {
     }
 }
 
-impl fmt::Display for Layout {
+impl fmt::Display for Layer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let actions = [
             ("thumb top", self.thumb_top.as_ref()),
@@ -51,11 +52,25 @@ impl fmt::Display for Layout {
             ("right ring extra", self.right_ring_extra.as_ref()),
         ];
         for action in actions.iter() {
-            let unwrapped = match action.1 {
-                Some(x) => x,
-                None => return Err(fmt::Error),
-            };
-            writeln!(f, "\t{}: {}", action.0, unwrapped)?;
+            if let Some(unwrapped) = action.1 {
+                writeln!(f, "\t\t{}: {}", action.0, unwrapped)?;
+            } else {
+                writeln!(f, "\t\t{}: N/A", action.0)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl fmt::Display for Layout {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let base_layer = match &self.base {
+            Some(x) => x,
+            None => return Err(fmt::Error),
+        };
+        writeln!(f, "\tbase: {{\n{}\n\t}}", base_layer)?;
+        if let Some(mod_layer) = &self.r#mod {
+            writeln!(f, "\tmod: {{\n{}\n\t}}", mod_layer)?;
         }
         Ok(())
     }
