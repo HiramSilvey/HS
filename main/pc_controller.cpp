@@ -185,7 +185,7 @@ int PCController::GetDPadAngle(const ButtonPinMapping& mapping) {
   }
   for (const int pin : mapping.hat_right) {
     if (digitalRead(pin) == LOW) {
-      bits |= 1;  // 1000
+      bits |= 1;  // 0001
       break;
     }
   }
