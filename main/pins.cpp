@@ -2,7 +2,6 @@
 
 #include "pins.h"
 
-#include "Arduino.h"
 #include "profile.pb.h"
 
 using Layer = hs_profile_Profile_Layer;
