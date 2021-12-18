@@ -9,11 +9,12 @@
 
 #include "controller.h"
 #include "hall_joystick.h"
+#include "mcu.h"
 
 class NSController: public Controller {
 public:
-  NSController();
-  bool Init() override;
+  NSController(std::unique_ptr<MCU> mcu);
+  static bool Active();
   void Loop() override;
 
 private:
@@ -31,6 +32,7 @@ private:
   int GetDPadDirection(const NSButtonPinMapping& mapping);
   void UpdateButtons(const NSButtonPinMapping& mapping);
 
+  std::unique_ptr<MCU> mcu_;
   std::unique_ptr<HallJoystick> joystick_;
   NSButtonPinMapping base_mapping_;
   NSButtonPinMapping mod_mapping_;

@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "Arduino.h"
 #include "hall_joystick.h"
+#include "mcu.h"
 #include "pins.h"
 #include "profile.pb.h"
 
@@ -36,9 +36,14 @@ const int kDPadAngle[16] = {
   -1,   // 1111 Up + Down cancel; Left + Right cancel
 };
 
-PCController::PCController() {
-  base_mapping_ = {};
-  mod_mapping_ = {};
+PCController::PCController(std::unique_ptr<MCU> mcu)
+  : mcu_(std::move(mcu)), base_mapping_({}), mod_mapping_({}) {
+  LoadProfile();
+  Joystick.useManualSend(true);
+}
+
+bool PCController::Active() {
+  return usb_configuration;
 }
 
 PCController::PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
@@ -144,7 +149,7 @@ PCController::PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& 
 }
 
 void PCController::LoadProfile() {
-  Layout layout = FetchProfile(hs_profile_Profile_Platform_PC);
+  Layout layout = FetchProfile(hs_profile_Profile_Platform_PC, mcu_);
   joystick_ = std::make_unique<HallJoystick>(0, 1023, layout.joystick_threshold);
   joystick_->Init();
 
@@ -154,37 +159,28 @@ void PCController::LoadProfile() {
   }
 }
 
-bool PCController::Init() {
-  if (!usb_configuration) {
-    return false;
-  }
-  LoadProfile();
-  Joystick.useManualSend(true);
-  return true;
-}
-
 int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
   int bits = 0;
   for (const int pin : mapping.hat_up) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 8;  // 1000
       break;
     }
   }
   for (const int pin : mapping.hat_down) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 4;  // 0100
       break;
     }
   }
   for (const int pin : mapping.hat_left) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 2;  // 0010
       break;
     }
   }
   for (const int pin : mapping.hat_right) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 1;  // 0001
       break;
     }
@@ -193,15 +189,15 @@ int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
 }
 
 void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
-  Joystick.Z(Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral()));
-  Joystick.Zrotate(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral()));
-  Joystick.sliderLeft(Controller::ResolveSOCD(mapping.slider_left, joystick_->get_neutral()));
-  Joystick.sliderRight(Controller::ResolveSOCD(mapping.slider_right, joystick_->get_neutral()));
+  Joystick.Z(Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral(), mcu_));
+  Joystick.Zrotate(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral(), mcu_));
+  Joystick.sliderLeft(Controller::ResolveSOCD(mapping.slider_left, joystick_->get_neutral(), mcu_));
+  Joystick.sliderRight(Controller::ResolveSOCD(mapping.slider_right, joystick_->get_neutral(), mcu_));
 
   for (const auto& element : mapping.button_id_to_pins) {
     bool active = false;
     for (const auto& pin : element.second) {
-      if (digitalRead(pin) == LOW) {
+      if (mcu_->DigitalReadLow(pin)) {
         active = true;
         break;
       }
@@ -219,7 +215,7 @@ void PCController::Loop() {
 
   bool mod_active = false;
   for (const auto& pin : base_mapping_.mod) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       mod_active = true;
       break;
     }

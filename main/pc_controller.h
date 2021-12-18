@@ -9,11 +9,12 @@
 
 #include "controller.h"
 #include "hall_joystick.h"
+#include "mcu.h"
 
 class PCController: public Controller {
 public:
-  PCController();
-  bool Init() override;
+  PCController(std::unique_ptr<MCU> mcu);
+  static bool Active();
   void Loop() override;
 
 private:
@@ -33,6 +34,7 @@ private:
   int GetDPadAngle(const PCButtonPinMapping& mapping);
   void UpdateButtons(const PCButtonPinMapping& mapping);
 
+  std::unique_ptr<MCU> mcu_;
   std::unique_ptr<HallJoystick> joystick_;
   PCButtonPinMapping base_mapping_;
   PCButtonPinMapping mod_mapping_;

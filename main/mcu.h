@@ -5,7 +5,8 @@
 
 class MCU {
 public:
-  virtual int digitalRead(uint8_t pin) = 0;
-}
+  virtual ~MCU() {}
+  virtual bool DigitalReadLow(uint8_t pin) const = 0;
+};
 
 #endif  // MCU_H_

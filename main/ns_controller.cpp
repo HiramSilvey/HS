@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "Arduino.h"
 #include "hall_joystick.h"
+#include "mcu.h"
 #include "pins.h"
 #include "profile.pb.h"
 #include "usb_nsgamepad.h"
@@ -37,9 +37,13 @@ const int kDPadDirection[16] = {
   NSGAMEPAD_DPAD_CENTERED,    // 1111 Up + Down cancel; Left + Right cancel
 };
 
-NSController::NSController() {
-  base_mapping_ = {};
-  mod_mapping_ = {};
+NSController::NSController(std::unique_ptr<MCU> mcu)
+  : mcu_(std::move(mcu)), base_mapping_({}), mod_mapping_({}) {
+  LoadProfile();
+}
+
+bool NSController::Active() {
+  return usb_configuration;
 }
 
 NSController::NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
@@ -129,7 +133,7 @@ NSController::NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& 
 }
 
 void NSController::LoadProfile() {
-  Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH);
+  Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH, mcu_);
   joystick_ = std::make_unique<HallJoystick>(0, 255, layout.joystick_threshold);
   joystick_->Init();
 
@@ -139,36 +143,28 @@ void NSController::LoadProfile() {
   }
 }
 
-bool NSController::Init() {
-  if (!usb_configuration) {
-    return false;
-  }
-  LoadProfile();
-  return true;
-}
-
 int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
   int bits = 0;
   for (const int pin : mapping.dpad_up) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 8;  // 1000
       break;
     }
   }
   for (const int pin : mapping.dpad_down) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 4;  // 0100
       break;
     }
   }
   for (const int pin : mapping.dpad_left) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 2;  // 0010
       break;
     }
   }
   for (const int pin : mapping.dpad_right) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       bits |= 1;  // 0001
       break;
     }
@@ -178,12 +174,12 @@ int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
 
 void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
   NSGamepad.rightYAxis(joystick_->get_max()-
-                       Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral()));
-  NSGamepad.rightXAxis(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral()));
+                       Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral(), mcu_));
+  NSGamepad.rightXAxis(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral(), mcu_));
 
   for (const auto& element : mapping.button_id_to_pins) {
     for (const auto& pin : element.second) {
-      if (digitalRead(pin) == LOW) {
+      if (mcu_->DigitalReadLow(pin)) {
         NSGamepad.press(element.first);
         break;
       }
@@ -202,7 +198,7 @@ void NSController::Loop() {
 
   bool mod_active = false;
   for (const auto& pin : base_mapping_.mod) {
-    if (digitalRead(pin) == LOW) {
+    if (mcu_->DigitalReadLow(pin)) {
       mod_active = true;
       break;
     }

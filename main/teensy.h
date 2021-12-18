@@ -8,10 +8,10 @@
 #include "Arduino.h"
 
 class Teensy : public MCU {
- public:
-  int digitalRead(uint8_t pin) override {
-    return digitalRead(pin);
+public:
+  inline bool DigitalReadLow(uint8_t pin) const override {
+    return digitalRead(pin) == LOW;
   }
-}
+};
 
 #endif  // TEENSY_H_

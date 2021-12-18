@@ -3,17 +3,15 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
+#include "mcu.h"
 #include "profile.pb.h"
 
 class Controller {
 public:
-  // Initializations to be run once before the main loop. Returns true on
-  // success, false otherwise.
-  virtual bool Init() = 0;
-
   // Main loop to be run each tick.
   virtual void Loop() = 0;
 
@@ -29,10 +27,10 @@ protected:
   };
 
   // Fetch the specified profile given the platform.
-  static hs_profile_Profile_Layout FetchProfile(hs_profile_Profile_Platform Platform);
+  static hs_profile_Profile_Layout FetchProfile(const hs_profile_Profile_Platform& Platform, const std::unique_ptr<MCU>& mcu);
 
   // Resolve simultaneous opposing cardinal directions from button inputs.
-  static int ResolveSOCD(std::vector<AnalogButton> buttons, int joystick_neutral);
+  static int ResolveSOCD(const std::vector<AnalogButton>& buttons, int joystick_neutral, const std::unique_ptr<MCU>& mcu);
 
 private:
   // Load the controller profile settings based on the button held.
