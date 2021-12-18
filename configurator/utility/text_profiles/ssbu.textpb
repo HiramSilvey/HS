@@ -5,26 +5,26 @@ platform_config {
 }
 layout {
     base {
-        index_top { digital: R_STICK_LEFT }     # left tilt
-        middle_top { digital: R_STICK_UP }      # up tilt
-        ring_top { digital: R_STICK_RIGHT }     # right tilt
-        pinky_top { digital: MOD }              # mod layout
-        index_middle { digital: R2 }            # shield, dodge, tech
-        middle_middle { digital: SQUARE }       # jump
-        ring_middle { digital: X }              # special
-        pinky_middle { digital: R1 }            # grab
-        thumb_bottom { digital: L1 }            # grab
-        thumb_middle { digital: R_STICK_DOWN }  # down tilt
-        thumb_top { digital: CIRCLE }           # normal
-        left_ring_extra { digital: SHARE }      # minus
-        left_middle_extra { digital: CAPTURE }  # capture
-        right_middle_extra { digital: HOME }    # home
-        right_ring_extra { digital: OPTIONS }   # plus
-    }
-    mod {
-        index_top { digital: D_PAD_LEFT }       # left taunt
-        middle_top { digital: D_PAD_UP }        # up taunt
-        ring_top { digital: D_PAD_RIGHT }       # right taunt
-        thumb_middle { digital: D_PAD_DOWN }    # down taunt
+        index_top { digital: R_STICK_LEFT }      # Left tilt
+        middle_top { digital: R_STICK_UP }       # Up tilt
+        ring_top { digital: R_STICK_RIGHT }      # Right tilt
+        index_middle { digital: R2 }             # Shield, dodge, tech
+        middle_middle { digital: SQUARE }        # Jump
+        ring_middle { digital: X }               # Special
+        pinky_middle { digital: R1 }             # Grab
+        thumb_bottom { digital: L1 }             # Grab
+        thumb_middle { digital: R_STICK_DOWN }   # Down tilt
+        thumb_top { digital: CIRCLE }            # Normal
+        left_ring_extra { digital: MOD }         # Mod layout
+        left_index_extra { digital: SHARE }      # Minus
+        right_index_extra { digital: OPTIONS }   # Plus
+        right_middle_extra { digital: CAPTURE }  # Capture
+        right_ring_extra { digital: HOME }       # Home
+    }                                            
+    mod {                                        
+        index_middle { digital: D_PAD_LEFT }     # Left taunt
+        middle_middle { digital: D_PAD_UP }      # Up taunt
+        ring_middle { digital: D_PAD_RIGHT }     # Right taunt
+        thumb_top { digital: D_PAD_DOWN }        # Down taunt
     }
 }

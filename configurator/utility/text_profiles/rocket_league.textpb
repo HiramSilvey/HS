@@ -24,9 +24,9 @@ layout {
         left_ring_extra { digital: MOD }        # Mod layout
     }
     mod {
-        index_top { digital: D_PAD_LEFT }       # Quick chat
-        middle_top { digital: D_PAD_UP }        # Quick chat
-        ring_top { digital: D_PAD_RIGHT }       # Quick chat
+        index_middle { digital: D_PAD_LEFT }    # Quick chat
+        middle_middle { digital: D_PAD_UP }     # Quick chat
+        ring_middle { digital: D_PAD_RIGHT }    # Quick chat
         thumb_top { digital: D_PAD_DOWN }       # Quick chat
     }
 }

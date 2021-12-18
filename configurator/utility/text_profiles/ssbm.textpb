@@ -8,7 +8,6 @@ layout {
         index_top { digital: R_STICK_LEFT }     # C left
         middle_top { digital: R_STICK_UP }      # C up
         ring_top { digital: R_STICK_RIGHT }     # C right
-        pinky_top { digital: MOD }              # Mod layout
         index_middle { digital: L2 }            # L
         middle_middle { digital: TRIANGLE }     # Y
         ring_middle { digital: CIRCLE }         # B
@@ -22,11 +21,12 @@ layout {
         thumb_middle { digital: R_STICK_DOWN }  # C down
         thumb_top { digital: X }                # A
         right_index_extra { digital: OPTIONS }  # Start
+        left_ring_extra { digital: MOD }        # Mod layout
     }
     mod {
-        index_top { digital: D_PAD_LEFT }
-        middle_top { digital: D_PAD_UP }        # Taunt
-        ring_top { digital: D_PAD_RIGHT }
+        index_middle { digital: D_PAD_LEFT }
+        middle_middle { digital: D_PAD_UP }     # Taunt
+        ring_middle { digital: D_PAD_RIGHT }
         thumb_middle { digital: D_PAD_DOWN }
     }
 }
