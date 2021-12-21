@@ -27,6 +27,13 @@ cc_library(
 )
 
 cc_library(
+    name = "hall_sensor",
+    srcs = ["hall_sensor.cpp"],
+    hdrs = ["hall_sensor.h"],
+    deps = [],
+)
+
+cc_library(
     name = "mcu",
     hdrs = ["mcu.h"],
     deps = [],
@@ -55,7 +62,7 @@ cc_library(
 cc_test(
   name = "pc_controller_test",
   size = "small",
-  srcs = ["pc_controller_test.cpp"],
+  srcs = ["test/pc_controller_test.cpp"],
   deps = [
     "@com_google_googletest//:gtest_main",
     ":pc_controller",
@@ -79,6 +86,12 @@ cc_library(
 cc_library(
     name = "teensy",
     hdrs = ["teensy.h"],
+    deps = [],
+)
+
+cc_library(
+    name = "tlv493d_sensor",
+    hdrs = ["tlv493d_sensor.h"],
     deps = [],
 )
 
