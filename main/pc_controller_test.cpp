@@ -10,7 +10,7 @@ using ::testing::Return;
 using ::testing::_;
 
 TEST(PCControllerTest, GetDPadAngleUp) {
-  auto mcu = std::make_unique<MockMcu>();
+  auto mcu = std::make_unique<MockMCU>();
 
   EXPECT_CALL(mcu, DigitalReadLow(_))
     .WillOnce(Return(true));
