@@ -2,8 +2,8 @@
 
 #include "hall_joystick.h"
 
-#include <Tlv493d.h>
 #include <EEPROM.h>
+#include "tlv493d_sensor.h"
 #include "util.h"
 
 HallJoystick::HallJoystick(int min, int max, int threshold)
@@ -15,12 +15,6 @@ HallJoystick::HallJoystick(int min, int max, int threshold)
   int range = Util::GetIntFromEEPROM(8);
   x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
   y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
-}
-
-void HallJoystick::Init() {
-  sensor_.begin();
-  sensor_.setAccessMode(sensor_.LOWPOWERMODE);
-  sensor_.disableTemp();
 }
 
 int HallJoystick::Normalize(int val, const Bounds& in) {
@@ -41,10 +35,10 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
 }
 
 HallJoystick::Coordinates HallJoystick::GetCoordinates() {
-  sensor_.updateData();
-  float z = sensor_.getZ();
-  int x = sensor_.getX() / z * 1000000;
-  int y = sensor_.getY() / z * 1000000;
+  sensor_.UpdateData();
+  float z = sensor_.GetZ();
+  int x = sensor_.GetX() / z * 1000000;
+  int y = sensor_.GetY() / z * 1000000;
 
   x = Normalize(x, x_in_);
   y = Normalize(y, y_in_);

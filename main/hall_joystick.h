@@ -3,7 +3,7 @@
 #ifndef HALL_JOYSTICK_H_
 #define HALL_JOYSTICK_H_
 
-#include <Tlv493d.h>
+#include "tlv493d_sensor.h"
 
 class HallJoystick {
 public:
@@ -54,7 +54,7 @@ private:
   // Digital joystick activation thresholds (negative, positive).
   const std::pair<int, int> threshold_;
 
-  Tlv493d sensor_;
+  Tlv493dSensor sensor_;
 };
 
 #endif  // HALL_JOYSTICK_H_
