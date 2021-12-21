@@ -151,8 +151,6 @@ PCController::PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& 
 void PCController::LoadProfile() {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_PC, mcu_);
   joystick_ = std::make_unique<HallJoystick>(0, 1023, layout.joystick_threshold);
-  joystick_->Init();
-
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
     mod_mapping_ = GetButtonPinMapping(layout.mod);

@@ -15,9 +15,6 @@ public:
   int get_max();
   int get_neutral();
 
-  // Initializations to be run once before the main loop.
-  void Init();
-
   struct Coordinates {
     int x;
     int y;
@@ -44,8 +41,8 @@ private:
   int GetIntFromEEPROM(int address);
 
   // Input data bounds.
-  const Bounds x_in_;
-  const Bounds y_in_;
+  Bounds x_in_;
+  Bounds y_in_;
 
   // Output data bounds.
   const Bounds out_;

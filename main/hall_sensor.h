@@ -6,11 +6,10 @@
 class HallSensor {
 public:
   virtual ~HallSensor() {}
-  virtual void Setup() = 0;
   virtual void UpdateData() = 0;
-  virtual float GetX() const = 0;
-  virtual float GetY() const = 0;
-  virtual float GetZ() const = 0;
+  virtual float GetX() = 0;
+  virtual float GetY() = 0;
+  virtual float GetZ() = 0;
 };
 
 #endif  // HALL_SENSOR_H_

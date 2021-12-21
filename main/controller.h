@@ -12,6 +12,11 @@
 
 class Controller {
 public:
+  struct AnalogButton {
+    int value;
+    int pin;
+  };
+
   // Fetch the specified profile given the platform.
   static hs_profile_Profile_Layout FetchProfile(const hs_profile_Profile_Platform& Platform, const std::unique_ptr<MCU>& mcu);
 
@@ -22,11 +27,6 @@ public:
   virtual void Loop() = 0;
 
 protected:
-  struct AnalogButton {
-    int value;
-    int pin;
-  };
-
   struct ButtonPinMapping {
     std::unordered_map<int, std::vector<int>> button_id_to_pins;
     std::vector<int> mod;

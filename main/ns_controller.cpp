@@ -135,8 +135,6 @@ NSController::NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& 
 void NSController::LoadProfile() {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH, mcu_);
   joystick_ = std::make_unique<HallJoystick>(0, 255, layout.joystick_threshold);
-  joystick_->Init();
-
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
     mod_mapping_ = GetButtonPinMapping(layout.mod);

@@ -13,11 +13,6 @@
 
 class PCController: public Controller {
 public:
-  PCController(std::unique_ptr<MCU> mcu);
-  static bool Active();
-  int GetDPadAngle(const PCButtonPinMapping& mapping);
-  void Loop() override;
-
   struct PCButtonPinMapping : Controller::ButtonPinMapping {
     std::vector<Controller::AnalogButton> z_y;
     std::vector<Controller::AnalogButton> z_x;
@@ -28,6 +23,11 @@ public:
     std::vector<int> hat_left;
     std::vector<int> hat_right;
   };
+  
+  PCController(std::unique_ptr<MCU> mcu);
+  static bool Active();
+  int GetDPadAngle(const PCButtonPinMapping& mapping);
+  void Loop() override;
 
 private:
   PCButtonPinMapping GetButtonPinMapping(const hs_profile_Profile_Layer& layer);

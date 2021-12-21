@@ -14,20 +14,20 @@ public:
     sensor_.setAccessMode(sensor_.LOWPOWERMODE);
     sensor_.disableTemp();
   }
-  inline void UpdateData() const override {
+  inline void UpdateData() override {
     sensor_.updateData();
   }
-  inline float GetX() const override {
+  inline float GetX() override {
     return sensor_.getX();
   }
-  inline float GetY() const override {
+  inline float GetY() override {
     return sensor_.getY();
   }
-  inline float GetZ() const override {
+  inline float GetZ() override {
     return sensor_.getZ();
   }
 private:
-  Tlv49d sensor_;
+  Tlv493d sensor_;
 };
 
 #endif  // TLV493D_SENSOR_H_
