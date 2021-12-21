@@ -4,18 +4,18 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "mock_teensy.h"
+#include "mock_mcu.h"
 
 using ::testing::Return;
 using ::testing::_;
 
 TEST(PCControllerTest, GetDPadAngleUp) {
-  auto teensy = std::make_unique<MockTeensy>();
+  auto mcu = std::make_unique<MockMcu>();
 
-  EXPECT_CALL(teensy, DigitalReadLow(_))
+  EXPECT_CALL(mcu, DigitalReadLow(_))
     .WillOnce(Return(true));
 
-  PCController controller(std::move(teensy));
+  PCController controller(std::move(mcu));
 
   const PCButtonPinMapping mapping = {
     .hat_up = {1},

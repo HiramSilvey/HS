@@ -33,8 +33,8 @@ cc_library(
 )
 
 cc_library(
-    name = "mock_teensy",
-    hdrs = ["mock_teensy.h"],
+    name = "mock_mcu",
+    hdrs = ["mock_mcu.h"],
     deps = [],
 )
 
