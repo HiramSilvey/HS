@@ -2,7 +2,6 @@
 
 #include "util.h"
 
-#include "Arduino.h"
 #include <EEPROM.h>
 
 int Util::GetIntFromEEPROM(int address) {
