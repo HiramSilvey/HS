@@ -9,6 +9,7 @@ public:
 
   // Arduino
   virtual bool DigitalReadLow(uint8_t pin) const = 0;
+  virtual void Exit(int status) const = 0;
 
   // Arduino: Math
   virtual int Constrain(int amount, int low, int high) const = 0;

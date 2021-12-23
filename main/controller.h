@@ -18,10 +18,13 @@ public:
   };
 
   // Fetch the specified profile given the platform.
-  static hs_profile_Profile_Layout FetchProfile(const hs_profile_Profile_Platform& Platform, const std::unique_ptr<MCU>& mcu);
+  static hs_profile_Profile_Layout FetchProfile(const std::unique_ptr<MCU>& mcu,
+                                                const hs_profile_Profile_Platform& Platform);
 
   // Resolve simultaneous opposing cardinal directions from button inputs.
-  static int ResolveSOCD(const std::vector<AnalogButton>& buttons, int joystick_neutral, const std::unique_ptr<MCU>& mcu);
+  static int ResolveSOCD(const std::unique_ptr<MCU>& mcu,
+                         const std::vector<AnalogButton>& buttons,
+                         int joystick_neutral);
 
   // Main loop to be run each tick.
   virtual void Loop() = 0;

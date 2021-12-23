@@ -2,9 +2,11 @@
 
 #include "decoder.h"
 
+#include <memory>
 #include <vector>
-#include "Arduino.h"
-#include <EEPROM.h>
+
+#include "mcu.h"
+#include "profile.pb.h"
 
 using Platform = hs_profile_Profile_Platform;
 using PlatformConfig = hs_profile_Profile_PlatformConfig;
@@ -32,8 +34,9 @@ const int kLenAnalogActionValue = 10;
 
 namespace {
 
-  std::vector<PlatformConfig> DecodeHeader(int addr) {
-    const byte platform_bitmap = EEPROM.read(addr++);
+  std::vector<PlatformConfig> DecodeHeader(const std::unique_ptr<MCU>& mcu,
+                                           int addr) {
+    const uint8_t platform_bitmap = mcu->EEPROMRead(addr++);
     std::vector<PlatformConfig> configs;
     for (int platform = _hs_profile_Profile_Platform_MIN;
          platform <= _hs_profile_Profile_Platform_MAX; platform++) {
@@ -41,9 +44,9 @@ namespace {
         PlatformConfig config;
         config.platform = static_cast<Platform>(platform);
         if (configs.size() % 2 == 0) {
-          config.position = EEPROM.read(addr) >> 4;
+          config.position = mcu->EEPROMRead(addr) >> 4;
         } else {
-          config.position = EEPROM.read(addr++) & 0xFF;
+          config.position = mcu->EEPROMRead(addr++) & 0xFF;
         }
         configs.push_back(config);
       }
@@ -51,7 +54,8 @@ namespace {
     return configs;
   }
 
-  int FetchData(int remaining, int& addr, byte& curr_byte, int& unread) {
+  int FetchData(const std::unique_ptr<MCU>& mcu, int remaining, int& addr,
+                uint8_t& curr_byte, int& unread) {
     int data = 0;
     while (remaining > 0) {
       int offset = unread - remaining;
@@ -64,14 +68,14 @@ namespace {
       remaining -= fetched;
       unread -= fetched;
       if (unread == 0) {
-        curr_byte = EEPROM.read(addr++);
+        curr_byte = mcu->EEPROMRead(addr++);
         unread = 8;
       }
     }
     return data;
   }
 
-  Layer DecodeLayer(int& addr) {
+  Layer DecodeLayer(const std::unique_ptr<MCU>& mcu, int& addr) {
     Layer layer;
     Action* actions[20] = {
                            &layer.thumb_top,
@@ -95,14 +99,16 @@ namespace {
                            &layer.right_middle_extra,
                            &layer.right_ring_extra
     };
-    byte curr_byte = EEPROM.read(addr++);
+    uint8_t curr_byte = mcu->EEPROMRead(addr++);
     int unread = 8;
     for (Action* action : actions) {
-      int button_id = FetchData(kLenActionID, addr, curr_byte, unread);
+      int button_id = FetchData(mcu, kLenActionID, addr, curr_byte, unread);
       if (button_id > _hs_profile_Profile_Layer_DigitalAction_MAX) {
         action->action_type.analog.id =
-          static_cast<AnalogAction_ID>(button_id - _hs_profile_Profile_Layer_DigitalAction_MAX);
-        int button_value = FetchData(kLenAnalogActionValue, addr, curr_byte, unread);
+          static_cast<AnalogAction_ID>(button_id -
+                                       _hs_profile_Profile_Layer_DigitalAction_MAX);
+        int button_value = FetchData(mcu, kLenAnalogActionValue, addr,
+                                     curr_byte, unread);
         action->action_type.analog.value = button_value;
         action->which_action_type = hs_profile_Profile_Layer_Action_analog_tag;
       } else {
@@ -113,28 +119,29 @@ namespace {
     return layer;
   }
 
-  Layout DecodeBody(int& addr) {
-    const int max_addr = addr + EEPROM.read(addr++) + 1;
+  Layout DecodeBody(const std::unique_ptr<MCU>& mcu, int& addr) {
+    const int max_addr = addr + mcu->EEPROMRead(addr++) + 1;
 
     Layout layout;
-    layout.joystick_threshold = EEPROM.read(addr++);
-    layout.base = DecodeLayer(addr);
+    layout.joystick_threshold = mcu->EEPROMRead(addr++);
+    layout.base = DecodeLayer(mcu, addr);
     if (addr < max_addr) {
       layout.has_mod = true;
-      layout.mod = DecodeLayer(addr);
+      layout.mod = DecodeLayer(mcu, addr);
     }
     return layout;
   }
 
 }  // namespace
 
-Layout Decoder::Decode(Platform platform, int position) {
-  const int encoded_len = (EEPROM.read(kMinAddr) << 8) | EEPROM.read(kMinAddr + 1);
+Layout Decoder::Decode(const std::unique_ptr<MCU>& mcu, Platform platform,
+                       int position) {
+  const int encoded_len = (mcu->EEPROMRead(kMinAddr) << 8) | mcu->EEPROMRead(kMinAddr + 1);
   const int max_addr = kMinAddr + encoded_len + 1;
 
   int curr_addr = kMinAddr + 2;
   while (curr_addr < max_addr) {
-    std::vector<PlatformConfig> configs = DecodeHeader(curr_addr);
+    std::vector<PlatformConfig> configs = DecodeHeader(mcu, curr_addr);
     // Advance past the header.
     curr_addr += configs.size() / 2 + configs.size() % 2 + 1;
     if ([&]{
@@ -148,12 +155,12 @@ Layout Decoder::Decode(Platform platform, int position) {
       break;
     }
     // Advance to the header of the next profile.
-    curr_addr += EEPROM.read(curr_addr++);
+    curr_addr += mcu->EEPROMRead(curr_addr++);
   }
 
   if (curr_addr >= max_addr) {
-    exit(1);
+    mcu->Exit(1);
   }
 
-  return DecodeBody(curr_addr);
+  return DecodeBody(mcu, curr_addr);
 }

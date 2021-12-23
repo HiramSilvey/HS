@@ -132,7 +132,7 @@ NSController::NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& 
 }
 
 void NSController::LoadProfile() {
-  Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH, mcu_);
+  Layout layout = FetchProfile(mcu_, hs_profile_Profile_Platform_SWITCH);
   joystick_ = std::make_unique<HallJoystick>(mcu_, 0, 255, layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
@@ -171,8 +171,10 @@ int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
 
 void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
   nsgamepad_->SetRightYAxis(joystick_->get_max()-
-                       Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral(), mcu_));
-  nsgamepad_->SetRightXAxis(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral(), mcu_));
+                            Controller::ResolveSOCD(mcu_, mapping.z_y,
+                                                    joystick_->get_neutral()));
+  nsgamepad_->SetRightXAxis(Controller::ResolveSOCD(mcu_, mapping.z_x,
+                                                    joystick_->get_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     for (const auto& pin : element.second) {

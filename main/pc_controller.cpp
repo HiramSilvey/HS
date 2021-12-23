@@ -149,7 +149,7 @@ PCController::PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& 
 }
 
 void PCController::LoadProfile() {
-  Layout layout = FetchProfile(hs_profile_Profile_Platform_PC, mcu_);
+  Layout layout = FetchProfile(mcu_, hs_profile_Profile_Platform_PC);
   joystick_ = std::make_unique<HallJoystick>(mcu_, 0, 1023,
                                              layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
@@ -188,18 +188,15 @@ int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
 }
 
 void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
-  mcu_->SetJoystickZ(Controller::ResolveSOCD(mapping.z_y,
-                                             joystick_->get_neutral(),
-                                             mcu_));
-  mcu_->SetJoystickZRotate(Controller::ResolveSOCD(mapping.z_x,
-                                                   joystick_->get_neutral(),
-                                                   mcu_));
-  mcu_->SetJoystickSliderLeft(Controller::ResolveSOCD(mapping.slider_left,
-                                                      joystick_->get_neutral(),
-                                                      mcu_));
-  mcu_->SetJoystickSliderRight(Controller::ResolveSOCD(mapping.slider_right,
-                                                       joystick_->get_neutral(),
-                                                       mcu_));
+  mcu_->SetJoystickZ(Controller::ResolveSOCD(mcu_, mapping.z_y,
+                                             joystick_->get_neutral()));
+  mcu_->SetJoystickZRotate(Controller::ResolveSOCD(mcu_, mapping.z_x,
+                                                   joystick_->get_neutral()));
+  mcu_->SetJoystickSliderLeft(Controller::ResolveSOCD(mcu_, mapping.slider_left,
+                                                      joystick_->get_neutral()));
+  mcu_->SetJoystickSliderRight(Controller::ResolveSOCD(mcu_,
+                                                       mapping.slider_right,
+                                                       joystick_->get_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     bool active = false;

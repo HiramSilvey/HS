@@ -10,7 +10,8 @@
 using Layout = hs_profile_Profile_Layout;
 using Platform = hs_profile_Profile_Platform;
 
-Layout Controller::FetchProfile(const Platform& platform, const std::unique_ptr<MCU>& mcu) {
+Layout Controller::FetchProfile(const std::unique_ptr<MCU>& mcu,
+                                const Platform& platform) {
   std::pair<int, int> button_to_position[] = {
                                               std::make_pair(kLeftRingExtra, 1),
                                               std::make_pair(kLeftMiddleExtra, 2),
@@ -24,10 +25,12 @@ Layout Controller::FetchProfile(const Platform& platform, const std::unique_ptr<
       break;
     }
   }
-  return Decoder::Decode(platform, position);
+  return Decoder::Decode(mcu, platform, position);
 }
 
-int Controller::ResolveSOCD(const std::vector<AnalogButton>& buttons, int joystick_neutral, const std::unique_ptr<MCU>& mcu) {
+int Controller::ResolveSOCD(const std::unique_ptr<MCU>& mcu,
+                            const std::vector<AnalogButton>& buttons,
+                            int joystick_neutral) {
   int min_value = joystick_neutral;
   int max_value = joystick_neutral;
   for (const auto& button : buttons) {

@@ -20,6 +20,9 @@ public:
   inline bool DigitalReadLow(uint8_t pin) const override {
     return digitalRead(pin) == LOW;
   }
+  inline void Exit(int status) const override {
+    exit(status);
+  }
 
   inline int Constrain(int amount, int low, int high) const override {
     return constrain(amount, low, high);
