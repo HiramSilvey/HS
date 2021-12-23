@@ -7,7 +7,7 @@
 #include "mcu.h"
 #include "util.h"
 
-void WriteToSerial(std::unique_ptr<MCU>& mcu, int val) {
+void WriteToSerial(const std::unique_ptr<MCU>& mcu, int val) {
   uint8_t bytes[4] = {val >> 24,
                       val >> 16 & 0xFF,
                       val >> 8 & 0xFF,
@@ -15,7 +15,7 @@ void WriteToSerial(std::unique_ptr<MCU>& mcu, int val) {
   mcu->SerialWrite(bytes, 4);
 }
 
-void SaveToEEPROM(std::unique_ptr<MCU>& mcu, int val, int address) {
+void SaveToEEPROM(const std::unique_ptr<MCU>& mcu, int val, int address) {
   uint8_t one = val >> 24;
   uint8_t two = val >> 16 & 0xFF;
   uint8_t three = val >> 8 & 0xFF;
@@ -27,7 +27,7 @@ void SaveToEEPROM(std::unique_ptr<MCU>& mcu, int val, int address) {
   mcu->EEPROMUpdate(address+3, four);
 }
 
-void Configurator::FetchStoredBounds(std::unique_ptr<MCU>& mcu) {
+void Configurator::FetchStoredBounds(const std::unique_ptr<MCU>& mcu) {
   int center_x = Util::GetIntFromEEPROM(mcu, 0);
   int center_y = Util::GetIntFromEEPROM(mcu, 4);
   int range = Util::GetIntFromEEPROM(mcu, 8);
@@ -37,7 +37,7 @@ void Configurator::FetchStoredBounds(std::unique_ptr<MCU>& mcu) {
   WriteToSerial(mcu, range);
 }
 
-void Configurator::FetchJoystickCoords(std::unique_ptr<MCU>& mcu) {
+void Configurator::FetchJoystickCoords(const std::unique_ptr<MCU>& mcu) {
   mcu->UpdateHallData();
   float z = mcu->GetHallZ();
   int x = mcu->GetHallX() / z * 1000000;
@@ -47,7 +47,7 @@ void Configurator::FetchJoystickCoords(std::unique_ptr<MCU>& mcu) {
   WriteToSerial(mcu, y);
 }
 
-void Configurator::CalibrateJoystick(std::unique_ptr<MCU>& mcu) {
+void Configurator::CalibrateJoystick(const std::unique_ptr<MCU>& mcu) {
   float min_x = 0;
   float max_x = 0;
   float min_y = 0;
@@ -84,7 +84,7 @@ void Configurator::CalibrateJoystick(std::unique_ptr<MCU>& mcu) {
   WriteToSerial(mcu, range);
 }
 
-void Configurator::SaveCalibration(std::unique_ptr<MCU>& mcu) {
+void Configurator::SaveCalibration(const std::unique_ptr<MCU>& mcu) {
   int bytes_to_read = 12;
   int address = 0;
   while (address < bytes_to_read) {
@@ -96,7 +96,7 @@ void Configurator::SaveCalibration(std::unique_ptr<MCU>& mcu) {
   mcu->SerialWrite(0);  // Done.
 }
 
-void Configurator::StoreProfiles(std::unique_ptr<MCU>& mcu) {
+void Configurator::StoreProfiles(const std::unique_ptr<MCU>& mcu) {
   while (mcu->SerialAvailable() < 2) {}
   int num_bytes = mcu->SerialRead() << 8 | mcu->SerialRead();
   int base_address = 12;  // 0-11 are reserved for joystick calibration values.
