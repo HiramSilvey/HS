@@ -7,7 +7,7 @@
 #include "controller.h"
 #include "ns_controller.h"
 #include "pc_controller.h"
-#include "teensy.h"
+#include "teensy_impl.h"
 #include "nspad_impl.h"
 
 std::unique_ptr<Controller> controller;
@@ -16,7 +16,7 @@ extern uint8_t nsgamepad_active;
 void setup() {
   delay(100);
 
-  auto teensy = std::make_unique<Teensy>();
+  auto teensy = std::make_unique<TeensyImpl>();
   if (teensy->DigitalReadLow(kRightIndexExtra)) {
     Configurator::Configure(std::move(teensy));
     exit(0);

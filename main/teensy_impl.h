@@ -1,7 +1,7 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef TEENSY_H_
-#define TEENSY_H_
+#ifndef TEENSY_IMPL_H_
+#define TEENSY_IMPL_H_
 
 #include "mcu.h"
 
@@ -10,9 +10,9 @@
 
 #include "Arduino.h"
 
-class Teensy : public MCU {
+class TeensyImpl : public MCU {
 public:
-  Teensy() {
+  TeensyImpl() {
     sensor_.begin();
     sensor_.setAccessMode(sensor_.LOWPOWERMODE);
     sensor_.disableTemp();
@@ -99,4 +99,4 @@ private:
   Tlv493d sensor_;
 };
 
-#endif  // TEENSY_H_
+#endif  // TEENSY_IMPL_H_
