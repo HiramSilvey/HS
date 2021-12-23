@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "hall_joystick.h"
+#include "hall_sensor.h"
 #include "mcu.h"
 #include "pins.h"
 #include "profile.pb.h"
@@ -36,9 +37,9 @@ const int kDPadAngle[16] = {
   -1,   // 1111 Up + Down cancel; Left + Right cancel
 };
 
-PCController::PCController(std::unique_ptr<MCU> mcu)
+PCController::PCController(std::unique_ptr<MCU> mcu, std::unique_ptr<HallSensor> sensor)
   : mcu_(std::move(mcu)), base_mapping_({}), mod_mapping_({}) {
-  LoadProfile();
+  LoadProfile(std::move(sensor));
   Joystick.useManualSend(true);
 }
 
@@ -148,9 +149,10 @@ PCController::PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& 
   return mapping;
 }
 
-void PCController::LoadProfile() {
+void PCController::LoadProfile(std::unique_ptr<HallSensor> sensor) {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_PC, mcu_);
-  joystick_ = std::make_unique<HallJoystick>(0, 1023, layout.joystick_threshold);
+  joystick_ = std::make_unique<HallJoystick>(mcu_, std::move(sensor), 0, 1023,
+                                             layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
     mod_mapping_ = GetButtonPinMapping(layout.mod);
@@ -207,7 +209,7 @@ void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
 }
 
 void PCController::Loop() {
-  HallJoystick::Coordinates coords = joystick_->GetCoordinates();
+  HallJoystick::Coordinates coords = joystick_->GetCoordinates(mcu_);
   Joystick.X(coords.x);
   Joystick.Y(joystick_->get_max()-coords.y);
 

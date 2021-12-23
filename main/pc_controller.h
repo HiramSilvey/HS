@@ -9,6 +9,7 @@
 
 #include "controller.h"
 #include "hall_joystick.h"
+#include "hall_sensor.h"
 #include "mcu.h"
 
 class PCController: public Controller {
@@ -23,8 +24,8 @@ public:
     std::vector<int> hat_left;
     std::vector<int> hat_right;
   };
-  
-  PCController(std::unique_ptr<MCU> mcu);
+
+  PCController(std::unique_ptr<MCU> mcu, std::unique_ptr<HallSensor> sensor);
   static bool Active();
   int GetDPadAngle(const PCButtonPinMapping& mapping);
   void Loop() override;

@@ -3,13 +3,20 @@
 #ifndef HALL_JOYSTICK_H_
 #define HALL_JOYSTICK_H_
 
-#include "tlv493d_sensor.h"
+#include "hall_sensor.h"
+
+#include <memory>
+
+#include "hall_sensor.h"
+#include "mcu.h"
 
 class HallJoystick {
 public:
   // Minimum and maximum values each joystick axis is expected to output +
   // digital joystick activation threshold.
-  explicit HallJoystick(int min, int max, int threshold);
+  explicit HallJoystick(const std::unique_ptr<MCU>& mcu,
+                        std::unique_ptr<HallSensor> sensor,
+                        int min, int max, int threshold);
 
   int get_min();
   int get_max();
@@ -21,7 +28,7 @@ public:
   };
 
   // Read and return X and Y axes values.
-  Coordinates GetCoordinates();
+  Coordinates GetCoordinates(const std::unique_ptr<MCU>& mcu);
 
 private:
   struct Bounds {
@@ -31,14 +38,13 @@ private:
 
   // Map the provided int value from the specified input range to the global
   // output range.
-  int Normalize(int val, const Bounds& in);
+  int Normalize(const std::unique_ptr<MCU>& mcu, int val, const Bounds& in);
 
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);
 
-  // Read and return 4 consecutive bytes as an int from EEPROM, with the highest
-  // order byte at the lowest address.
-  int GetIntFromEEPROM(int address);
+  // 3D hall effect sensor.
+  std::unique_ptr<HallSensor> sensor_;
 
   // Input data bounds.
   Bounds x_in_;
@@ -50,8 +56,6 @@ private:
 
   // Digital joystick activation thresholds (negative, positive).
   const std::pair<int, int> threshold_;
-
-  Tlv493dSensor sensor_;
 };
 
 #endif  // HALL_JOYSTICK_H_

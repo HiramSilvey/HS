@@ -2,25 +2,31 @@
 
 #include "hall_joystick.h"
 
-#include <EEPROM.h>
-#include "tlv493d_sensor.h"
+#include <memory>
+
+#include "hall_sensor.h"
+#include "mcu.h"
 #include "util.h"
 
-HallJoystick::HallJoystick(int min, int max, int threshold)
-  : out_({.min = min, .max = max}),
+HallJoystick::HallJoystick(const std::unique_ptr<MCU>& mcu,
+                           std::unique_ptr<HallSensor> sensor,
+                           int min, int max, int threshold)
+  : sensor_(sensor),
+    out_({.min = min, .max = max}),
     out_neutral_((max - min + 1) / 2 + min),
     threshold_({threshold * -1, threshold}) {
-  int neutral_x = Util::GetIntFromEEPROM(0);
-  int neutral_y = Util::GetIntFromEEPROM(4);
-  int range = Util::GetIntFromEEPROM(8);
+  int neutral_x = Util::GetIntFromEEPROM(mcu, 0);
+  int neutral_y = Util::GetIntFromEEPROM(mcu, 4);
+  int range = Util::GetIntFromEEPROM(mcu, 8);
   x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
   y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
 }
 
-int HallJoystick::Normalize(int val, const Bounds& in) {
+int HallJoystick::Normalize(const std::unique_ptr<MCU>& mcu, int val,
+                            const Bounds& in) {
   int mapped = static_cast<float>(val - in.min) /
     static_cast<float>(in.max - in.min) * (out_.max - out_.min) + out_.min;
-  return constrain(mapped, out_.min, out_.max);
+  return mcu->Constrain(mapped, out_.min, out_.max);
 }
 
 int HallJoystick::ResolveDigitalCoord(int coord) {
@@ -34,14 +40,15 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
   return out_neutral_;
 }
 
-HallJoystick::Coordinates HallJoystick::GetCoordinates() {
-  sensor_.UpdateData();
-  float z = sensor_.GetZ();
-  int x = sensor_.GetX() / z * 1000000;
-  int y = sensor_.GetY() / z * 1000000;
+HallJoystick::Coordinates HallJoystick::GetCoordinates(
+                          const std::unique_ptr<MCU>& mcu) {
+  sensor_->UpdateData();
+  float z = sensor_->GetZ();
+  int x = sensor_->GetX() / z * 1000000;
+  int y = sensor_->GetY() / z * 1000000;
 
-  x = Normalize(x, x_in_);
-  y = Normalize(y, y_in_);
+  x = Normalize(mcu, x, x_in_);
+  y = Normalize(mcu, y, y_in_);
 
   if (threshold_.first < 0) {
     // DIGITAL

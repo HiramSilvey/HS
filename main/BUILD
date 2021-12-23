@@ -2,21 +2,17 @@ cc_library(
     name = "controller",
     srcs = ["controller.cpp"],
     hdrs = ["controller.h"],
-    deps = [],
-)
-
-cc_library(
-    name = "decoder",
-    srcs = ["decoder.cpp"],
-    hdrs = ["decoder.h"],
-    deps = [],
+    deps = [":mcu"],
 )
 
 cc_library(
     name = "hall_joystick",
     srcs = ["hall_joystick.cpp"],
     hdrs = ["hall_joystick.h"],
-    deps = [":tlv493d_sensor"],
+    deps = [
+         ":hall_sensor",
+         ":util",
+         ],
 )
 
 cc_library(
@@ -35,7 +31,7 @@ cc_library(
     name = "ns_controller",
     srcs = ["ns_controller.cpp"],
     hdrs = ["ns_controller.h"],
-    deps = [],
+    deps = [":controller"],
 )
 
 cc_library(
@@ -50,25 +46,6 @@ cc_library(
     srcs = ["pins.cpp"],
     hdrs = ["pins.h"],
     deps = [],
-)
-
-cc_library(
-    name = "profile",
-    srcs = ["profile.pb.c"],
-    hdrs = ["profile.pb.h"],
-    deps = [],
-)
-
-cc_library(
-    name = "teensy",
-    hdrs = ["teensy.h"],
-    deps = [],
-)
-
-cc_library(
-    name = "tlv493d_sensor",
-    hdrs = ["tlv493d_sensor.h"],
-    deps = [":hall_sensor"],
 )
 
 cc_library(

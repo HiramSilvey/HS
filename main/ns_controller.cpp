@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "hall_joystick.h"
+#include "hall_sensor.h"
 #include "mcu.h"
 #include "pins.h"
 #include "profile.pb.h"
@@ -37,9 +38,9 @@ const int kDPadDirection[16] = {
   NSGAMEPAD_DPAD_CENTERED,    // 1111 Up + Down cancel; Left + Right cancel
 };
 
-NSController::NSController(std::unique_ptr<MCU> mcu)
+NSController::NSController(std::unique_ptr<MCU> mcu, std::unique_ptr<HallSensor> sensor)
   : mcu_(std::move(mcu)), base_mapping_({}), mod_mapping_({}) {
-  LoadProfile();
+  LoadProfile(std::move(sensor));
 }
 
 bool NSController::Active() {
@@ -132,9 +133,10 @@ NSController::NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& 
   return mapping;
 }
 
-void NSController::LoadProfile() {
+void NSController::LoadProfile(std::unique_ptr<HallSensor> sensor) {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH, mcu_);
-  joystick_ = std::make_unique<HallJoystick>(0, 255, layout.joystick_threshold);
+  joystick_ = std::make_unique<HallJoystick>(mcu_, std::move(sensor),
+                                             0, 255, layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
     mod_mapping_ = GetButtonPinMapping(layout.mod);
@@ -190,7 +192,7 @@ void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
 void NSController::Loop() {
   NSGamepad.releaseAll();
 
-  HallJoystick::Coordinates coords = joystick_->GetCoordinates();
+  HallJoystick::Coordinates coords = joystick_->GetCoordinates(mcu_);
   NSGamepad.leftYAxis(joystick_->get_max()-coords.y);
   NSGamepad.leftXAxis(coords.x);
 

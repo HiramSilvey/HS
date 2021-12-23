@@ -2,12 +2,12 @@
 
 #include "util.h"
 
-#include <EEPROM.h>
+#include <memory>
 
-int Util::GetIntFromEEPROM(int address) {
-  byte one = EEPROM.read(address);
-  byte two = EEPROM.read(address+1);
-  byte three = EEPROM.read(address+2);
-  byte four = EEPROM.read(address+3);
+int Util::GetIntFromEEPROM(const std::unique_ptr<MCU>& mcu, int address) {
+  byte one = mcu->EEPROMRead(address);
+  byte two = mcu->EEPROMRead(address+1);
+  byte three = mcu->EEPROMRead(address+2);
+  byte four = mcu->EEPROMRead(address+3);
   return one << 24 | two << 16 | three << 8 | four;
 }

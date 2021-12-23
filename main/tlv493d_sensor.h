@@ -5,7 +5,7 @@
 
 #include "hall_sensor.h"
 
-#include <tlv493d.h>
+#include <Tlv493d.h>
 
 class Tlv493dSensor : public HallSensor {
 public:

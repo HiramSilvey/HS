@@ -3,7 +3,13 @@ configurator/debug/
 configurator/target/
 *_pb2\.*
 __pycache__
-configurator/profiles
+configurator/profiles/
 *\.pb\.*
 .DS_Store
-bazel*
+main/CMakeCache.txt
+main/CMakeFiles/
+main/*\.cmake
+main/_deps/
+main/lib/
+main/lib*
+main/Makefile

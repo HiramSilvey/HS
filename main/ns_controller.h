@@ -9,11 +9,12 @@
 
 #include "controller.h"
 #include "hall_joystick.h"
+#include "hall_sensor.h"
 #include "mcu.h"
 
 class NSController: public Controller {
 public:
-  NSController(std::unique_ptr<MCU> mcu);
+  NSController(std::unique_ptr<MCU> mcu, std::unique_ptr<HallSensor> sensor);
   static bool Active();
   void Loop() override;
 
