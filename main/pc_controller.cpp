@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "hall_joystick.h"
-#include "hall_sensor.h"
 #include "mcu.h"
 #include "pins.h"
 #include "profile.pb.h"
@@ -37,10 +36,10 @@ const int kDPadAngle[16] = {
   -1,   // 1111 Up + Down cancel; Left + Right cancel
 };
 
-PCController::PCController(std::unique_ptr<MCU> mcu, std::unique_ptr<HallSensor> sensor)
+PCController::PCController(std::unique_ptr<MCU> mcu)
   : mcu_(std::move(mcu)), base_mapping_({}), mod_mapping_({}) {
-  LoadProfile(std::move(sensor));
-  Joystick.useManualSend(true);
+  LoadProfile();
+  mcu_->JoystickUseManualSend();
 }
 
 bool PCController::Active() {
@@ -149,9 +148,9 @@ PCController::PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& 
   return mapping;
 }
 
-void PCController::LoadProfile(std::unique_ptr<HallSensor> sensor) {
+void PCController::LoadProfile() {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_PC, mcu_);
-  joystick_ = std::make_unique<HallJoystick>(mcu_, std::move(sensor), 0, 1023,
+  joystick_ = std::make_unique<HallJoystick>(mcu_, 0, 1023,
                                              layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
@@ -189,10 +188,18 @@ int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
 }
 
 void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
-  Joystick.Z(Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral(), mcu_));
-  Joystick.Zrotate(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral(), mcu_));
-  Joystick.sliderLeft(Controller::ResolveSOCD(mapping.slider_left, joystick_->get_neutral(), mcu_));
-  Joystick.sliderRight(Controller::ResolveSOCD(mapping.slider_right, joystick_->get_neutral(), mcu_));
+  mcu_->SetJoystickZ(Controller::ResolveSOCD(mapping.z_y,
+                                             joystick_->get_neutral(),
+                                             mcu_));
+  mcu_->SetJoystickZRotate(Controller::ResolveSOCD(mapping.z_x,
+                                                   joystick_->get_neutral(),
+                                                   mcu_));
+  mcu_->SetJoystickSliderLeft(Controller::ResolveSOCD(mapping.slider_left,
+                                                      joystick_->get_neutral(),
+                                                      mcu_));
+  mcu_->SetJoystickSliderRight(Controller::ResolveSOCD(mapping.slider_right,
+                                                       joystick_->get_neutral(),
+                                                       mcu_));
 
   for (const auto& element : mapping.button_id_to_pins) {
     bool active = false;
@@ -202,16 +209,16 @@ void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
         break;
       }
     }
-    Joystick.button(element.first, active);
+    mcu_->SetJoystickButton(element.first, active);
   }
 
-  Joystick.hat(GetDPadAngle(mapping));
+  mcu_->SetJoystickHat(GetDPadAngle(mapping));
 }
 
 void PCController::Loop() {
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(mcu_);
-  Joystick.X(coords.x);
-  Joystick.Y(joystick_->get_max()-coords.y);
+  mcu_->SetJoystickX(coords.x);
+  mcu_->SetJoystickY(joystick_->get_max()-coords.y);
 
   bool mod_active = false;
   for (const auto& pin : base_mapping_.mod) {
@@ -227,5 +234,5 @@ void PCController::Loop() {
     UpdateButtons(base_mapping_);
   }
 
-  Joystick.send_now();
+  mcu_->JoystickSendNow();
 }

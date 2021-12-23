@@ -52,21 +52,12 @@ target_link_libraries(
 )
 
 add_library(
-  hall_sensor INTERFACE
-)
-target_include_directories(
-  hall_sensor INTERFACE
-  .
-)
-
-add_library(
   hall_joystick
   hall_joystick.h
   hall_joystick.cpp
 )
 target_link_libraries(
   hall_joystick
-  hall_sensor
   mcu
   util
 )

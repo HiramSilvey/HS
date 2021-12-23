@@ -5,11 +5,10 @@
 #include <memory>
 
 #include "hall_joystick.h"
-#include "hall_sensor.h"
 #include "mcu.h"
+#include "nspad.h"
 #include "pins.h"
 #include "profile.pb.h"
-#include "usb_nsgamepad.h"
 
 using Layout = hs_profile_Profile_Layout;
 using Layer = hs_profile_Profile_Layer;
@@ -17,30 +16,29 @@ using Action = hs_profile_Profile_Layer_Action;
 
 extern volatile uint8_t usb_configuration;
 
-// DPad direction with neutral SOCD.
-const int kDPadDirection[16] = {
-  // Bit order: Up, Down, Left, Right
-  NSGAMEPAD_DPAD_CENTERED,    // 0000 None
-  NSGAMEPAD_DPAD_RIGHT,       // 0001
-  NSGAMEPAD_DPAD_LEFT,        // 0010
-  NSGAMEPAD_DPAD_CENTERED,    // 0011 Left + Right cancel
-  NSGAMEPAD_DPAD_DOWN,        // 0100
-  NSGAMEPAD_DPAD_DOWN_RIGHT,  // 0101
-  NSGAMEPAD_DPAD_DOWN_LEFT,   // 0110
-  NSGAMEPAD_DPAD_DOWN,        // 0111 Left + Right cancel
-  NSGAMEPAD_DPAD_UP,          // 1000
-  NSGAMEPAD_DPAD_UP_RIGHT,    // 1001
-  NSGAMEPAD_DPAD_UP_LEFT,     // 1010
-  NSGAMEPAD_DPAD_UP,          // 1011 Left + Right cancel
-  NSGAMEPAD_DPAD_CENTERED,    // 1100 Up + Down cancel
-  NSGAMEPAD_DPAD_RIGHT,       // 1101 Up + Down cancel
-  NSGAMEPAD_DPAD_LEFT,        // 1110 Up + Down cancel
-  NSGAMEPAD_DPAD_CENTERED,    // 1111 Up + Down cancel; Left + Right cancel
-};
+NSController::NSController(std::unique_ptr<MCU> mcu,
+                           std::unique_ptr<NSPad> nsgamepad)
+  : mcu_(std::move(mcu)), nsgamepad_(std::move(nsgamepad)), base_mapping_({}),
+    mod_mapping_({}) {
+  // DPad direction with neutral SOCD. Bit order: Up, Down, Left, Right
+  dpad_direction_[0] = nsgamepad_->DPadCentered();   // 0000 None
+  dpad_direction_[1] = nsgamepad_->DPadRight();      // 0001
+  dpad_direction_[2] = nsgamepad_->DPadLeft();       // 0010
+  dpad_direction_[3] = nsgamepad_->DPadCentered();   // 0011 Left + Right cancel
+  dpad_direction_[4] = nsgamepad_->DPadDown();       // 0100
+  dpad_direction_[5] = nsgamepad_->DPadDownRight();  // 0101
+  dpad_direction_[6] = nsgamepad_->DPadDownLeft();   // 0110
+  dpad_direction_[7] = nsgamepad_->DPadDown();       // 0111 Left + Right cancel
+  dpad_direction_[8] = nsgamepad_->DPadUp();         // 1000
+  dpad_direction_[9] = nsgamepad_->DPadUpRight();    // 1001
+  dpad_direction_[10] = nsgamepad_->DPadUpLeft();    // 1010
+  dpad_direction_[11] = nsgamepad_->DPadUp();        // 1011 Left + Right cancel
+  dpad_direction_[12] = nsgamepad_->DPadCentered();  // 1100 Up + Down cancel
+  dpad_direction_[13] = nsgamepad_->DPadRight();     // 1101 Up + Down cancel
+  dpad_direction_[14] = nsgamepad_->DPadLeft();      // 1110 Up + Down cancel
+  dpad_direction_[15] = nsgamepad_->DPadCentered();  // 1111 Up + Down cancel; Left + Right cancel
 
-NSController::NSController(std::unique_ptr<MCU> mcu, std::unique_ptr<HallSensor> sensor)
-  : mcu_(std::move(mcu)), base_mapping_({}), mod_mapping_({}) {
-  LoadProfile(std::move(sensor));
+  LoadProfile();
 }
 
 bool NSController::Active() {
@@ -133,10 +131,9 @@ NSController::NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& 
   return mapping;
 }
 
-void NSController::LoadProfile(std::unique_ptr<HallSensor> sensor) {
+void NSController::LoadProfile() {
   Layout layout = FetchProfile(hs_profile_Profile_Platform_SWITCH, mcu_);
-  joystick_ = std::make_unique<HallJoystick>(mcu_, std::move(sensor),
-                                             0, 255, layout.joystick_threshold);
+  joystick_ = std::make_unique<HallJoystick>(mcu_, 0, 255, layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
     mod_mapping_ = GetButtonPinMapping(layout.mod);
@@ -169,32 +166,32 @@ int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
       break;
     }
   }
-  return kDPadDirection[bits];
+  return dpad_direction_[bits];
 }
 
 void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
-  NSGamepad.rightYAxis(joystick_->get_max()-
+  nsgamepad_->SetRightYAxis(joystick_->get_max()-
                        Controller::ResolveSOCD(mapping.z_y, joystick_->get_neutral(), mcu_));
-  NSGamepad.rightXAxis(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral(), mcu_));
+  nsgamepad_->SetRightXAxis(Controller::ResolveSOCD(mapping.z_x, joystick_->get_neutral(), mcu_));
 
   for (const auto& element : mapping.button_id_to_pins) {
     for (const auto& pin : element.second) {
       if (mcu_->DigitalReadLow(pin)) {
-        NSGamepad.press(element.first);
+        nsgamepad_->Press(element.first);
         break;
       }
     }
   }
 
-  NSGamepad.dPad(GetDPadDirection(mapping));
+  nsgamepad_->SetDPad(GetDPadDirection(mapping));
 }
 
 void NSController::Loop() {
-  NSGamepad.releaseAll();
+  nsgamepad_->ReleaseAll();
 
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(mcu_);
-  NSGamepad.leftYAxis(joystick_->get_max()-coords.y);
-  NSGamepad.leftXAxis(coords.x);
+  nsgamepad_->SetLeftYAxis(joystick_->get_max()-coords.y);
+  nsgamepad_->SetLeftXAxis(coords.x);
 
   bool mod_active = false;
   for (const auto& pin : base_mapping_.mod) {
@@ -210,5 +207,5 @@ void NSController::Loop() {
     UpdateButtons(base_mapping_);
   }
 
-  NSGamepad.loop();
+  nsgamepad_->Loop();
 }

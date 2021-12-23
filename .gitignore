@@ -6,10 +6,4 @@ __pycache__
 configurator/profiles/
 *\.pb\.*
 .DS_Store
-main/CMakeCache.txt
-main/CMakeFiles/
-main/*\.cmake
-main/_deps/
-main/lib/
-main/lib*
-main/Makefile
+main/build/

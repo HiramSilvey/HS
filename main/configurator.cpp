@@ -2,63 +2,63 @@
 
 #include "configurator.h"
 
-#include "Arduino.h"
-#include <EEPROM.h>
-#include <Tlv493d.h>
+#include <memory>
+
+#include "mcu.h"
 #include "util.h"
 
-void WriteToSerial(int val) {
-  byte bytes[4] = {val >> 24,
-                   val >> 16 & 0xFF,
-                   val >> 8 & 0xFF,
-                   val & 0xFF};
-  Serial.write(bytes, 4);
+void WriteToSerial(std::unique_ptr<MCU>& mcu, int val) {
+  uint8_t bytes[4] = {val >> 24,
+                      val >> 16 & 0xFF,
+                      val >> 8 & 0xFF,
+                      val & 0xFF};
+  mcu->SerialWrite(bytes, 4);
 }
 
-void SaveToEEPROM(int val, int address) {
-  byte one = val >> 24;
-  byte two = val >> 16 & 0xFF;
-  byte three = val >> 8 & 0xFF;
-  byte four = val & 0xFF;
+void SaveToEEPROM(std::unique_ptr<MCU>& mcu, int val, int address) {
+  uint8_t one = val >> 24;
+  uint8_t two = val >> 16 & 0xFF;
+  uint8_t three = val >> 8 & 0xFF;
+  uint8_t four = val & 0xFF;
 
-  EEPROM.update(address, one);
-  EEPROM.update(address+1, two);
-  EEPROM.update(address+2, three);
-  EEPROM.update(address+3, four);
+  mcu->EEPROMUpdate(address, one);
+  mcu->EEPROMUpdate(address+1, two);
+  mcu->EEPROMUpdate(address+2, three);
+  mcu->EEPROMUpdate(address+3, four);
 }
 
-void Configurator::FetchStoredBounds() {
-  int center_x = Util::GetIntFromEEPROM(0);
-  int center_y = Util::GetIntFromEEPROM(4);
-  int range = Util::GetIntFromEEPROM(8);
+void Configurator::FetchStoredBounds(std::unique_ptr<MCU>& mcu) {
+  int center_x = Util::GetIntFromEEPROM(mcu, 0);
+  int center_y = Util::GetIntFromEEPROM(mcu, 4);
+  int range = Util::GetIntFromEEPROM(mcu, 8);
 
-  WriteToSerial(center_x);
-  WriteToSerial(center_y);
-  WriteToSerial(range);
+  WriteToSerial(mcu, center_x);
+  WriteToSerial(mcu, center_y);
+  WriteToSerial(mcu, range);
 }
 
-void Configurator::FetchJoystickCoords(Tlv493d& sensor) {
-  sensor.updateData();
-  float z = sensor.getZ();
-  int x = sensor.getX() / z * 1000000;
-  int y = sensor.getY() / z * 1000000;
+void Configurator::FetchJoystickCoords(std::unique_ptr<MCU>& mcu) {
+  mcu->UpdateHallData();
+  float z = mcu->GetHallZ();
+  int x = mcu->GetHallX() / z * 1000000;
+  int y = mcu->GetHallY() / z * 1000000;
 
-  WriteToSerial(x);
-  WriteToSerial(y);
+  WriteToSerial(mcu, x);
+  WriteToSerial(mcu, y);
 }
 
-void Configurator::CalibrateJoystick(Tlv493d& sensor) {
+void Configurator::CalibrateJoystick(std::unique_ptr<MCU>& mcu) {
   float min_x = 0;
   float max_x = 0;
   float min_y = 0;
   float max_y = 0;
 
-  uint64_t end_time = millis() + 15000;  // 15 seconds from now.
-  while (millis() < end_time) {
-    sensor.updateData();
-    float z = sensor.getZ();
-    float x = sensor.getX() / z;
-    float y = sensor.getY() / z;
+  uint64_t end_time = mcu->Millis() + 15000;  // 15 seconds from now.
+  while (mcu->Millis() < end_time) {
+    mcu->UpdateHallData();
+    float z = mcu->GetHallZ();
+    float x = mcu->GetHallX() / z;
+    float y = mcu->GetHallY() / z;
 
     if (x < min_x) {
       min_x = x;
@@ -79,67 +79,62 @@ void Configurator::CalibrateJoystick(Tlv493d& sensor) {
   int center_y = (min_y + range_y) * 1000000;
   int range = range_x >= range_y ? range_x * 1000000 : range_y * 1000000;
 
-  WriteToSerial(center_x);
-  WriteToSerial(center_y);
-  WriteToSerial(range);
+  WriteToSerial(mcu, center_x);
+  WriteToSerial(mcu, center_y);
+  WriteToSerial(mcu, range);
 }
 
-void Configurator::SaveCalibration() {
+void Configurator::SaveCalibration(std::unique_ptr<MCU>& mcu) {
   int bytes_to_read = 12;
   int address = 0;
   while (address < bytes_to_read) {
-    if (Serial.available()) {
-      EEPROM.update(address, Serial.read());
+    if (mcu->SerialAvailable()) {
+      mcu->EEPROMUpdate(address, mcu->SerialRead());
       address++;
     }
   }
-  Serial.write(0);  // Done.
+  mcu->SerialWrite(0);  // Done.
 }
 
-void Configurator::StoreProfiles() {
-  while (Serial.available() < 2) {}
-  int num_bytes = Serial.read() << 8 | Serial.read();
+void Configurator::StoreProfiles(std::unique_ptr<MCU>& mcu) {
+  while (mcu->SerialAvailable() < 2) {}
+  int num_bytes = mcu->SerialRead() << 8 | mcu->SerialRead();
   int base_address = 12;  // 0-11 are reserved for joystick calibration values.
   int curr_address = base_address;
   while (curr_address < base_address + num_bytes) {
-    if (Serial.available()) {
-      byte data = Serial.read();
-      EEPROM.update(curr_address, data);
+    if (mcu->SerialAvailable()) {
+      uint8_t data = mcu->SerialRead();
+      mcu->EEPROMUpdate(curr_address, data);
       curr_address++;
     }
   }
-  Serial.write(0);  // Done.
+  mcu->SerialWrite(0);  // Done.
 }
 
-void Configurator::Configure() {
-  Tlv493d sensor = Tlv493d();
-  sensor.begin();
-  sensor.setAccessMode(sensor.LOWPOWERMODE);
-  sensor.disableTemp();
-
+void Configurator::Configure(std::unique_ptr<MCU> mcu) {
   while(true) {
-    if (Serial.available() > 0) {
-      byte data = Serial.read();
+    if (mcu->SerialAvailable() > 0) {
+      uint8_t data = mcu->SerialRead();
       if (data > 4) {
-        Serial.write(1);  // Error.
+        mcu->SerialWrite(1);  // Error.
         continue;
       }
-      Serial.write(0);  // OK.
+      mcu->SerialWrite(0);  // OK.
       switch(data) {
       case 0:
-        FetchStoredBounds();
+        FetchStoredBounds(mcu);
         break;
       case 1:
-        FetchJoystickCoords(sensor);
+        FetchJoystickCoords(mcu);
         break;
       case 2:
-        CalibrateJoystick(sensor);
+        CalibrateJoystick(mcu);
         break;
       case 3:
-        SaveCalibration();
+        SaveCalibration(mcu);
         break;
       case 4:
-        StoreProfiles();
+        StoreProfiles(mcu);
         break;
       }
     }

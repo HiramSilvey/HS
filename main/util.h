@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "mcu.h"
+
 class Util {
 public:
   // Read 4 bytes from EEPROM and return it as a single integer.

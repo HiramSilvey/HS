@@ -4,15 +4,12 @@
 
 #include <memory>
 
-#include "hall_sensor.h"
 #include "mcu.h"
 #include "util.h"
 
 HallJoystick::HallJoystick(const std::unique_ptr<MCU>& mcu,
-                           std::unique_ptr<HallSensor> sensor,
                            int min, int max, int threshold)
-  : sensor_(sensor),
-    out_({.min = min, .max = max}),
+  : out_({.min = min, .max = max}),
     out_neutral_((max - min + 1) / 2 + min),
     threshold_({threshold * -1, threshold}) {
   int neutral_x = Util::GetIntFromEEPROM(mcu, 0);
@@ -42,10 +39,10 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
 
 HallJoystick::Coordinates HallJoystick::GetCoordinates(
                           const std::unique_ptr<MCU>& mcu) {
-  sensor_->UpdateData();
-  float z = sensor_->GetZ();
-  int x = sensor_->GetX() / z * 1000000;
-  int y = sensor_->GetY() / z * 1000000;
+  mcu->UpdateHallData();
+  float z = mcu->GetHallZ();
+  int x = mcu->GetHallX() / z * 1000000;
+  int y = mcu->GetHallY() / z * 1000000;
 
   x = Normalize(mcu, x, x_in_);
   y = Normalize(mcu, y, y_in_);

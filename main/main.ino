@@ -8,30 +8,27 @@
 #include "ns_controller.h"
 #include "pc_controller.h"
 #include "teensy.h"
-#include "tlv493d_sensor.h"
+#include "nspad_impl.h"
 
 std::unique_ptr<Controller> controller;
-std::unique_ptr<Teensy> teensy;
-std::unique_ptr<Tlv493d> sensor;
 extern uint8_t nsgamepad_active;
 
 void setup() {
   delay(100);
 
-  teensy = std::make_unique<Teensy>();
-  sensor = std::make_unique<Tlv493d>();
+  auto teensy = std::make_unique<Teensy>();
   if (teensy->DigitalReadLow(kRightIndexExtra)) {
-    Configurator::Configure();
+    Configurator::Configure(std::move(teensy));
+    exit(0);
   }
 
   while(true) {
     if (nsgamepad_active && NSController::Active()) {
-      controller = std::make_unique<NSController>(std::move(teensy),
-                                                  std::move(sensor));
+      auto nsgamepad = std::make_unique<NSPadImpl>();
+      controller = std::make_unique<NSController>(std::move(teensy), std::move(nsgamepad));
       break;
     } else if (PCController::Active()) {
-      controller = std::make_unique<PCController>(std::move(teensy),
-                                                  std::move(sensor));
+      controller = std::make_unique<PCController>(std::move(teensy));
       break;
     }
     delay(50);

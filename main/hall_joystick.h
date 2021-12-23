@@ -3,11 +3,8 @@
 #ifndef HALL_JOYSTICK_H_
 #define HALL_JOYSTICK_H_
 
-#include "hall_sensor.h"
-
 #include <memory>
 
-#include "hall_sensor.h"
 #include "mcu.h"
 
 class HallJoystick {
@@ -15,7 +12,6 @@ public:
   // Minimum and maximum values each joystick axis is expected to output +
   // digital joystick activation threshold.
   explicit HallJoystick(const std::unique_ptr<MCU>& mcu,
-                        std::unique_ptr<HallSensor> sensor,
                         int min, int max, int threshold);
 
   int get_min();
@@ -42,9 +38,6 @@ private:
 
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);
-
-  // 3D hall effect sensor.
-  std::unique_ptr<HallSensor> sensor_;
 
   // Input data bounds.
   Bounds x_in_;

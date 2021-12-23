@@ -3,17 +3,19 @@
 #ifndef CONFIGURATOR_H_
 #define CONFIGURATOR_H_
 
-#include <Tlv493d.h>
+#include <memory>
+
+#include "mcu.h"
 
 class Configurator {
 public:
-  static void Configure();
+  static void Configure(std::unique_ptr<MCU> mcu);
 private:
-  static void FetchStoredBounds();
-  static void FetchJoystickCoords(Tlv493d& sensor);
-  static void CalibrateJoystick(Tlv493d& sensor);
-  static void SaveCalibration();
-  static void StoreProfiles();
+  static void FetchStoredBounds(std::unique_ptr<MCU>& mcu);
+  static void FetchJoystickCoords(std::unique_ptr<MCU>& mcu);
+  static void CalibrateJoystick(std::unique_ptr<MCU>& mcu);
+  static void SaveCalibration(std::unique_ptr<MCU>& mcu);
+  static void StoreProfiles(std::unique_ptr<MCU>& mcu);
 };
 
 #endif  // CONFIGURATOR_H_
