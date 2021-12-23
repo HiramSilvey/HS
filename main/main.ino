@@ -2,13 +2,13 @@
 
 #include <memory>
 
-#include "pins.h"
 #include "configurator.h"
 #include "controller.h"
 #include "ns_controller.h"
-#include "pc_controller.h"
-#include "teensy_impl.h"
 #include "nspad_impl.h"
+#include "pc_controller.h"
+#include "pins.h"
+#include "teensy_impl.h"
 
 std::unique_ptr<Controller> controller;
 extern uint8_t nsgamepad_active;
@@ -22,10 +22,11 @@ void setup() {
     exit(0);
   }
 
-  while(true) {
+  while (true) {
     if (nsgamepad_active && NSController::Active()) {
       auto nsgamepad = std::make_unique<NSPadImpl>();
-      controller = std::make_unique<NSController>(std::move(teensy), std::move(nsgamepad));
+      controller = std::make_unique<NSController>(std::move(teensy),
+                                                  std::move(nsgamepad));
       break;
     } else if (PCController::Active()) {
       controller = std::make_unique<PCController>(std::move(teensy));
@@ -35,6 +36,4 @@ void setup() {
   }
 }
 
-void loop() {
-  controller->Loop();
-}
+void loop() { controller->Loop(); }

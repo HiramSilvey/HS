@@ -4,7 +4,7 @@
 #define NSPAD_H_
 
 class NSPad {
-public:
+ public:
   virtual ~NSPad() {}
 
   virtual int DPadCentered() const = 0;

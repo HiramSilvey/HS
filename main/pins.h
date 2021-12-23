@@ -4,6 +4,7 @@
 #define PINS_H_
 
 #include <vector>
+
 #include "profile.pb.h"
 
 // Button pins.
@@ -29,14 +30,15 @@ const int kRightMiddleExtra = 20;
 const int kRightRingExtra = 21;
 
 class Pins {
-public:
+ public:
   struct ActionPin {
     hs_profile_Profile_Layer_Action action;
     int pin;
   };
 
   // Get pins associated with each profile layer action.
-  static std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layer& layer);
+  static std::vector<ActionPin> GetActionPins(
+      const hs_profile_Profile_Layer& layer);
 };
 
 #endif  // PINS_H_

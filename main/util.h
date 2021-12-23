@@ -5,12 +5,13 @@
 
 #include <memory>
 
-#include "mcu.h"
+#include "teensy.h"
 
 class Util {
-public:
+ public:
   // Read 4 bytes from EEPROM and return it as a single integer.
-  static int GetIntFromEEPROM(const std::unique_ptr<MCU>& mcu, int address);
+  static int GetIntFromEEPROM(const std::unique_ptr<Teensy>& teensy,
+                              int address);
 };
 
 #endif  // UTIL_H_

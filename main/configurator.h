@@ -5,17 +5,18 @@
 
 #include <memory>
 
-#include "mcu.h"
+#include "teensy.h"
 
 class Configurator {
-public:
-  static void Configure(std::unique_ptr<MCU> mcu);
-private:
-  static void FetchStoredBounds(const std::unique_ptr<MCU>& mcu);
-  static void FetchJoystickCoords(const std::unique_ptr<MCU>& mcu);
-  static void CalibrateJoystick(const std::unique_ptr<MCU>& mcu);
-  static void SaveCalibration(const std::unique_ptr<MCU>& mcu);
-  static void StoreProfiles(const std::unique_ptr<MCU>& mcu);
+ public:
+  static void Configure(std::unique_ptr<Teensy> teensy);
+
+ private:
+  static void FetchStoredBounds(const std::unique_ptr<Teensy>& teensy);
+  static void FetchJoystickCoords(const std::unique_ptr<Teensy>& teensy);
+  static void CalibrateJoystick(const std::unique_ptr<Teensy>& teensy);
+  static void SaveCalibration(const std::unique_ptr<Teensy>& teensy);
+  static void StoreProfiles(const std::unique_ptr<Teensy>& teensy);
 };
 
 #endif  // CONFIGURATOR_H_

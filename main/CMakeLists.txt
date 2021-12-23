@@ -15,10 +15,10 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_library(
-  mcu INTERFACE
+  teensy INTERFACE
 )
 target_include_directories(
-  mcu INTERFACE
+  teensy INTERFACE
   .
 )
 
@@ -47,7 +47,7 @@ add_library(
 )
 target_link_libraries(
   controller
-  mcu
+  teensy
   profile
 )
 
@@ -58,7 +58,7 @@ add_library(
 )
 target_link_libraries(
   hall_joystick
-  mcu
+  teensy
   util
 )
 
@@ -71,16 +71,16 @@ target_link_libraries(
   pc_controller
   controller
   hall_joystick
-  mcu
+  teensy
 )
 
 add_library(
-  mock_mcu OBJECT
-  test/mock_mcu.h
+  mock_teensy OBJECT
+  test/mock_teensy.h
 )
 target_link_libraries(
-  mock_mcu
-  mcu
+  mock_teensy
+  teensy
 )
 
 add_executable(
@@ -90,7 +90,7 @@ add_executable(
 target_link_libraries(
   pc_controller_test
   gtest_main
-  mock_mcu
+  mock_teensy
 )
 
 include(GoogleTest)

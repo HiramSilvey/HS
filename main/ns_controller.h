@@ -9,16 +9,17 @@
 
 #include "controller.h"
 #include "hall_joystick.h"
-#include "mcu.h"
 #include "nspad.h"
+#include "teensy.h"
 
-class NSController: public Controller {
-public:
-  NSController(std::unique_ptr<MCU> mcu, std::unique_ptr<NSPad> nsgamepad);
+class NSController : public Controller {
+ public:
+  NSController(std::unique_ptr<Teensy> teensy,
+               std::unique_ptr<NSPad> nsgamepad);
   static bool Active();
   void Loop() override;
 
-private:
+ private:
   struct NSButtonPinMapping : Controller::ButtonPinMapping {
     std::vector<Controller::AnalogButton> z_y;
     std::vector<Controller::AnalogButton> z_x;
@@ -33,7 +34,7 @@ private:
   int GetDPadDirection(const NSButtonPinMapping& mapping);
   void UpdateButtons(const NSButtonPinMapping& mapping);
 
-  std::unique_ptr<MCU> mcu_;
+  std::unique_ptr<Teensy> teensy_;
   std::unique_ptr<NSPad> nsgamepad_;
   std::unique_ptr<HallJoystick> joystick_;
   int dpad_direction_[16];

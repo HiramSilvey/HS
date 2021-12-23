@@ -9,10 +9,10 @@
 
 #include "controller.h"
 #include "hall_joystick.h"
-#include "mcu.h"
+#include "teensy.h"
 
-class PCController: public Controller {
-public:
+class PCController : public Controller {
+ public:
   struct PCButtonPinMapping : Controller::ButtonPinMapping {
     std::vector<Controller::AnalogButton> z_y;
     std::vector<Controller::AnalogButton> z_x;
@@ -24,17 +24,17 @@ public:
     std::vector<int> hat_right;
   };
 
-  PCController(std::unique_ptr<MCU> mcu);
+  PCController(std::unique_ptr<Teensy> teensy);
   static bool Active();
   int GetDPadAngle(const PCButtonPinMapping& mapping);
   void Loop() override;
 
-private:
+ private:
   PCButtonPinMapping GetButtonPinMapping(const hs_profile_Profile_Layer& layer);
   void LoadProfile() override;
   void UpdateButtons(const PCButtonPinMapping& mapping);
 
-  std::unique_ptr<MCU> mcu_;
+  std::unique_ptr<Teensy> teensy_;
   std::unique_ptr<HallJoystick> joystick_;
   PCButtonPinMapping base_mapping_;
   PCButtonPinMapping mod_mapping_;

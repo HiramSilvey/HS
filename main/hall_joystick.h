@@ -5,14 +5,14 @@
 
 #include <memory>
 
-#include "mcu.h"
+#include "teensy.h"
 
 class HallJoystick {
-public:
+ public:
   // Minimum and maximum values each joystick axis is expected to output +
   // digital joystick activation threshold.
-  explicit HallJoystick(const std::unique_ptr<MCU>& mcu,
-                        int min, int max, int threshold);
+  explicit HallJoystick(const std::unique_ptr<Teensy>& teensy, int min, int max,
+                        int threshold);
 
   int get_min();
   int get_max();
@@ -24,9 +24,9 @@ public:
   };
 
   // Read and return X and Y axes values.
-  Coordinates GetCoordinates(const std::unique_ptr<MCU>& mcu);
+  Coordinates GetCoordinates(const std::unique_ptr<Teensy>& teensy);
 
-private:
+ private:
   struct Bounds {
     int min;
     int max;
@@ -34,7 +34,8 @@ private:
 
   // Map the provided int value from the specified input range to the global
   // output range.
-  int Normalize(const std::unique_ptr<MCU>& mcu, int val, const Bounds& in);
+  int Normalize(const std::unique_ptr<Teensy>& teensy, int val,
+                const Bounds& in);
 
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);

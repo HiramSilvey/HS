@@ -1,11 +1,11 @@
 // Copyright 2021 Hiram Silvey
 
-#ifndef MCU_H_
-#define MCU_H_
+#ifndef TEENSY_H_
+#define TEENSY_H_
 
-class MCU {
-public:
-  virtual ~MCU() {}
+class Teensy {
+ public:
+  virtual ~Teensy() {}
 
   // Arduino
   virtual bool DigitalReadLow(uint8_t pin) const = 0;
@@ -46,4 +46,4 @@ public:
   virtual float GetHallZ() = 0;
 };
 
-#endif  // MCU_H_
+#endif  // TEENSY_H_

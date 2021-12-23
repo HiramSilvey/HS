@@ -7,35 +7,36 @@
 #include <unordered_map>
 #include <vector>
 
-#include "mcu.h"
 #include "profile.pb.h"
+#include "teensy.h"
 
 class Controller {
-public:
+ public:
   struct AnalogButton {
     int value;
     int pin;
   };
 
   // Fetch the specified profile given the platform.
-  static hs_profile_Profile_Layout FetchProfile(const std::unique_ptr<MCU>& mcu,
-                                                const hs_profile_Profile_Platform& Platform);
+  static hs_profile_Profile_Layout FetchProfile(
+      const std::unique_ptr<Teensy>& teensy,
+      const hs_profile_Profile_Platform& Platform);
 
   // Resolve simultaneous opposing cardinal directions from button inputs.
-  static int ResolveSOCD(const std::unique_ptr<MCU>& mcu,
+  static int ResolveSOCD(const std::unique_ptr<Teensy>& teensy,
                          const std::vector<AnalogButton>& buttons,
                          int joystick_neutral);
 
   // Main loop to be run each tick.
   virtual void Loop() = 0;
 
-protected:
+ protected:
   struct ButtonPinMapping {
     std::unordered_map<int, std::vector<int>> button_id_to_pins;
     std::vector<int> mod;
   };
 
-private:
+ private:
   // Load the controller profile settings based on the button held.
   virtual void LoadProfile() = 0;
 };

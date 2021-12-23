@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include "mcu.h"
 #include "profile.pb.h"
+#include "teensy.h"
 
 using Platform = hs_profile_Profile_Platform;
 using PlatformConfig = hs_profile_Profile_PlatformConfig;
@@ -18,133 +18,113 @@ using DigitalAction = hs_profile_Profile_Layer_DigitalAction;
 
 const int kMinAddr = 12;
 const int kMasks[10] = {
-                       0b1,
-                       0b11,
-                       0b111,
-                       0b1111,
-                       0b11111,
-                       0b111111,
-                       0b1111111,
-                       0b11111111,
-                       0b111111111,
-                       0b1111111111,
+    0b1,      0b11,      0b111,      0b1111,      0b11111,
+    0b111111, 0b1111111, 0b11111111, 0b111111111, 0b1111111111,
 };
 const int kLenActionID = 5;
 const int kLenAnalogActionValue = 10;
 
 namespace {
 
-  std::vector<PlatformConfig> DecodeHeader(const std::unique_ptr<MCU>& mcu,
-                                           int addr) {
-    const uint8_t platform_bitmap = mcu->EEPROMRead(addr++);
-    std::vector<PlatformConfig> configs;
-    for (int platform = _hs_profile_Profile_Platform_MIN;
-         platform <= _hs_profile_Profile_Platform_MAX; platform++) {
-      if (platform_bitmap & (1 << (8 - platform))) {
-        PlatformConfig config;
-        config.platform = static_cast<Platform>(platform);
-        if (configs.size() % 2 == 0) {
-          config.position = mcu->EEPROMRead(addr) >> 4;
-        } else {
-          config.position = mcu->EEPROMRead(addr++) & 0xFF;
-        }
-        configs.push_back(config);
-      }
-    }
-    return configs;
-  }
-
-  int FetchData(const std::unique_ptr<MCU>& mcu, int remaining, int& addr,
-                uint8_t& curr_byte, int& unread) {
-    int data = 0;
-    while (remaining > 0) {
-      int offset = unread - remaining;
-      if (offset >= 0) {
-        data |= (curr_byte >> offset) & kMasks[remaining - 1];
+std::vector<PlatformConfig> DecodeHeader(const std::unique_ptr<Teensy>& teensy,
+                                         int addr) {
+  const uint8_t platform_bitmap = teensy->EEPROMRead(addr++);
+  std::vector<PlatformConfig> configs;
+  for (int platform = _hs_profile_Profile_Platform_MIN;
+       platform <= _hs_profile_Profile_Platform_MAX; platform++) {
+    if (platform_bitmap & (1 << (8 - platform))) {
+      PlatformConfig config;
+      config.platform = static_cast<Platform>(platform);
+      if (configs.size() % 2 == 0) {
+        config.position = teensy->EEPROMRead(addr) >> 4;
       } else {
-        data |= (curr_byte << offset * -1) & kMasks[remaining - 1];
+        config.position = teensy->EEPROMRead(addr++) & 0xFF;
       }
-      int fetched = unread < remaining ? unread : remaining;
-      remaining -= fetched;
-      unread -= fetched;
-      if (unread == 0) {
-        curr_byte = mcu->EEPROMRead(addr++);
-        unread = 8;
-      }
+      configs.push_back(config);
     }
-    return data;
   }
+  return configs;
+}
 
-  Layer DecodeLayer(const std::unique_ptr<MCU>& mcu, int& addr) {
-    Layer layer;
-    Action* actions[20] = {
-                           &layer.thumb_top,
-                           &layer.thumb_middle,
-                           &layer.thumb_bottom,
-                           &layer.index_top,
-                           &layer.index_middle,
-                           &layer.middle_top,
-                           &layer.middle_middle,
-                           &layer.middle_bottom,
-                           &layer.ring_top,
-                           &layer.ring_middle,
-                           &layer.ring_bottom,
-                           &layer.pinky_top,
-                           &layer.pinky_middle,
-                           &layer.pinky_bottom,
-                           &layer.left_index_extra,
-                           &layer.left_middle_extra,
-                           &layer.left_ring_extra,
-                           &layer.right_index_extra,
-                           &layer.right_middle_extra,
-                           &layer.right_ring_extra
-    };
-    uint8_t curr_byte = mcu->EEPROMRead(addr++);
-    int unread = 8;
-    for (Action* action : actions) {
-      int button_id = FetchData(mcu, kLenActionID, addr, curr_byte, unread);
-      if (button_id > _hs_profile_Profile_Layer_DigitalAction_MAX) {
-        action->action_type.analog.id =
-          static_cast<AnalogAction_ID>(button_id -
-                                       _hs_profile_Profile_Layer_DigitalAction_MAX);
-        int button_value = FetchData(mcu, kLenAnalogActionValue, addr,
-                                     curr_byte, unread);
-        action->action_type.analog.value = button_value;
-        action->which_action_type = hs_profile_Profile_Layer_Action_analog_tag;
-      } else {
-        action->action_type.digital = static_cast<DigitalAction>(button_id);
-        action->which_action_type = hs_profile_Profile_Layer_Action_digital_tag;
-      }
+int FetchData(const std::unique_ptr<Teensy>& teensy, int remaining, int& addr,
+              uint8_t& curr_byte, int& unread) {
+  int data = 0;
+  while (remaining > 0) {
+    int offset = unread - remaining;
+    if (offset >= 0) {
+      data |= (curr_byte >> offset) & kMasks[remaining - 1];
+    } else {
+      data |= (curr_byte << offset * -1) & kMasks[remaining - 1];
     }
-    return layer;
-  }
-
-  Layout DecodeBody(const std::unique_ptr<MCU>& mcu, int& addr) {
-    const int max_addr = addr + mcu->EEPROMRead(addr++) + 1;
-
-    Layout layout;
-    layout.joystick_threshold = mcu->EEPROMRead(addr++);
-    layout.base = DecodeLayer(mcu, addr);
-    if (addr < max_addr) {
-      layout.has_mod = true;
-      layout.mod = DecodeLayer(mcu, addr);
+    int fetched = unread < remaining ? unread : remaining;
+    remaining -= fetched;
+    unread -= fetched;
+    if (unread == 0) {
+      curr_byte = teensy->EEPROMRead(addr++);
+      unread = 8;
     }
-    return layout;
   }
+  return data;
+}
+
+Layer DecodeLayer(const std::unique_ptr<Teensy>& teensy, int& addr) {
+  Layer layer;
+  Action* actions[20] = {&layer.thumb_top,          &layer.thumb_middle,
+                         &layer.thumb_bottom,       &layer.index_top,
+                         &layer.index_middle,       &layer.middle_top,
+                         &layer.middle_middle,      &layer.middle_bottom,
+                         &layer.ring_top,           &layer.ring_middle,
+                         &layer.ring_bottom,        &layer.pinky_top,
+                         &layer.pinky_middle,       &layer.pinky_bottom,
+                         &layer.left_index_extra,   &layer.left_middle_extra,
+                         &layer.left_ring_extra,    &layer.right_index_extra,
+                         &layer.right_middle_extra, &layer.right_ring_extra};
+  uint8_t curr_byte = teensy->EEPROMRead(addr++);
+  int unread = 8;
+  for (Action* action : actions) {
+    int button_id = FetchData(teensy, kLenActionID, addr, curr_byte, unread);
+    if (button_id > _hs_profile_Profile_Layer_DigitalAction_MAX) {
+      action->action_type.analog.id = static_cast<AnalogAction_ID>(
+          button_id - _hs_profile_Profile_Layer_DigitalAction_MAX);
+      int button_value =
+          FetchData(teensy, kLenAnalogActionValue, addr, curr_byte, unread);
+      action->action_type.analog.value = button_value;
+      action->which_action_type = hs_profile_Profile_Layer_Action_analog_tag;
+    } else {
+      action->action_type.digital = static_cast<DigitalAction>(button_id);
+      action->which_action_type = hs_profile_Profile_Layer_Action_digital_tag;
+    }
+  }
+  return layer;
+}
+
+Layout DecodeBody(const std::unique_ptr<Teensy>& teensy, int& addr) {
+  const int max_addr = addr + teensy->EEPROMRead(addr++) + 1;
+
+  Layout layout;
+  layout.joystick_threshold = teensy->EEPROMRead(addr++);
+  layout.base = DecodeLayer(teensy, addr);
+  if (addr < max_addr) {
+    layout.has_mod = true;
+    layout.mod = DecodeLayer(teensy, addr);
+  }
+  return layout;
+}
 
 }  // namespace
 
-Layout Decoder::Decode(const std::unique_ptr<MCU>& mcu, Platform platform,
+Layout Decoder::Decode(const std::unique_ptr<Teensy>& teensy, Platform platform,
                        int position) {
-  const int encoded_len = (mcu->EEPROMRead(kMinAddr) << 8) | mcu->EEPROMRead(kMinAddr + 1);
+  const int encoded_len =
+      (teensy->EEPROMRead(kMinAddr) << 8) | teensy->EEPROMRead(kMinAddr + 1);
   const int max_addr = kMinAddr + encoded_len + 1;
 
   int curr_addr = kMinAddr + 2;
   while (curr_addr < max_addr) {
-    std::vector<PlatformConfig> configs = DecodeHeader(mcu, curr_addr);
+    std::vector<PlatformConfig> configs = DecodeHeader(teensy, curr_addr);
     // Advance past the header.
     curr_addr += configs.size() / 2 + configs.size() % 2 + 1;
-    if ([&]{
+    if ([&] {
           for (const auto& config : configs) {
             if (config.platform == platform && config.position == position) {
               return true;
@@ -155,12 +135,12 @@ Layout Decoder::Decode(const std::unique_ptr<MCU>& mcu, Platform platform,
       break;
     }
     // Advance to the header of the next profile.
-    curr_addr += mcu->EEPROMRead(curr_addr++);
+    curr_addr += teensy->EEPROMRead(curr_addr++);
   }
 
   if (curr_addr >= max_addr) {
-    mcu->Exit(1);
+    teensy->Exit(1);
   }
 
-  return DecodeBody(mcu, curr_addr);
+  return DecodeBody(teensy, curr_addr);
 }
