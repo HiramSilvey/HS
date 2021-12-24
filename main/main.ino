@@ -12,6 +12,7 @@
 
 std::unique_ptr<Controller> controller;
 extern uint8_t nsgamepad_active;
+extern volatile uint8_t usb_configuration;
 
 void setup() {
   delay(100);
@@ -23,13 +24,14 @@ void setup() {
   }
 
   while (true) {
-    if (nsgamepad_active && NSController::Active()) {
-      auto nsgamepad = std::make_unique<NSPadImpl>();
-      controller = std::make_unique<NSController>(std::move(teensy),
-                                                  std::move(nsgamepad));
-      break;
-    } else if (PCController::Active()) {
-      controller = std::make_unique<PCController>(std::move(teensy));
+    if (usb_configuration) {
+      if (nsgamepad_active) {
+        auto nsgamepad = std::make_unique<NSPadImpl>();
+        controller = std::make_unique<NSController>(std::move(teensy),
+                                                    std::move(nsgamepad));
+      } else {
+        controller = std::make_unique<PCController>(std::move(teensy));
+      }
       break;
     }
     delay(50);

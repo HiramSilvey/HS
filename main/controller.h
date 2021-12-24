@@ -10,6 +10,11 @@
 #include "profile.pb.h"
 #include "teensy.h"
 
+struct AnalogButton {
+  int value;
+  int pin;
+};
+
 struct ButtonPinMapping {
   std::unordered_map<int, std::vector<int>> button_id_to_pins;
   std::vector<int> mod;
@@ -17,11 +22,6 @@ struct ButtonPinMapping {
 
 class Controller {
  public:
-  struct AnalogButton {
-    int value;
-    int pin;
-  };
-
   // Fetch the specified profile given the platform.
   static hs_profile_Profile_Layout FetchProfile(
       const std::unique_ptr<Teensy>& teensy,

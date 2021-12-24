@@ -13,8 +13,6 @@ using Layout = hs_profile_Profile_Layout;
 using Layer = hs_profile_Profile_Layer;
 using Action = hs_profile_Profile_Layer_Action;
 
-extern volatile uint8_t usb_configuration;
-
 // DPad degrees with neutral SOCD.
 const int kDPadAngle[16] = {
     // Bit order: Up, Down, Left, Right
@@ -41,8 +39,6 @@ PCController::PCController(std::unique_ptr<Teensy> teensy)
   LoadProfile();
   teensy_->JoystickUseManualSend();
 }
-
-bool PCController::Active() { return usb_configuration; }
 
 PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
   PCButtonPinMapping mapping;

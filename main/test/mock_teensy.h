@@ -8,6 +8,7 @@
 
 class MockTeensy : public Teensy {
  public:
+  MOCK_METHOD(uint8_t, GetUSBConfiguration, (), (const override));
   MOCK_METHOD(bool, DigitalReadLow, (uint8_t pin), (const override));
   MOCK_METHOD(void, Exit, (int status), (const override));
   MOCK_METHOD(int, Constrain, (int amount, int low, int high),

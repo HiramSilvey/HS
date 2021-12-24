@@ -36,9 +36,33 @@ endif()
 # etc. as appropriate
 enable_testing()
 
+set(NANOPB_DIR /Users/hiram/Documents/Arduino/libraries/Nanopb)
 add_executable(
   pc_controller_test
+  controller.h
+  controller.cpp
+  decoder.h
+  decoder.cpp
+  hall_joystick.h
+  hall_joystick.cpp
+  ${NANOPB_DIR}/pb.h
+  ${NANOPB_DIR}/pb_common.h
+  ${NANOPB_DIR}/pb_common.c
+  ${NANOPB_DIR}/pb_decode.h
+  ${NANOPB_DIR}/pb_decode.c
+  ${NANOPB_DIR}/pb_encode.h
+  ${NANOPB_DIR}/pb_encode.c
+  pc_controller.h
+  pc_controller.cpp
+  pins.h
+  pins.cpp
+  profile.pb.h
+  profile.pb.c
+  teensy.h
+  test/mock_teensy.h
   test/pc_controller_test.cpp
+  util.h
+  util.cpp
   )
 target_link_libraries(
   pc_controller_test
@@ -48,7 +72,8 @@ target_link_libraries(
 target_include_directories(
   pc_controller_test PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
-  /opt/arduino-1.8.13/libraries/Nanopb
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
   )
 
 include(GoogleTest)

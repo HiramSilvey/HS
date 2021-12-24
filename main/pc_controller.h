@@ -12,10 +12,10 @@
 #include "teensy.h"
 
 struct PCButtonPinMapping : ButtonPinMapping {
-  std::vector<Controller::AnalogButton> z_y;
-  std::vector<Controller::AnalogButton> z_x;
-  std::vector<Controller::AnalogButton> slider_left;
-  std::vector<Controller::AnalogButton> slider_right;
+  std::vector<AnalogButton> z_y;
+  std::vector<AnalogButton> z_x;
+  std::vector<AnalogButton> slider_left;
+  std::vector<AnalogButton> slider_right;
   std::vector<int> hat_up;
   std::vector<int> hat_down;
   std::vector<int> hat_left;
@@ -25,7 +25,6 @@ struct PCButtonPinMapping : ButtonPinMapping {
 class PCController : public Controller {
  public:
   PCController(std::unique_ptr<Teensy> teensy);
-  static bool Active();
   int GetDPadAngle(const PCButtonPinMapping& mapping);
   void Loop() override;
 

@@ -13,8 +13,8 @@
 #include "teensy.h"
 
 struct NSButtonPinMapping : ButtonPinMapping {
-  std::vector<Controller::AnalogButton> z_y;
-  std::vector<Controller::AnalogButton> z_x;
+  std::vector<AnalogButton> z_y;
+  std::vector<AnalogButton> z_x;
   std::vector<int> dpad_up;
   std::vector<int> dpad_down;
   std::vector<int> dpad_left;
@@ -25,7 +25,6 @@ class NSController : public Controller {
  public:
   NSController(std::unique_ptr<Teensy> teensy,
                std::unique_ptr<NSPad> nsgamepad);
-  static bool Active();
   void Loop() override;
 
  private:
