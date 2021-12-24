@@ -11,19 +11,19 @@
 #include "hall_joystick.h"
 #include "teensy.h"
 
+struct PCButtonPinMapping : ButtonPinMapping {
+  std::vector<Controller::AnalogButton> z_y;
+  std::vector<Controller::AnalogButton> z_x;
+  std::vector<Controller::AnalogButton> slider_left;
+  std::vector<Controller::AnalogButton> slider_right;
+  std::vector<int> hat_up;
+  std::vector<int> hat_down;
+  std::vector<int> hat_left;
+  std::vector<int> hat_right;
+};
+
 class PCController : public Controller {
  public:
-  struct PCButtonPinMapping : Controller::ButtonPinMapping {
-    std::vector<Controller::AnalogButton> z_y;
-    std::vector<Controller::AnalogButton> z_x;
-    std::vector<Controller::AnalogButton> slider_left;
-    std::vector<Controller::AnalogButton> slider_right;
-    std::vector<int> hat_up;
-    std::vector<int> hat_down;
-    std::vector<int> hat_left;
-    std::vector<int> hat_right;
-  };
-
   PCController(std::unique_ptr<Teensy> teensy);
   static bool Active();
   int GetDPadAngle(const PCButtonPinMapping& mapping);

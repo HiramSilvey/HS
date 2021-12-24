@@ -9,12 +9,13 @@
 class MockTeensy : public Teensy {
  public:
   MOCK_METHOD(bool, DigitalReadLow, (uint8_t pin), (const override));
+  MOCK_METHOD(void, Exit, (int status), (const override));
   MOCK_METHOD(int, Constrain, (int amount, int low, int high),
               (const override));
   MOCK_METHOD(void, SerialWrite, (uint8_t val), (const override));
   MOCK_METHOD(void, SerialWrite, (uint8_t * vals, int size), (const override));
-  MOCK_METHOD(int, SerialRead, ()(const override));
-  MOCK_METHOD(int, SerialAvailable, ()(const override));
+  MOCK_METHOD(int, SerialRead, (), (const override));
+  MOCK_METHOD(int, SerialAvailable, (), (const override));
   MOCK_METHOD(unsigned long, Millis, (), (const override));
   MOCK_METHOD(void, JoystickUseManualSend, (), (const override));
   MOCK_METHOD(void, SetJoystickX, (int val), (const override));

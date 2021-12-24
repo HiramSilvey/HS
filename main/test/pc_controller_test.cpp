@@ -13,7 +13,7 @@ using ::testing::Return;
 TEST(PCControllerTest, GetDPadAngleUp) {
   auto teensy = std::make_unique<MockTeensy>();
 
-  EXPECT_CALL(teensy, DigitalReadLow(_)).WillOnce(Return(true));
+  EXPECT_CALL(*teensy, DigitalReadLow(_)).WillOnce(Return(true));
 
   PCController controller(std::move(teensy));
 
@@ -21,5 +21,5 @@ TEST(PCControllerTest, GetDPadAngleUp) {
       .hat_up = {1},
   };
 
-  EXPECT_THAT(controller.GetDPadAngle(mapping), Equals(0));
+  EXPECT_EQ(controller.GetDPadAngle(mapping), 0);
 }

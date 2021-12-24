@@ -10,6 +10,11 @@
 #include "profile.pb.h"
 #include "teensy.h"
 
+struct ButtonPinMapping {
+  std::unordered_map<int, std::vector<int>> button_id_to_pins;
+  std::vector<int> mod;
+};
+
 class Controller {
  public:
   struct AnalogButton {
@@ -29,12 +34,6 @@ class Controller {
 
   // Main loop to be run each tick.
   virtual void Loop() = 0;
-
- protected:
-  struct ButtonPinMapping {
-    std::unordered_map<int, std::vector<int>> button_id_to_pins;
-    std::vector<int> mod;
-  };
 
  private:
   // Load the controller profile settings based on the button held.

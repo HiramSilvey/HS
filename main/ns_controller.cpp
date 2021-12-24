@@ -46,8 +46,7 @@ NSController::NSController(std::unique_ptr<Teensy> teensy,
 
 bool NSController::Active() { return usb_configuration; }
 
-NSController::NSButtonPinMapping NSController::GetButtonPinMapping(
-    const Layer& layer) {
+NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
   NSButtonPinMapping mapping;
 
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layer);

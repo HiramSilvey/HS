@@ -1,97 +1,55 @@
+# Template source: https://crascit.com/2015/07/25/cmake-gtest/
 cmake_minimum_required(VERSION 3.16)
-project(HS)
+project(HS VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/97a467571a0f615a4d96e79e4399c43221ca1232.zip
+# Download and unpack googletest at configure time.
+configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download"
 )
-# For Windows: Prevent overriding the parent project's compiler/linker settings
+execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download"
+)
+
+# Prevent GoogleTest from overriding our compiler/linker options
+# when building with Visual Studio.
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
 
+# Add googletest directly to our build. This adds the following targets:
+# gtest, gtest_main, gmock and gmock_main.
+add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src"
+                 "${CMAKE_BINARY_DIR}/googletest-build"
+)
+
+# The gtest/gmock targets carry header search path dependencies
+# automatically when using CMake 2.8.11 or later. Otherwise we
+# have to add them here ourselves.
+if(CMAKE_VERSION VERSION_LESS 2.8.11)
+    include_directories("${gtest_SOURCE_DIR}/include"
+                        "${gmock_SOURCE_DIR}/include"
+    )
+endif()
+
+# Now simply link your own targets against gtest, gmock,
+# etc. as appropriate
 enable_testing()
-
-add_library(
-  teensy INTERFACE
-)
-target_include_directories(
-  teensy INTERFACE
-  .
-)
-
-add_library(
-  pb INTERFACE
-)
-target_include_directories(
-  pb INTERFACE
-  /opt/arduino-1.8.13/libraries/Nanopb/
-)
-
-add_library(
-  profile
-  profile.pb.h
-  profile.pb.c
-)
-target_link_libraries(
-  profile
-  pb
-)
-
-add_library(
-  controller
-  controller.h
-  controller.cpp
-)
-target_link_libraries(
-  controller
-  teensy
-  profile
-)
-
-add_library(
-  hall_joystick
-  hall_joystick.h
-  hall_joystick.cpp
-)
-target_link_libraries(
-  hall_joystick
-  teensy
-  util
-)
-
-add_library(
-  pc_controller
-  pc_controller.h
-  pc_controller.cpp
-)
-target_link_libraries(
-  pc_controller
-  controller
-  hall_joystick
-  teensy
-)
-
-add_library(
-  mock_teensy OBJECT
-  test/mock_teensy.h
-)
-target_link_libraries(
-  mock_teensy
-  teensy
-)
 
 add_executable(
   pc_controller_test
   test/pc_controller_test.cpp
-)
+  )
 target_link_libraries(
   pc_controller_test
   gtest_main
-  mock_teensy
-)
+  gmock_main
+  )
+target_include_directories(
+  pc_controller_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  /opt/arduino-1.8.13/libraries/Nanopb
+  )
 
 include(GoogleTest)
 gtest_discover_tests(pc_controller_test)

@@ -44,8 +44,7 @@ PCController::PCController(std::unique_ptr<Teensy> teensy)
 
 bool PCController::Active() { return usb_configuration; }
 
-PCController::PCButtonPinMapping PCController::GetButtonPinMapping(
-    const Layer& layer) {
+PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
   PCButtonPinMapping mapping;
 
   std::vector<Pins::ActionPin> action_pins = Pins::GetActionPins(layer);
