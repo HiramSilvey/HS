@@ -37,8 +37,7 @@ endif()
 enable_testing()
 
 set(NANOPB_DIR /Users/hiram/Documents/Arduino/libraries/Nanopb)
-add_executable(
-  pc_controller_test
+set(SOURCE_FILES
   controller.h
   controller.cpp
   decoder.h
@@ -48,10 +47,6 @@ add_executable(
   ${NANOPB_DIR}/pb.h
   ${NANOPB_DIR}/pb_common.h
   ${NANOPB_DIR}/pb_common.c
-  ${NANOPB_DIR}/pb_decode.h
-  ${NANOPB_DIR}/pb_decode.c
-  ${NANOPB_DIR}/pb_encode.h
-  ${NANOPB_DIR}/pb_encode.c
   pc_controller.h
   pc_controller.cpp
   pins.h
@@ -60,9 +55,14 @@ add_executable(
   profile.pb.c
   teensy.h
   test/mock_teensy.h
-  test/pc_controller_test.cpp
   util.h
   util.cpp
+  )
+
+add_executable(
+  pc_controller_test
+  test/pc_controller_test.cpp
+  ${SOURCE_FILES}
   )
 target_link_libraries(
   pc_controller_test
