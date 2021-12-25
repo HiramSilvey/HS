@@ -44,7 +44,7 @@ protected:
   std::unique_ptr<MockTeensy> teensy_;
 };
 
-TEST_F(PCControllerTest, GetButtonPinMapping) {
+TEST_F(PCControllerTest, GetButtonPinMappingStandardDigital) {
   hs_profile_Profile_Layer layer = {
     .thumb_top = {
       .action_type.digital = hs_profile_Profile_Layer_DigitalAction_X,
@@ -109,6 +109,49 @@ TEST_F(PCControllerTest, GetButtonPinMapping) {
   expected_mapping.button_id_to_pins[12] = {kRingMiddle};
   expected_mapping.button_id_to_pins[10] = {kRingBottom};
   expected_mapping.button_id_to_pins[9] = {kPinkyTop};
+
+  PCController controller(std::move(teensy_));
+
+  EXPECT_EQ(controller.GetButtonPinMapping(layer), expected_mapping);
+}
+
+TEST_F(PCControllerTest, GetButtonPinMappingAnalog) {
+  hs_profile_Profile_Layer layer = {
+    .thumb_top = {
+      .action_type.analog = {
+        .id = hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y,
+        .value = 100,
+      },
+      .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
+    },
+    .thumb_middle = {
+      .action_type.analog = {
+        .id = hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X,
+        .value = 101,
+      },
+      .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
+    },
+    .pinky_middle = {
+      .action_type.analog = {
+        .id = hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_LEFT,
+        .value = 102,
+      },
+      .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
+    },
+    .pinky_bottom = {
+      .action_type.analog = {
+        .id = hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_RIGHT,
+        .value = 103,
+      },
+      .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
+    },
+  };
+
+  PCButtonPinMapping expected_mapping;
+  expected_mapping.z_y = {{100, kThumbTop}};
+  expected_mapping.z_x = {{101, kThumbMiddle}};
+  expected_mapping.slider_left = {{102, kPinkyMiddle}};
+  expected_mapping.slider_right = {{103, kPinkyBottom}};
 
   PCController controller(std::move(teensy_));
 
