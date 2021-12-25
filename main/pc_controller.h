@@ -25,14 +25,13 @@ struct PCButtonPinMapping : ButtonPinMapping {
 class PCController : public Controller {
  public:
   PCController(std::unique_ptr<Teensy> teensy);
+  PCButtonPinMapping GetButtonPinMapping(const hs_profile_Profile_Layer& layer);
+  void LoadProfile() override;
   int GetDPadAngle(const PCButtonPinMapping& mapping);
+  void UpdateButtons(const PCButtonPinMapping& mapping);
   void Loop() override;
 
  private:
-  PCButtonPinMapping GetButtonPinMapping(const hs_profile_Profile_Layer& layer);
-  void LoadProfile() override;
-  void UpdateButtons(const PCButtonPinMapping& mapping);
-
   std::unique_ptr<Teensy> teensy_;
   std::unique_ptr<HallJoystick> joystick_;
   PCButtonPinMapping base_mapping_;
