@@ -12,21 +12,36 @@
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Return;
+using ::testing::AllOf;
+using ::testing::Field;
+using ::testing::ElementsAreArray;
 
-bool operator ==(const AnalogButton& lhs, const AnalogButton& rhs) {
-  return lhs.value == rhs.value && lhs.pin == rhs.pin;
+std::vector<testing::Matcher<AnalogButton>> AnalogEq(const std::vector<AnalogButton>& expected) {
+  std::vector<testing::Matcher<AnalogButton>> matchers;
+  for (const auto& button : expected) {
+    matchers.push_back(
+                       AllOf(
+                             Field(&AnalogButton::value, button.value),
+                             Field(&AnalogButton::pin, button.pin)
+                             )
+                       );
+  }
+  return matchers;
 }
 
-bool operator ==(const PCButtonPinMapping& lhs, const PCButtonPinMapping& rhs) {
-  return lhs.button_id_to_pins == rhs.button_id_to_pins
-    && lhs.mod == rhs.mod
-    && lhs.z_y == rhs.z_y && lhs.z_x == rhs.z_x
-    && lhs.slider_left == rhs.slider_left
-    && lhs.slider_right == rhs.slider_right
-    && lhs.hat_up == rhs.hat_up
-    && lhs.hat_down == rhs.hat_down
-    && lhs.hat_left == rhs.hat_left
-    && lhs.hat_right == rhs.hat_right;
+auto MappingEq(const PCButtonPinMapping& expected) {
+  return AllOf(
+               Field(&PCButtonPinMapping::button_id_to_pins, expected.button_id_to_pins),
+               Field(&PCButtonPinMapping::mod, expected.mod),
+               Field(&PCButtonPinMapping::z_y, ElementsAreArray(AnalogEq(expected.z_y))),
+               Field(&PCButtonPinMapping::z_x, ElementsAreArray(AnalogEq(expected.z_x))),
+               Field(&PCButtonPinMapping::slider_left, ElementsAreArray(AnalogEq(expected.slider_left))),
+               Field(&PCButtonPinMapping::slider_right, ElementsAreArray(AnalogEq(expected.slider_right))),
+               Field(&PCButtonPinMapping::hat_up, expected.hat_up),
+               Field(&PCButtonPinMapping::hat_down, expected.hat_down),
+               Field(&PCButtonPinMapping::hat_left, expected.hat_left),
+               Field(&PCButtonPinMapping::hat_right, expected.hat_right)
+               );
 }
 
 class PCControllerTest : public ::testing::Test {
@@ -112,7 +127,82 @@ TEST_F(PCControllerTest, GetButtonPinMappingStandardDigital) {
 
   PCController controller(std::move(teensy_));
 
-  EXPECT_EQ(controller.GetButtonPinMapping(layer), expected_mapping);
+  EXPECT_THAT(controller.GetButtonPinMapping(layer), MappingEq(expected_mapping));
+}
+
+TEST_F(PCControllerTest, GetButtonPinMappingSpecialDigital) {
+  hs_profile_Profile_Layer layer = {
+    .thumb_top = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_R_STICK_UP,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .thumb_middle = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .thumb_bottom = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .index_top = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .index_middle = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MIN,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .middle_top = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MAX,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .middle_middle = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MIN,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .left_ring_extra = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MAX,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .left_middle_extra = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_D_PAD_UP,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .left_index_extra = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .right_index_extra = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .right_middle_extra = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+    .right_ring_extra = {
+      .action_type.digital = hs_profile_Profile_Layer_DigitalAction_MOD,
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+    },
+  };
+
+  const int joystick_min = 0;
+  const int joystick_max = 1023;
+
+  PCButtonPinMapping expected_mapping;
+  expected_mapping.z_y = {{joystick_max, kThumbTop}, {joystick_min, kThumbMiddle}};
+  expected_mapping.z_x = {{joystick_min, kThumbBottom}, {joystick_max, kIndexTop}};
+  expected_mapping.slider_left = {{joystick_min, kIndexMiddle}, {joystick_max, kMiddleTop}};
+  expected_mapping.slider_right = {{joystick_min, kMiddleMiddle}, {joystick_max, kLeftRingExtra}};
+  expected_mapping.hat_up = {kLeftMiddleExtra};
+  expected_mapping.hat_down = {kLeftIndexExtra};
+  expected_mapping.hat_left = {kRightIndexExtra};
+  expected_mapping.hat_right = {kRightMiddleExtra};
+  expected_mapping.mod = {kRightRingExtra};
+
+  PCController controller(std::move(teensy_));
+
+  EXPECT_THAT(controller.GetButtonPinMapping(layer), MappingEq(expected_mapping));
 }
 
 TEST_F(PCControllerTest, GetButtonPinMappingAnalog) {
@@ -155,7 +245,7 @@ TEST_F(PCControllerTest, GetButtonPinMappingAnalog) {
 
   PCController controller(std::move(teensy_));
 
-  EXPECT_EQ(controller.GetButtonPinMapping(layer), expected_mapping);
+  EXPECT_THAT(controller.GetButtonPinMapping(layer), MappingEq(expected_mapping));
 }
 
 TEST_F(PCControllerTest, GetDPadAngle) {
@@ -210,7 +300,7 @@ TEST_F(PCControllerTest, GetDPadAngle) {
   EXPECT_EQ(controller.GetDPadAngle(mapping), 180);
 
   mapping = {
-      .hat_up = {pin},
+    .hat_up = {pin},
   };
   EXPECT_EQ(controller.GetDPadAngle(mapping), 0);
 
