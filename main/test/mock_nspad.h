@@ -3,9 +3,8 @@
 #ifndef MOCK_NSPAD_H_
 #define MOCK_NSPAD_H_
 
-#include "nspad.h"
-
 #include "gmock/gmock.h"
+#include "nspad.h"
 
 class MockNSPad : public NSPad {
  public:
