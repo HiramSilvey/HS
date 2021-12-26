@@ -15,9 +15,11 @@ using ::testing::Return;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::ElementsAreArray;
+using ::testing::InSequence;
+using ::testing::Matcher;
 
-std::vector<testing::Matcher<AnalogButton>> AnalogEq(const std::vector<AnalogButton>& expected) {
-  std::vector<testing::Matcher<AnalogButton>> matchers;
+std::vector<Matcher<AnalogButton>> AnalogEq(const std::vector<AnalogButton>& expected) {
+  std::vector<Matcher<AnalogButton>> matchers;
   for (const auto& button : expected) {
     matchers.push_back(
                        AllOf(
@@ -126,7 +128,6 @@ TEST_F(PCControllerTest, GetButtonPinMapping_StandardDigital) {
   expected_mapping.button_id_to_pins[9] = {kPinkyTop};
 
   PCController controller(std::move(teensy_));
-
   EXPECT_THAT(controller.GetButtonPinMapping(layer), MappingEq(expected_mapping));
 }
 
@@ -201,7 +202,6 @@ TEST_F(PCControllerTest, GetButtonPinMapping_SpecialDigital) {
   expected_mapping.mod = {kRightRingExtra};
 
   PCController controller(std::move(teensy_));
-
   EXPECT_THAT(controller.GetButtonPinMapping(layer), MappingEq(expected_mapping));
 }
 
@@ -244,7 +244,6 @@ TEST_F(PCControllerTest, GetButtonPinMapping_Analog) {
   expected_mapping.slider_right = {{103, kPinkyBottom}};
 
   PCController controller(std::move(teensy_));
-
   EXPECT_THAT(controller.GetButtonPinMapping(layer), MappingEq(expected_mapping));
 }
 
@@ -290,7 +289,6 @@ TEST_F(PCControllerTest, GetButtonPinMapping_MultiplePinsOneButton) {
   expected_mapping.button_id_to_pins[2] = {kIndexTop, kIndexMiddle, kMiddleTop};
 
   PCController controller(std::move(teensy_));
-
   EXPECT_THAT(controller.GetButtonPinMapping(layer), MappingEq(expected_mapping));
 }
 
@@ -396,4 +394,57 @@ TEST_F(PCControllerTest, GetDPadAngle) {
     .hat_right = {pin},
   };
   EXPECT_EQ(controller.GetDPadAngle(mapping), -1);
+}
+
+TEST_F(PCControllerTest, UpdateButtons) {
+  const uint8_t pin = 1;
+  const std::vector<int> digital = {pin};
+  const std::vector<AnalogButton> analog = {{
+      .value = 0,
+      .pin = pin
+  }};
+  PCButtonPinMapping mapping = {
+    .z_y = analog,
+    .z_x = analog,
+    .slider_left = analog,
+    .slider_right = analog,
+    .hat_up = digital,
+    .hat_down = digital,
+    .hat_left = digital,
+    .hat_right = digital,
+  };
+  mapping.mod = digital;
+  mapping.button_id_to_pins = {
+    {1, digital},
+    {2, digital},
+    {3, digital},
+    {4, digital},
+    {5, digital},
+    {6, digital},
+    {7, digital},
+    {8, digital},
+    {9, digital},
+    {10, digital},
+    {11, digital},
+    {12, digital}
+  };
+
+  EXPECT_CALL(*teensy_, DigitalReadLow(1))
+    .Times(20)
+    .WillRepeatedly(Return(true));
+
+  {
+    InSequence seq;
+
+    EXPECT_CALL(*teensy_, SetJoystickZ);
+    EXPECT_CALL(*teensy_, SetJoystickZRotate);
+    EXPECT_CALL(*teensy_, SetJoystickSliderLeft);
+    EXPECT_CALL(*teensy_, SetJoystickSliderRight);
+    EXPECT_CALL(*teensy_, SetJoystickButton(_, true))
+      .Times(12);
+    EXPECT_CALL(*teensy_, SetJoystickHat);
+  }
+
+  PCController controller(std::move(teensy_));
+  controller.UpdateButtons(mapping);
 }
