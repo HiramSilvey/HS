@@ -6,9 +6,7 @@
 
 namespace hs {
 
-using Layer = hs_profile_Profile_Layer;
-
-std::vector<Pins::ActionPin> Pins::GetActionPins(const Layer& layer) {
+std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layer& layer) {
   return {{layer.thumb_top, kThumbTop},
           {layer.thumb_middle, kThumbMiddle},
           {layer.thumb_bottom, kThumbBottom},

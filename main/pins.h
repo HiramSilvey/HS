@@ -31,17 +31,13 @@ const int kRightIndexExtra = 17;
 const int kRightMiddleExtra = 20;
 const int kRightRingExtra = 21;
 
-class Pins {
- public:
-  struct ActionPin {
-    hs_profile_Profile_Layer_Action action;
-    int pin;
-  };
-
-  // Get pins associated with each profile layer action.
-  static std::vector<ActionPin> GetActionPins(
-      const hs_profile_Profile_Layer& layer);
+struct ActionPin {
+  hs_profile_Profile_Layer_Action action;
+  int pin;
 };
+
+// Get pins associated with each profile layer action.
+std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layer& layer);
 
 }  // namespace hs
 
