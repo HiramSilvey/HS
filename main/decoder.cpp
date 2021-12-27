@@ -9,6 +9,7 @@
 #include "teensy.h"
 
 namespace hs {
+namespace decoder {
 
 using Platform = hs_profile_Profile_Platform;
 using PlatformConfig = hs_profile_Profile_PlatformConfig;
@@ -148,4 +149,5 @@ Layout Decode(const std::unique_ptr<Teensy>& teensy, Platform platform,
   return internal::DecodeBody(teensy, curr_addr);
 }
 
+}  // namespace decoder
 }  // namespace hs

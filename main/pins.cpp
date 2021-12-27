@@ -5,6 +5,7 @@
 #include "profile.pb.h"
 
 namespace hs {
+namespace pins {
 
 std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layer& layer) {
   return {{layer.thumb_top, kThumbTop},
@@ -29,4 +30,5 @@ std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layer& layer) {
           {layer.right_ring_extra, kRightRingExtra}};
 }
 
+}  // namespace pins
 }  // namespace hs

@@ -8,6 +8,7 @@
 #include "teensy.h"
 
 namespace hs {
+namespace configurator {
 namespace internal {
 
 void FetchStoredBounds(const std::unique_ptr<Teensy>& teensy);
@@ -20,6 +21,7 @@ void StoreProfiles(const std::unique_ptr<Teensy>& teensy);
 
 void Configure(std::unique_ptr<Teensy> teensy);
 
+}  // namespace configurator
 }  // namespace hs
 
 #endif  // CONFIGURATOR_H_

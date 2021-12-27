@@ -14,9 +14,9 @@ HallJoystick::HallJoystick(const std::unique_ptr<Teensy>& teensy, int min,
     : out_({.min = min, .max = max}),
       out_neutral_((max - min + 1) / 2 + min),
       threshold_({threshold * -1, threshold}) {
-  int neutral_x = Util::GetIntFromEEPROM(teensy, 0);
-  int neutral_y = Util::GetIntFromEEPROM(teensy, 4);
-  int range = Util::GetIntFromEEPROM(teensy, 8);
+  int neutral_x = util::GetIntFromEEPROM(teensy, 0);
+  int neutral_y = util::GetIntFromEEPROM(teensy, 4);
+  int range = util::GetIntFromEEPROM(teensy, 8);
   x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
   y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
 }

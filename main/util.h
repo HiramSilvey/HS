@@ -8,14 +8,12 @@
 #include "teensy.h"
 
 namespace hs {
+namespace util {
 
-class Util {
- public:
-  // Read 4 bytes from EEPROM and return it as a single integer.
-  static int GetIntFromEEPROM(const std::unique_ptr<Teensy>& teensy,
-                              int address);
-};
+// Read 4 bytes from EEPROM and return it as a single integer.
+int GetIntFromEEPROM(const std::unique_ptr<Teensy>& teensy, int address);
 
+}  // namespace util
 }  // namespace hs
 
 #endif  // UTIL_H_

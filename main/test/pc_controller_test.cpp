@@ -130,18 +130,18 @@ TEST_F(PCControllerTest, GetButtonPinMapping_StandardDigital) {
   };
 
   PCButtonPinMapping expected_mapping;
-  expected_mapping.button_id_to_pins[2] = {kThumbTop};
-  expected_mapping.button_id_to_pins[3] = {kThumbMiddle};
-  expected_mapping.button_id_to_pins[4] = {kThumbBottom};
-  expected_mapping.button_id_to_pins[1] = {kIndexTop};
-  expected_mapping.button_id_to_pins[5] = {kIndexMiddle};
-  expected_mapping.button_id_to_pins[7] = {kMiddleTop};
-  expected_mapping.button_id_to_pins[11] = {kMiddleMiddle};
-  expected_mapping.button_id_to_pins[6] = {kMiddleBottom};
-  expected_mapping.button_id_to_pins[8] = {kRingTop};
-  expected_mapping.button_id_to_pins[12] = {kRingMiddle};
-  expected_mapping.button_id_to_pins[10] = {kRingBottom};
-  expected_mapping.button_id_to_pins[9] = {kPinkyTop};
+  expected_mapping.button_id_to_pins[2] = {pins::kThumbTop};
+  expected_mapping.button_id_to_pins[3] = {pins::kThumbMiddle};
+  expected_mapping.button_id_to_pins[4] = {pins::kThumbBottom};
+  expected_mapping.button_id_to_pins[1] = {pins::kIndexTop};
+  expected_mapping.button_id_to_pins[5] = {pins::kIndexMiddle};
+  expected_mapping.button_id_to_pins[7] = {pins::kMiddleTop};
+  expected_mapping.button_id_to_pins[11] = {pins::kMiddleMiddle};
+  expected_mapping.button_id_to_pins[6] = {pins::kMiddleBottom};
+  expected_mapping.button_id_to_pins[8] = {pins::kRingTop};
+  expected_mapping.button_id_to_pins[12] = {pins::kRingMiddle};
+  expected_mapping.button_id_to_pins[10] = {pins::kRingBottom};
+  expected_mapping.button_id_to_pins[9] = {pins::kPinkyTop};
 
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
@@ -233,19 +233,19 @@ TEST_F(PCControllerTest, GetButtonPinMapping_SpecialDigital) {
   const int joystick_max = 1023;
 
   PCButtonPinMapping expected_mapping;
-  expected_mapping.z_y = {{joystick_max, kThumbTop},
-                          {joystick_min, kThumbMiddle}};
-  expected_mapping.z_x = {{joystick_min, kThumbBottom},
-                          {joystick_max, kIndexTop}};
-  expected_mapping.slider_left = {{joystick_min, kIndexMiddle},
-                                  {joystick_max, kMiddleTop}};
-  expected_mapping.slider_right = {{joystick_min, kMiddleMiddle},
-                                   {joystick_max, kLeftRingExtra}};
-  expected_mapping.hat_up = {kLeftMiddleExtra};
-  expected_mapping.hat_down = {kLeftIndexExtra};
-  expected_mapping.hat_left = {kRightIndexExtra};
-  expected_mapping.hat_right = {kRightMiddleExtra};
-  expected_mapping.mod = {kRightRingExtra};
+  expected_mapping.z_y = {{joystick_max, pins::kThumbTop},
+                          {joystick_min, pins::kThumbMiddle}};
+  expected_mapping.z_x = {{joystick_min, pins::kThumbBottom},
+                          {joystick_max, pins::kIndexTop}};
+  expected_mapping.slider_left = {{joystick_min, pins::kIndexMiddle},
+                                  {joystick_max, pins::kMiddleTop}};
+  expected_mapping.slider_right = {{joystick_min, pins::kMiddleMiddle},
+                                   {joystick_max, pins::kLeftRingExtra}};
+  expected_mapping.hat_up = {pins::kLeftMiddleExtra};
+  expected_mapping.hat_down = {pins::kLeftIndexExtra};
+  expected_mapping.hat_left = {pins::kRightIndexExtra};
+  expected_mapping.hat_right = {pins::kRightMiddleExtra};
+  expected_mapping.mod = {pins::kRightRingExtra};
 
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
@@ -295,10 +295,10 @@ TEST_F(PCControllerTest, GetButtonPinMapping_Analog) {
   };
 
   PCButtonPinMapping expected_mapping;
-  expected_mapping.z_y = {{100, kThumbTop}};
-  expected_mapping.z_x = {{101, kThumbMiddle}};
-  expected_mapping.slider_left = {{102, kPinkyMiddle}};
-  expected_mapping.slider_right = {{103, kPinkyBottom}};
+  expected_mapping.z_y = {{100, pins::kThumbTop}};
+  expected_mapping.z_x = {{101, pins::kThumbMiddle}};
+  expected_mapping.slider_left = {{102, pins::kPinkyMiddle}};
+  expected_mapping.slider_right = {{103, pins::kPinkyBottom}};
 
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
@@ -352,9 +352,11 @@ TEST_F(PCControllerTest, GetButtonPinMapping_MultiplePinsOneButton) {
   };
 
   PCButtonPinMapping expected_mapping;
-  expected_mapping.z_y = {
-      {100, kThumbTop}, {101, kThumbMiddle}, {102, kThumbBottom}};
-  expected_mapping.button_id_to_pins[2] = {kIndexTop, kIndexMiddle, kMiddleTop};
+  expected_mapping.z_y = {{100, pins::kThumbTop},
+                          {101, pins::kThumbMiddle},
+                          {102, pins::kThumbBottom}};
+  expected_mapping.button_id_to_pins[2] = {pins::kIndexTop, pins::kIndexMiddle,
+                                           pins::kMiddleTop};
 
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),

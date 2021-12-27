@@ -8,6 +8,7 @@
 #include "util.h"
 
 namespace hs {
+namespace configurator {
 
 namespace {
 
@@ -33,9 +34,9 @@ void SaveToEEPROM(const std::unique_ptr<Teensy>& teensy, int val, int address) {
 namespace internal {
 
 void FetchStoredBounds(const std::unique_ptr<Teensy>& teensy) {
-  int center_x = Util::GetIntFromEEPROM(teensy, 0);
-  int center_y = Util::GetIntFromEEPROM(teensy, 4);
-  int range = Util::GetIntFromEEPROM(teensy, 8);
+  int center_x = util::GetIntFromEEPROM(teensy, 0);
+  int center_y = util::GetIntFromEEPROM(teensy, 4);
+  int range = util::GetIntFromEEPROM(teensy, 8);
 
   WriteToSerial(teensy, center_x);
   WriteToSerial(teensy, center_y);
@@ -149,4 +150,5 @@ void Configure(std::unique_ptr<Teensy> teensy) {
   }
 }
 
+}  // namespace configurator
 }  // namespace hs

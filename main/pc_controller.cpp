@@ -46,7 +46,7 @@ PCController::PCController(std::unique_ptr<Teensy> teensy)
 PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
   PCButtonPinMapping mapping;
 
-  std::vector<ActionPin> action_pins = GetActionPins(layer);
+  std::vector<pins::ActionPin> action_pins = pins::GetActionPins(layer);
 
   std::unordered_map<int, int> action_to_button_id = {
       {hs_profile_Profile_Layer_DigitalAction_X, 2},

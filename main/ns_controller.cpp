@@ -47,7 +47,7 @@ NSController::NSController(std::unique_ptr<Teensy> teensy,
 NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
   NSButtonPinMapping mapping;
 
-  std::vector<ActionPin> action_pins = GetActionPins(layer);
+  std::vector<pins::ActionPin> action_pins = pins::GetActionPins(layer);
 
   std::unordered_map<int, int> action_to_button_id = {
       {hs_profile_Profile_Layer_DigitalAction_X, 1},

@@ -10,6 +10,7 @@
 #include "teensy.h"
 
 namespace hs {
+namespace decoder {
 
 namespace internal {
 
@@ -28,6 +29,7 @@ hs_profile_Profile_Layout Decode(const std::unique_ptr<Teensy>& teensy,
                                  hs_profile_Profile_Platform Platform,
                                  int position);
 
+}  // namespace decoder
 }  // namespace hs
 
 #endif  // PROFILES_H_

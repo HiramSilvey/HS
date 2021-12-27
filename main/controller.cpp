@@ -15,10 +15,10 @@ using Platform = ::hs_profile_Profile_Platform;
 Layout FetchProfile(const std::unique_ptr<Teensy>& teensy,
                     const Platform& platform) {
   std::pair<int, int> button_to_position[] = {
-      std::make_pair(kLeftRingExtra, 1),
-      std::make_pair(kLeftMiddleExtra, 2),
-      std::make_pair(kRightMiddleExtra, 3),
-      std::make_pair(kRightRingExtra, 4),
+      std::make_pair(pins::kLeftRingExtra, 1),
+      std::make_pair(pins::kLeftMiddleExtra, 2),
+      std::make_pair(pins::kRightMiddleExtra, 3),
+      std::make_pair(pins::kRightRingExtra, 4),
   };
   int position = 0;
   for (const auto& element : button_to_position) {
@@ -27,7 +27,7 @@ Layout FetchProfile(const std::unique_ptr<Teensy>& teensy,
       break;
     }
   }
-  return Decode(teensy, platform, position);
+  return decoder::Decode(teensy, platform, position);
 }
 
 int ResolveSOCD(const std::unique_ptr<Teensy>& teensy,
