@@ -8,6 +8,8 @@
 #include "profile.pb.h"
 #include "teensy.h"
 
+namespace hs {
+
 using Platform = hs_profile_Profile_Platform;
 using PlatformConfig = hs_profile_Profile_PlatformConfig;
 using Layout = hs_profile_Profile_Layout;
@@ -24,7 +26,7 @@ const int kMasks[10] = {
 const int kLenActionID = 5;
 const int kLenAnalogActionValue = 10;
 
-namespace {
+namespace internal {
 
 std::vector<PlatformConfig> DecodeHeader(const std::unique_ptr<Teensy>& teensy,
                                          int addr) {
@@ -111,17 +113,18 @@ Layout DecodeBody(const std::unique_ptr<Teensy>& teensy, int& addr) {
   return layout;
 }
 
-}  // namespace
+}  // namespace internal
 
-Layout Decoder::Decode(const std::unique_ptr<Teensy>& teensy, Platform platform,
-                       int position) {
+Layout Decode(const std::unique_ptr<Teensy>& teensy, Platform platform,
+              int position) {
   const int encoded_len =
       (teensy->EEPROMRead(kMinAddr) << 8) | teensy->EEPROMRead(kMinAddr + 1);
   const int max_addr = kMinAddr + encoded_len + 1;
 
   int curr_addr = kMinAddr + 2;
   while (curr_addr < max_addr) {
-    std::vector<PlatformConfig> configs = DecodeHeader(teensy, curr_addr);
+    std::vector<PlatformConfig> configs =
+        internal::DecodeHeader(teensy, curr_addr);
     // Advance past the header.
     curr_addr += configs.size() / 2 + configs.size() % 2 + 1;
     if ([&] {
@@ -142,5 +145,7 @@ Layout Decoder::Decode(const std::unique_ptr<Teensy>& teensy, Platform platform,
     teensy->Exit(1);
   }
 
-  return DecodeBody(teensy, curr_addr);
+  return internal::DecodeBody(teensy, curr_addr);
 }
+
+}  // namespace hs

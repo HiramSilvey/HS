@@ -12,6 +12,8 @@
 #include "nspad.h"
 #include "teensy.h"
 
+namespace hs {
+
 struct NSButtonPinMapping : ButtonPinMapping {
   std::vector<AnalogButton> z_y;
   std::vector<AnalogButton> z_x;
@@ -40,5 +42,7 @@ class NSController : public Controller {
   NSButtonPinMapping base_mapping_;
   NSButtonPinMapping mod_mapping_;
 };
+
+}  // namespace hs
 
 #endif  // NS_CONTROLLER_H_

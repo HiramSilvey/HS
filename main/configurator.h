@@ -7,16 +7,19 @@
 
 #include "teensy.h"
 
-class Configurator {
- public:
-  static void Configure(std::unique_ptr<Teensy> teensy);
+namespace hs {
+namespace internal {
 
- private:
-  static void FetchStoredBounds(const std::unique_ptr<Teensy>& teensy);
-  static void FetchJoystickCoords(const std::unique_ptr<Teensy>& teensy);
-  static void CalibrateJoystick(const std::unique_ptr<Teensy>& teensy);
-  static void SaveCalibration(const std::unique_ptr<Teensy>& teensy);
-  static void StoreProfiles(const std::unique_ptr<Teensy>& teensy);
-};
+void FetchStoredBounds(const std::unique_ptr<Teensy>& teensy);
+void FetchJoystickCoords(const std::unique_ptr<Teensy>& teensy);
+void CalibrateJoystick(const std::unique_ptr<Teensy>& teensy);
+void SaveCalibration(const std::unique_ptr<Teensy>& teensy);
+void StoreProfiles(const std::unique_ptr<Teensy>& teensy);
+
+}  // namespace internal
+
+void Configure(std::unique_ptr<Teensy> teensy);
+
+}  // namespace hs
 
 #endif  // CONFIGURATOR_H_

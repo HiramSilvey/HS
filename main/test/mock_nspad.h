@@ -6,6 +6,8 @@
 #include "gmock/gmock.h"
 #include "nspad.h"
 
+namespace hs {
+
 class MockNSPad : public NSPad {
  public:
   MOCK_METHOD(int, DPadCentered, (), (const override));
@@ -26,5 +28,7 @@ class MockNSPad : public NSPad {
   MOCK_METHOD(void, ReleaseAll, (), (const override));
   MOCK_METHOD(void, Loop, (), (const override));
 };
+
+}  // namespace hs
 
 #endif  // MOCK_NSPAD_H_

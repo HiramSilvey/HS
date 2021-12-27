@@ -10,27 +10,27 @@
 #include "pins.h"
 #include "teensy_impl.h"
 
-std::unique_ptr<Controller> controller;
+std::unique_ptr<hs::Controller> controller;
 extern uint8_t nsgamepad_active;
 extern volatile uint8_t usb_configuration;
 
 void setup() {
   delay(100);
 
-  auto teensy = std::make_unique<TeensyImpl>();
-  if (teensy->DigitalReadLow(kRightIndexExtra)) {
-    Configurator::Configure(std::move(teensy));
+  auto teensy = std::make_unique<hs::TeensyImpl>();
+  if (teensy->DigitalReadLow(hs::kRightIndexExtra)) {
+    hs::Configure(std::move(teensy));
     exit(0);
   }
 
   while (true) {
     if (usb_configuration) {
       if (nsgamepad_active) {
-        auto nsgamepad = std::make_unique<NSPadImpl>();
-        controller = std::make_unique<NSController>(std::move(teensy),
-                                                    std::move(nsgamepad));
+        auto nsgamepad = std::make_unique<hs::NSPadImpl>();
+        controller = std::make_unique<hs::NSController>(std::move(teensy),
+                                                        std::move(nsgamepad));
       } else {
-        controller = std::make_unique<PCController>(std::move(teensy));
+        controller = std::make_unique<hs::PCController>(std::move(teensy));
       }
       break;
     }

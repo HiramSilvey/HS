@@ -4,6 +4,8 @@
 
 #include "profile.pb.h"
 
+namespace hs {
+
 using Layer = hs_profile_Profile_Layer;
 
 std::vector<Pins::ActionPin> Pins::GetActionPins(const Layer& layer) {
@@ -28,3 +30,5 @@ std::vector<Pins::ActionPin> Pins::GetActionPins(const Layer& layer) {
           {layer.right_middle_extra, kRightMiddleExtra},
           {layer.right_ring_extra, kRightRingExtra}};
 }
+
+}  // namespace hs

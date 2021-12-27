@@ -10,6 +10,8 @@
 #include "profile.pb.h"
 #include "teensy.h"
 
+namespace hs {
+
 struct AnalogButton {
   int value;
   int pin;
@@ -20,24 +22,24 @@ struct ButtonPinMapping {
   std::vector<int> mod;
 };
 
+// Fetch the specified profile given the platform.
+hs_profile_Profile_Layout FetchProfile(
+    const std::unique_ptr<Teensy>& teensy,
+    const hs_profile_Profile_Platform& Platform);
+
+// Resolve simultaneous opposing cardinal directions from button inputs.
+int ResolveSOCD(const std::unique_ptr<Teensy>& teensy,
+                const std::vector<AnalogButton>& buttons, int joystick_neutral);
+
 class Controller {
  public:
-  // Fetch the specified profile given the platform.
-  static hs_profile_Profile_Layout FetchProfile(
-      const std::unique_ptr<Teensy>& teensy,
-      const hs_profile_Profile_Platform& Platform);
-
-  // Resolve simultaneous opposing cardinal directions from button inputs.
-  static int ResolveSOCD(const std::unique_ptr<Teensy>& teensy,
-                         const std::vector<AnalogButton>& buttons,
-                         int joystick_neutral);
+  // Load the controller profile settings based on the button held.
+  virtual void LoadProfile() = 0;
 
   // Main loop to be run each tick.
   virtual void Loop() = 0;
-
- private:
-  // Load the controller profile settings based on the button held.
-  virtual void LoadProfile() = 0;
 };
+
+}  // namespace hs
 
 #endif  // CONTROLLER_H_

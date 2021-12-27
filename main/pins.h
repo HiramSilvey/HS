@@ -7,6 +7,8 @@
 
 #include "profile.pb.h"
 
+namespace hs {
+
 // Button pins.
 const int kThumbTop = 0;
 const int kThumbMiddle = 1;
@@ -40,5 +42,7 @@ class Pins {
   static std::vector<ActionPin> GetActionPins(
       const hs_profile_Profile_Layer& layer);
 };
+
+}  // namespace hs
 
 #endif  // PINS_H_

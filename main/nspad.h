@@ -3,6 +3,8 @@
 #ifndef NSPAD_H_
 #define NSPAD_H_
 
+namespace hs {
+
 class NSPad {
  public:
   virtual ~NSPad() {}
@@ -26,5 +28,7 @@ class NSPad {
   virtual void ReleaseAll() const = 0;
   virtual void Loop() const = 0;
 };
+
+}  // namespace hs
 
 #endif  // NSPAD_H_

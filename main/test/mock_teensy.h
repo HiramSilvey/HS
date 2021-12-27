@@ -6,6 +6,8 @@
 #include "gmock/gmock.h"
 #include "teensy.h"
 
+namespace hs {
+
 class MockTeensy : public Teensy {
  public:
   MOCK_METHOD(uint8_t, GetUSBConfiguration, (), (const override));
@@ -36,5 +38,7 @@ class MockTeensy : public Teensy {
   MOCK_METHOD(float, GetHallY, (), (override));
   MOCK_METHOD(float, GetHallZ, (), (override));
 };
+
+}  // namespace hs
 
 #endif  // MOCK_TEENSY_H_

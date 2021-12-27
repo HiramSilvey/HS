@@ -7,6 +7,8 @@
 #include "teensy.h"
 #include "util.h"
 
+namespace hs {
+
 HallJoystick::HallJoystick(const std::unique_ptr<Teensy>& teensy, int min,
                            int max, int threshold)
     : out_({.min = min, .max = max}),
@@ -61,3 +63,5 @@ int HallJoystick::get_min() { return out_.min; }
 int HallJoystick::get_max() { return out_.max; }
 
 int HallJoystick::get_neutral() { return out_neutral_; }
+
+}  // namespace hs

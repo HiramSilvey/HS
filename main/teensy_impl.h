@@ -9,6 +9,8 @@
 #include "Arduino.h"
 #include "teensy.h"
 
+namespace hs {
+
 class TeensyImpl : public Teensy {
  public:
   TeensyImpl() {
@@ -70,5 +72,7 @@ class TeensyImpl : public Teensy {
  private:
   Tlv493d sensor_;
 };
+
+}  // namespace hs
 
 #endif  // TEENSY_IMPL_H_

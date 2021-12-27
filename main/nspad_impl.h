@@ -6,6 +6,8 @@
 #include "nspad.h"
 #include "usb_nsgamepad.h"
 
+namespace hs {
+
 class NSPadImpl : public NSPad {
  public:
   inline int DPadCentered() const override { return NSGAMEPAD_DPAD_CENTERED; }
@@ -41,5 +43,7 @@ class NSPadImpl : public NSPad {
   inline void ReleaseAll() const override { NSGamepad.releaseAll(); }
   inline void Loop() const override { NSGamepad.loop(); }
 };
+
+}  // namespace hs
 
 #endif  // NSPAD_IMPL_H_

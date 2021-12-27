@@ -10,6 +10,8 @@
 #include "profile.pb.h"
 #include "teensy.h"
 
+namespace hs {
+
 using Layout = hs_profile_Profile_Layout;
 using Layer = hs_profile_Profile_Layer;
 using Action = hs_profile_Profile_Layer_Action;
@@ -172,9 +174,9 @@ int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
 void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
   nsgamepad_->SetRightYAxis(
       joystick_->get_max() -
-      Controller::ResolveSOCD(teensy_, mapping.z_y, joystick_->get_neutral()));
+      ResolveSOCD(teensy_, mapping.z_y, joystick_->get_neutral()));
   nsgamepad_->SetRightXAxis(
-      Controller::ResolveSOCD(teensy_, mapping.z_x, joystick_->get_neutral()));
+      ResolveSOCD(teensy_, mapping.z_x, joystick_->get_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     for (const auto& pin : element.second) {
@@ -211,3 +213,5 @@ void NSController::Loop() {
 
   nsgamepad_->Loop();
 }
+
+}  // namespace hs

@@ -10,6 +10,8 @@
 #include "pins.h"
 #include "profile.pb.h"
 
+namespace hs {
+
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AtLeast;
@@ -500,3 +502,5 @@ TEST_F(PCControllerTest, UpdateButtons) {
   PCController controller(std::move(teensy_));
   controller.UpdateButtons(mapping);
 }
+
+}  // namespace hs

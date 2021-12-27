@@ -7,6 +7,10 @@
 #include "teensy.h"
 #include "util.h"
 
+namespace hs {
+
+namespace {
+
 void WriteToSerial(const std::unique_ptr<Teensy>& teensy, int val) {
   uint8_t bytes[4] = {val >> 24, val >> 16 & 0xFF, val >> 8 & 0xFF, val & 0xFF};
   teensy->SerialWrite(bytes, 4);
@@ -24,7 +28,11 @@ void SaveToEEPROM(const std::unique_ptr<Teensy>& teensy, int val, int address) {
   teensy->EEPROMUpdate(address + 3, four);
 }
 
-void Configurator::FetchStoredBounds(const std::unique_ptr<Teensy>& teensy) {
+}  // namespace
+
+namespace internal {
+
+void FetchStoredBounds(const std::unique_ptr<Teensy>& teensy) {
   int center_x = Util::GetIntFromEEPROM(teensy, 0);
   int center_y = Util::GetIntFromEEPROM(teensy, 4);
   int range = Util::GetIntFromEEPROM(teensy, 8);
@@ -34,7 +42,7 @@ void Configurator::FetchStoredBounds(const std::unique_ptr<Teensy>& teensy) {
   WriteToSerial(teensy, range);
 }
 
-void Configurator::FetchJoystickCoords(const std::unique_ptr<Teensy>& teensy) {
+void FetchJoystickCoords(const std::unique_ptr<Teensy>& teensy) {
   teensy->UpdateHallData();
   float z = teensy->GetHallZ();
   int x = teensy->GetHallX() / z * 1000000;
@@ -44,7 +52,7 @@ void Configurator::FetchJoystickCoords(const std::unique_ptr<Teensy>& teensy) {
   WriteToSerial(teensy, y);
 }
 
-void Configurator::CalibrateJoystick(const std::unique_ptr<Teensy>& teensy) {
+void CalibrateJoystick(const std::unique_ptr<Teensy>& teensy) {
   float min_x = 0;
   float max_x = 0;
   float min_y = 0;
@@ -81,7 +89,7 @@ void Configurator::CalibrateJoystick(const std::unique_ptr<Teensy>& teensy) {
   WriteToSerial(teensy, range);
 }
 
-void Configurator::SaveCalibration(const std::unique_ptr<Teensy>& teensy) {
+void SaveCalibration(const std::unique_ptr<Teensy>& teensy) {
   int bytes_to_read = 12;
   int address = 0;
   while (address < bytes_to_read) {
@@ -93,7 +101,7 @@ void Configurator::SaveCalibration(const std::unique_ptr<Teensy>& teensy) {
   teensy->SerialWrite(0);  // Done.
 }
 
-void Configurator::StoreProfiles(const std::unique_ptr<Teensy>& teensy) {
+void StoreProfiles(const std::unique_ptr<Teensy>& teensy) {
   while (teensy->SerialAvailable() < 2) {
   }
   int num_bytes = teensy->SerialRead() << 8 | teensy->SerialRead();
@@ -109,7 +117,9 @@ void Configurator::StoreProfiles(const std::unique_ptr<Teensy>& teensy) {
   teensy->SerialWrite(0);  // Done.
 }
 
-void Configurator::Configure(std::unique_ptr<Teensy> teensy) {
+}  // namespace internal
+
+void Configure(std::unique_ptr<Teensy> teensy) {
   while (true) {
     if (teensy->SerialAvailable() > 0) {
       uint8_t data = teensy->SerialRead();
@@ -120,21 +130,23 @@ void Configurator::Configure(std::unique_ptr<Teensy> teensy) {
       teensy->SerialWrite(0);  // OK.
       switch (data) {
         case 0:
-          FetchStoredBounds(teensy);
+          internal::FetchStoredBounds(teensy);
           break;
         case 1:
-          FetchJoystickCoords(teensy);
+          internal::FetchJoystickCoords(teensy);
           break;
         case 2:
-          CalibrateJoystick(teensy);
+          internal::CalibrateJoystick(teensy);
           break;
         case 3:
-          SaveCalibration(teensy);
+          internal::SaveCalibration(teensy);
           break;
         case 4:
-          StoreProfiles(teensy);
+          internal::StoreProfiles(teensy);
           break;
       }
     }
   }
 }
+
+}  // namespace hs

@@ -4,10 +4,13 @@
 
 #include <memory>
 
+#include "controller.h"
 #include "hall_joystick.h"
 #include "pins.h"
 #include "profile.pb.h"
 #include "teensy.h"
+
+namespace hs {
 
 using Layout = hs_profile_Profile_Layout;
 using Layer = hs_profile_Profile_Layer;
@@ -184,13 +187,13 @@ int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
 
 void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
   teensy_->SetJoystickZ(
-      Controller::ResolveSOCD(teensy_, mapping.z_y, joystick_->get_neutral()));
+      ResolveSOCD(teensy_, mapping.z_y, joystick_->get_neutral()));
   teensy_->SetJoystickZRotate(
-      Controller::ResolveSOCD(teensy_, mapping.z_x, joystick_->get_neutral()));
-  teensy_->SetJoystickSliderLeft(Controller::ResolveSOCD(
-      teensy_, mapping.slider_left, joystick_->get_neutral()));
-  teensy_->SetJoystickSliderRight(Controller::ResolveSOCD(
-      teensy_, mapping.slider_right, joystick_->get_neutral()));
+      ResolveSOCD(teensy_, mapping.z_x, joystick_->get_neutral()));
+  teensy_->SetJoystickSliderLeft(
+      ResolveSOCD(teensy_, mapping.slider_left, joystick_->get_neutral()));
+  teensy_->SetJoystickSliderRight(
+      ResolveSOCD(teensy_, mapping.slider_right, joystick_->get_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     bool active = false;
@@ -227,3 +230,5 @@ void PCController::Loop() {
 
   teensy_->JoystickSendNow();
 }
+
+}  // namespace hs

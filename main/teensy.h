@@ -3,6 +3,8 @@
 #ifndef TEENSY_H_
 #define TEENSY_H_
 
+namespace hs {
+
 class Teensy {
  public:
   virtual ~Teensy() {}
@@ -45,5 +47,7 @@ class Teensy {
   virtual float GetHallY() = 0;
   virtual float GetHallZ() = 0;
 };
+
+}  // namespace hs
 
 #endif  // TEENSY_H_

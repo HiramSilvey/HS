@@ -7,6 +7,8 @@
 
 #include "teensy.h"
 
+namespace hs {
+
 class HallJoystick {
  public:
   // Minimum and maximum values each joystick axis is expected to output +
@@ -51,5 +53,7 @@ class HallJoystick {
   // Digital joystick activation thresholds (negative, positive).
   const std::pair<int, int> threshold_;
 };
+
+}  // namespace hs
 
 #endif  // HALL_JOYSTICK_H_

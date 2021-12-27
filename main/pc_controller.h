@@ -11,6 +11,8 @@
 #include "hall_joystick.h"
 #include "teensy.h"
 
+namespace hs {
+
 struct PCButtonPinMapping : ButtonPinMapping {
   std::vector<AnalogButton> z_y;
   std::vector<AnalogButton> z_x;
@@ -39,3 +41,5 @@ class PCController : public Controller {
 };
 
 #endif  // PC_CONTROLLER_H_
+
+}  // namespace hs

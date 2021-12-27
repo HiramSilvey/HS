@@ -6,6 +6,8 @@
 
 #include "teensy.h"
 
+namespace hs {
+
 int Util::GetIntFromEEPROM(const std::unique_ptr<Teensy>& teensy, int address) {
   uint8_t one = teensy->EEPROMRead(address);
   uint8_t two = teensy->EEPROMRead(address + 1);
@@ -13,3 +15,5 @@ int Util::GetIntFromEEPROM(const std::unique_ptr<Teensy>& teensy, int address) {
   uint8_t four = teensy->EEPROMRead(address + 3);
   return one << 24 | two << 16 | three << 8 | four;
 }
+
+}  // namespace hs
