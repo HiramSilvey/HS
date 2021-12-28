@@ -54,7 +54,10 @@ set(SOURCE_FILES
   profile.pb.h
   profile.pb.c
   teensy.h
+  test/mock_nspad.h
   test/mock_teensy.h
+  test/util.h
+  test/util.cpp
   util.h
   util.cpp
   )

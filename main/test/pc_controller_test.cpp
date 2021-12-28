@@ -6,9 +6,10 @@
 #include <memory>
 
 #include "controller.h"
-#include "mock_teensy.h"
 #include "pins.h"
 #include "profile.pb.h"
+#include "test/mock_teensy.h"
+#include "test/util.h"
 
 namespace hs {
 
@@ -20,16 +21,6 @@ using ::testing::Field;
 using ::testing::InSequence;
 using ::testing::Matcher;
 using ::testing::Return;
-
-std::vector<Matcher<AnalogButton>> AnalogEq(
-    const std::vector<AnalogButton>& expected) {
-  std::vector<Matcher<AnalogButton>> matchers;
-  for (const auto& button : expected) {
-    matchers.push_back(AllOf(Field(&AnalogButton::value, button.value),
-                             Field(&AnalogButton::pin, button.pin)));
-  }
-  return matchers;
-}
 
 auto MappingEq(const PCButtonPinMapping& expected) {
   return AllOf(
