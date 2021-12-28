@@ -147,8 +147,8 @@ PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
 }
 
 void PCController::LoadProfile() {
-  Layout layout = FetchProfile(teensy_, hs_profile_Profile_Platform_PC);
-  joystick_ = std::make_unique<HallJoystick>(teensy_, 0, 1023,
+  Layout layout = FetchProfile(*teensy_, hs_profile_Profile_Platform_PC);
+  joystick_ = std::make_unique<HallJoystick>(*teensy_, 0, 1023,
                                              layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
@@ -187,13 +187,13 @@ int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
 
 void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
   teensy_->SetJoystickZ(
-      ResolveSOCD(teensy_, mapping.z_y, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.z_y, joystick_->get_neutral()));
   teensy_->SetJoystickZRotate(
-      ResolveSOCD(teensy_, mapping.z_x, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.z_x, joystick_->get_neutral()));
   teensy_->SetJoystickSliderLeft(
-      ResolveSOCD(teensy_, mapping.slider_left, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.slider_left, joystick_->get_neutral()));
   teensy_->SetJoystickSliderRight(
-      ResolveSOCD(teensy_, mapping.slider_right, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.slider_right, joystick_->get_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     bool active = false;
@@ -210,7 +210,7 @@ void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
 }
 
 void PCController::Loop() {
-  HallJoystick::Coordinates coords = joystick_->GetCoordinates(teensy_);
+  HallJoystick::Coordinates coords = joystick_->GetCoordinates(*teensy_);
   teensy_->SetJoystickX(coords.x);
   teensy_->SetJoystickY(joystick_->get_max() - coords.y);
 

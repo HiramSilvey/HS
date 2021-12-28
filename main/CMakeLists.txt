@@ -76,5 +76,22 @@ target_include_directories(
   ${NANOPB_DIR}
   )
 
+add_executable(
+  controller_test
+  test/controller_test.cpp
+  ${SOURCE_FILES}
+  )
+target_link_libraries(
+  controller_test
+  gtest_main
+  gmock_main
+  )
+target_include_directories(
+  controller_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
+  )
+
 include(GoogleTest)
 gtest_discover_tests(pc_controller_test)

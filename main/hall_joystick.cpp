@@ -9,8 +9,8 @@
 
 namespace hs {
 
-HallJoystick::HallJoystick(const std::unique_ptr<Teensy>& teensy, int min,
-                           int max, int threshold)
+HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
+                           int threshold)
     : out_({.min = min, .max = max}),
       out_neutral_((max - min + 1) / 2 + min),
       threshold_({threshold * -1, threshold}) {
@@ -21,12 +21,11 @@ HallJoystick::HallJoystick(const std::unique_ptr<Teensy>& teensy, int min,
   y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
 }
 
-int HallJoystick::Normalize(const std::unique_ptr<Teensy>& teensy, int val,
-                            const Bounds& in) {
+int HallJoystick::Normalize(const Teensy& teensy, int val, const Bounds& in) {
   int mapped = static_cast<float>(val - in.min) /
                    static_cast<float>(in.max - in.min) * (out_.max - out_.min) +
                out_.min;
-  return teensy->Constrain(mapped, out_.min, out_.max);
+  return teensy.Constrain(mapped, out_.min, out_.max);
 }
 
 int HallJoystick::ResolveDigitalCoord(int coord) {
@@ -40,12 +39,11 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
   return out_neutral_;
 }
 
-HallJoystick::Coordinates HallJoystick::GetCoordinates(
-    const std::unique_ptr<Teensy>& teensy) {
-  teensy->UpdateHallData();
-  float z = teensy->GetHallZ();
-  int x = teensy->GetHallX() / z * 1000000;
-  int y = teensy->GetHallY() / z * 1000000;
+HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
+  teensy.UpdateHallData();
+  float z = teensy.GetHallZ();
+  int x = teensy.GetHallX() / z * 1000000;
+  int y = teensy.GetHallY() / z * 1000000;
 
   x = Normalize(teensy, x, x_in_);
   y = Normalize(teensy, y, y_in_);

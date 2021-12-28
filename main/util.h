@@ -11,7 +11,7 @@ namespace hs {
 namespace util {
 
 // Read 4 bytes from EEPROM and return it as a single integer.
-int GetIntFromEEPROM(const std::unique_ptr<Teensy>& teensy, int address);
+int GetIntFromEEPROM(const Teensy& teensy, int address);
 
 }  // namespace util
 }  // namespace hs

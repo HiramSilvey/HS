@@ -29,9 +29,8 @@ const int kLenAnalogActionValue = 10;
 
 namespace internal {
 
-std::vector<PlatformConfig> DecodeHeader(const std::unique_ptr<Teensy>& teensy,
-                                         int addr) {
-  const uint8_t platform_bitmap = teensy->EEPROMRead(addr++);
+std::vector<PlatformConfig> DecodeHeader(const Teensy& teensy, int addr) {
+  const uint8_t platform_bitmap = teensy.EEPROMRead(addr++);
   std::vector<PlatformConfig> configs;
   for (int platform = _hs_profile_Profile_Platform_MIN;
        platform <= _hs_profile_Profile_Platform_MAX; platform++) {
@@ -39,9 +38,9 @@ std::vector<PlatformConfig> DecodeHeader(const std::unique_ptr<Teensy>& teensy,
       PlatformConfig config;
       config.platform = static_cast<Platform>(platform);
       if (configs.size() % 2 == 0) {
-        config.position = teensy->EEPROMRead(addr) >> 4;
+        config.position = teensy.EEPROMRead(addr) >> 4;
       } else {
-        config.position = teensy->EEPROMRead(addr++) & 0xFF;
+        config.position = teensy.EEPROMRead(addr++) & 0xFF;
       }
       configs.push_back(config);
     }
@@ -49,7 +48,7 @@ std::vector<PlatformConfig> DecodeHeader(const std::unique_ptr<Teensy>& teensy,
   return configs;
 }
 
-int FetchData(const std::unique_ptr<Teensy>& teensy, int remaining, int& addr,
+int FetchData(const Teensy& teensy, int remaining, int& addr,
               uint8_t& curr_byte, int& unread) {
   int data = 0;
   while (remaining > 0) {
@@ -63,14 +62,14 @@ int FetchData(const std::unique_ptr<Teensy>& teensy, int remaining, int& addr,
     remaining -= fetched;
     unread -= fetched;
     if (unread == 0) {
-      curr_byte = teensy->EEPROMRead(addr++);
+      curr_byte = teensy.EEPROMRead(addr++);
       unread = 8;
     }
   }
   return data;
 }
 
-Layer DecodeLayer(const std::unique_ptr<Teensy>& teensy, int& addr) {
+Layer DecodeLayer(const Teensy& teensy, int& addr) {
   Layer layer;
   Action* actions[20] = {&layer.thumb_top,          &layer.thumb_middle,
                          &layer.thumb_bottom,       &layer.index_top,
@@ -82,7 +81,7 @@ Layer DecodeLayer(const std::unique_ptr<Teensy>& teensy, int& addr) {
                          &layer.left_index_extra,   &layer.left_middle_extra,
                          &layer.left_ring_extra,    &layer.right_index_extra,
                          &layer.right_middle_extra, &layer.right_ring_extra};
-  uint8_t curr_byte = teensy->EEPROMRead(addr++);
+  uint8_t curr_byte = teensy.EEPROMRead(addr++);
   int unread = 8;
   for (Action* action : actions) {
     int button_id = FetchData(teensy, kLenActionID, addr, curr_byte, unread);
@@ -101,11 +100,11 @@ Layer DecodeLayer(const std::unique_ptr<Teensy>& teensy, int& addr) {
   return layer;
 }
 
-Layout DecodeBody(const std::unique_ptr<Teensy>& teensy, int& addr) {
-  const int max_addr = addr + teensy->EEPROMRead(addr++) + 1;
+Layout DecodeBody(const Teensy& teensy, int& addr) {
+  const int max_addr = addr + teensy.EEPROMRead(addr++) + 1;
 
   Layout layout;
-  layout.joystick_threshold = teensy->EEPROMRead(addr++);
+  layout.joystick_threshold = teensy.EEPROMRead(addr++);
   layout.base = DecodeLayer(teensy, addr);
   if (addr < max_addr) {
     layout.has_mod = true;
@@ -116,10 +115,9 @@ Layout DecodeBody(const std::unique_ptr<Teensy>& teensy, int& addr) {
 
 }  // namespace internal
 
-Layout Decode(const std::unique_ptr<Teensy>& teensy, Platform platform,
-              int position) {
+Layout Decode(const Teensy& teensy, Platform platform, int position) {
   const int encoded_len =
-      (teensy->EEPROMRead(kMinAddr) << 8) | teensy->EEPROMRead(kMinAddr + 1);
+      (teensy.EEPROMRead(kMinAddr) << 8) | teensy.EEPROMRead(kMinAddr + 1);
   const int max_addr = kMinAddr + encoded_len + 1;
 
   int curr_addr = kMinAddr + 2;
@@ -139,11 +137,11 @@ Layout Decode(const std::unique_ptr<Teensy>& teensy, Platform platform,
       break;
     }
     // Advance to the header of the next profile.
-    curr_addr += teensy->EEPROMRead(curr_addr++);
+    curr_addr += teensy.EEPROMRead(curr_addr++);
   }
 
   if (curr_addr >= max_addr) {
-    teensy->Exit(1);
+    teensy.Exit(1);
   }
 
   return internal::DecodeBody(teensy, curr_addr);

@@ -11,11 +11,11 @@ namespace hs {
 namespace configurator {
 namespace internal {
 
-void FetchStoredBounds(const std::unique_ptr<Teensy>& teensy);
-void FetchJoystickCoords(const std::unique_ptr<Teensy>& teensy);
-void CalibrateJoystick(const std::unique_ptr<Teensy>& teensy);
-void SaveCalibration(const std::unique_ptr<Teensy>& teensy);
-void StoreProfiles(const std::unique_ptr<Teensy>& teensy);
+void FetchStoredBounds(const Teensy& teensy);
+void FetchJoystickCoords(const Teensy& teensy);
+void CalibrateJoystick(const Teensy& teensy);
+void SaveCalibration(const Teensy& teensy);
+void StoreProfiles(const Teensy& teensy);
 
 }  // namespace internal
 

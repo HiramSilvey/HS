@@ -13,8 +13,7 @@ class HallJoystick {
  public:
   // Minimum and maximum values each joystick axis is expected to output +
   // digital joystick activation threshold.
-  explicit HallJoystick(const std::unique_ptr<Teensy>& teensy, int min, int max,
-                        int threshold);
+  explicit HallJoystick(const Teensy& teensy, int min, int max, int threshold);
 
   int get_min();
   int get_max();
@@ -26,7 +25,7 @@ class HallJoystick {
   };
 
   // Read and return X and Y axes values.
-  Coordinates GetCoordinates(const std::unique_ptr<Teensy>& teensy);
+  Coordinates GetCoordinates(Teensy& teensy);
 
  private:
   struct Bounds {
@@ -36,8 +35,7 @@ class HallJoystick {
 
   // Map the provided int value from the specified input range to the global
   // output range.
-  int Normalize(const std::unique_ptr<Teensy>& teensy, int val,
-                const Bounds& in);
+  int Normalize(const Teensy& teensy, int val, const Bounds& in);
 
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);
