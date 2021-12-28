@@ -26,9 +26,9 @@ void setup() {
   while (true) {
     if (usb_configuration) {
       if (nsgamepad_active) {
-        auto nsgamepad = std::make_unique<hs::NSPadImpl>();
+        auto nspad = std::make_unique<hs::NSPadImpl>();
         controller = std::make_unique<hs::NSController>(std::move(teensy),
-                                                        std::move(nsgamepad));
+                                                        std::move(nspad));
       } else {
         controller = std::make_unique<hs::PCController>(std::move(teensy));
       }

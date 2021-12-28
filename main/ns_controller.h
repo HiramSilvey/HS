@@ -25,18 +25,16 @@ struct NSButtonPinMapping : ButtonPinMapping {
 
 class NSController : public Controller {
  public:
-  NSController(std::unique_ptr<Teensy> teensy,
-               std::unique_ptr<NSPad> nsgamepad);
-  void Loop() override;
-
- private:
+  NSController(std::unique_ptr<Teensy> teensy, std::unique_ptr<NSPad> nspad);
   NSButtonPinMapping GetButtonPinMapping(const hs_profile_Profile_Layer& layer);
   void LoadProfile() override;
   int GetDPadDirection(const NSButtonPinMapping& mapping);
   void UpdateButtons(const NSButtonPinMapping& mapping);
+  void Loop() override;
 
+ private:
   std::unique_ptr<Teensy> teensy_;
-  std::unique_ptr<NSPad> nsgamepad_;
+  std::unique_ptr<NSPad> nspad_;
   std::unique_ptr<HallJoystick> joystick_;
   int dpad_direction_[16];
   NSButtonPinMapping base_mapping_;

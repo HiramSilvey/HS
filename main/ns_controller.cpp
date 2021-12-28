@@ -17,29 +17,29 @@ using Layer = hs_profile_Profile_Layer;
 using Action = hs_profile_Profile_Layer_Action;
 
 NSController::NSController(std::unique_ptr<Teensy> teensy,
-                           std::unique_ptr<NSPad> nsgamepad)
+                           std::unique_ptr<NSPad> nspad)
     : teensy_(std::move(teensy)),
-      nsgamepad_(std::move(nsgamepad)),
+      nspad_(std::move(nspad)),
       base_mapping_({}),
       mod_mapping_({}) {
   // DPad direction with neutral SOCD. Bit order: Up, Down, Left, Right
-  dpad_direction_[0] = nsgamepad_->DPadCentered();   // 0000 None
-  dpad_direction_[1] = nsgamepad_->DPadRight();      // 0001
-  dpad_direction_[2] = nsgamepad_->DPadLeft();       // 0010
-  dpad_direction_[3] = nsgamepad_->DPadCentered();   // 0011 Left + Right cancel
-  dpad_direction_[4] = nsgamepad_->DPadDown();       // 0100
-  dpad_direction_[5] = nsgamepad_->DPadDownRight();  // 0101
-  dpad_direction_[6] = nsgamepad_->DPadDownLeft();   // 0110
-  dpad_direction_[7] = nsgamepad_->DPadDown();       // 0111 Left + Right cancel
-  dpad_direction_[8] = nsgamepad_->DPadUp();         // 1000
-  dpad_direction_[9] = nsgamepad_->DPadUpRight();    // 1001
-  dpad_direction_[10] = nsgamepad_->DPadUpLeft();    // 1010
-  dpad_direction_[11] = nsgamepad_->DPadUp();        // 1011 Left + Right cancel
-  dpad_direction_[12] = nsgamepad_->DPadCentered();  // 1100 Up + Down cancel
-  dpad_direction_[13] = nsgamepad_->DPadRight();     // 1101 Up + Down cancel
-  dpad_direction_[14] = nsgamepad_->DPadLeft();      // 1110 Up + Down cancel
+  dpad_direction_[0] = nspad_->DPadCentered();   // 0000 None
+  dpad_direction_[1] = nspad_->DPadRight();      // 0001
+  dpad_direction_[2] = nspad_->DPadLeft();       // 0010
+  dpad_direction_[3] = nspad_->DPadCentered();   // 0011 Left + Right cancel
+  dpad_direction_[4] = nspad_->DPadDown();       // 0100
+  dpad_direction_[5] = nspad_->DPadDownRight();  // 0101
+  dpad_direction_[6] = nspad_->DPadDownLeft();   // 0110
+  dpad_direction_[7] = nspad_->DPadDown();       // 0111 Left + Right cancel
+  dpad_direction_[8] = nspad_->DPadUp();         // 1000
+  dpad_direction_[9] = nspad_->DPadUpRight();    // 1001
+  dpad_direction_[10] = nspad_->DPadUpLeft();    // 1010
+  dpad_direction_[11] = nspad_->DPadUp();        // 1011 Left + Right cancel
+  dpad_direction_[12] = nspad_->DPadCentered();  // 1100 Up + Down cancel
+  dpad_direction_[13] = nspad_->DPadRight();     // 1101 Up + Down cancel
+  dpad_direction_[14] = nspad_->DPadLeft();      // 1110 Up + Down cancel
   dpad_direction_[15] =
-      nsgamepad_->DPadCentered();  // 1111 Up + Down cancel; Left + Right cancel
+      nspad_->DPadCentered();  // 1111 Up + Down cancel; Left + Right cancel
 
   LoadProfile();
 }
@@ -172,30 +172,30 @@ int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
 }
 
 void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
-  nsgamepad_->SetRightYAxis(
+  nspad_->SetRightYAxis(
       joystick_->get_max() -
       ResolveSOCD(*teensy_, mapping.z_y, joystick_->get_neutral()));
-  nsgamepad_->SetRightXAxis(
+  nspad_->SetRightXAxis(
       ResolveSOCD(*teensy_, mapping.z_x, joystick_->get_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     for (const auto& pin : element.second) {
       if (teensy_->DigitalReadLow(pin)) {
-        nsgamepad_->Press(element.first);
+        nspad_->Press(element.first);
         break;
       }
     }
   }
 
-  nsgamepad_->SetDPad(GetDPadDirection(mapping));
+  nspad_->SetDPad(GetDPadDirection(mapping));
 }
 
 void NSController::Loop() {
-  nsgamepad_->ReleaseAll();
+  nspad_->ReleaseAll();
 
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(*teensy_);
-  nsgamepad_->SetLeftYAxis(joystick_->get_max() - coords.y);
-  nsgamepad_->SetLeftXAxis(coords.x);
+  nspad_->SetLeftYAxis(joystick_->get_max() - coords.y);
+  nspad_->SetLeftXAxis(coords.x);
 
   bool mod_active = false;
   for (const auto& pin : base_mapping_.mod) {
@@ -211,7 +211,7 @@ void NSController::Loop() {
     UpdateButtons(base_mapping_);
   }
 
-  nsgamepad_->Loop();
+  nspad_->Loop();
 }
 
 }  // namespace hs
