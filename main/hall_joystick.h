@@ -24,10 +24,6 @@ class HallJoystick {
     int y;
   };
 
-  // Read and return X and Y axes values.
-  Coordinates GetCoordinates(Teensy& teensy);
-
- private:
   struct Bounds {
     int min;
     int max;
@@ -40,6 +36,10 @@ class HallJoystick {
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);
 
+  // Read and return X and Y axes values.
+  Coordinates GetCoordinates(Teensy& teensy);
+
+ private:
   // Input data bounds.
   Bounds x_in_;
   Bounds y_in_;

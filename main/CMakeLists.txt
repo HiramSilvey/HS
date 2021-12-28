@@ -118,3 +118,21 @@ target_include_directories(
   ${NANOPB_DIR}
   )
 gtest_discover_tests(pc_controller_test)
+
+add_executable(
+  hall_joystick_test
+  test/hall_joystick_test.cpp
+  ${SOURCE_FILES}
+  )
+target_link_libraries(
+  hall_joystick_test
+  gtest_main
+  gmock_main
+  )
+target_include_directories(
+  hall_joystick_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
+  )
+gtest_discover_tests(hall_joystick_test)
