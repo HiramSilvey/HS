@@ -19,7 +19,6 @@ using ::testing::AtLeast;
 using ::testing::ElementsAreArray;
 using ::testing::Field;
 using ::testing::InSequence;
-using ::testing::Matcher;
 using ::testing::Return;
 
 auto MappingEq(const PCButtonPinMapping& expected) {
