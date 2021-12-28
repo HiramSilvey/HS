@@ -35,6 +35,7 @@ endif()
 # Now simply link your own targets against gtest, gmock,
 # etc. as appropriate
 enable_testing()
+include(GoogleTest)
 
 set(NANOPB_DIR /Users/hiram/Documents/Arduino/libraries/Nanopb)
 set(SOURCE_FILES
@@ -47,6 +48,8 @@ set(SOURCE_FILES
   ${NANOPB_DIR}/pb.h
   ${NANOPB_DIR}/pb_common.h
   ${NANOPB_DIR}/pb_common.c
+  ns_controller.h
+  ns_controller.cpp
   pc_controller.h
   pc_controller.cpp
   pins.h
@@ -60,23 +63,6 @@ set(SOURCE_FILES
   test/util.cpp
   util.h
   util.cpp
-  )
-
-add_executable(
-  pc_controller_test
-  test/pc_controller_test.cpp
-  ${SOURCE_FILES}
-  )
-target_link_libraries(
-  pc_controller_test
-  gtest_main
-  gmock_main
-  )
-target_include_directories(
-  pc_controller_test PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/test
-  ${NANOPB_DIR}
   )
 
 add_executable(
@@ -95,6 +81,40 @@ target_include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/test
   ${NANOPB_DIR}
   )
+gtest_discover_tests(controller_test)
 
-include(GoogleTest)
+add_executable(
+  ns_controller_test
+  test/ns_controller_test.cpp
+  ${SOURCE_FILES}
+  )
+target_link_libraries(
+  ns_controller_test
+  gtest_main
+  gmock_main
+  )
+target_include_directories(
+  ns_controller_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
+  )
+gtest_discover_tests(ns_controller_test)
+
+add_executable(
+  pc_controller_test
+  test/pc_controller_test.cpp
+  ${SOURCE_FILES}
+  )
+target_link_libraries(
+  pc_controller_test
+  gtest_main
+  gmock_main
+  )
+target_include_directories(
+  pc_controller_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
+  )
 gtest_discover_tests(pc_controller_test)
