@@ -29,7 +29,8 @@ int HallJoystick::Normalize(const Teensy& teensy, int val, const Bounds& in) {
 }
 
 int HallJoystick::ResolveDigitalCoord(int coord) {
-  const int percent_tilted = ((coord - out_neutral_) * 100) / out_neutral_;
+  const int percent_tilted =
+      ((coord - out_neutral_) * 100) / (out_neutral_ - out_.min);
   if (percent_tilted <= threshold_.first) {
     return out_.min;
   }
