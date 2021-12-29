@@ -59,8 +59,8 @@ set(SOURCE_FILES
   teensy.h
   test/mock_nspad.h
   test/mock_teensy.h
-  test/util.h
-  test/util.cpp
+  test/test_util.h
+  test/test_util.cpp
   util.h
   util.cpp
   )

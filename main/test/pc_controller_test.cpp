@@ -9,7 +9,7 @@
 #include "pins.h"
 #include "profile.pb.h"
 #include "test/mock_teensy.h"
-#include "test/util.h"
+#include "test/test_util.h"
 
 namespace hs {
 
