@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "profile.pb.h"
+#include "test_util.h"
 
 namespace hs {
 
@@ -12,20 +13,6 @@ using ::testing::Field;
 
 using Layout = ::hs_profile_Profile_Layout;
 using Layer = ::hs_profile_Profile_Layer;
-using Action = ::hs_profile_Profile_Layer_Action;
-using AnalogAction = ::hs_profile_Profile_Layer_AnalogAction;
-
-auto AnalogActionEq(const AnalogAction& expected) {
-  return AllOf(Field(AnalogAction::id, expected.id),
-               Field(AnalogAction::value, expected.value));
-}
-
-auto ActionEq(const Action& expected) {
-  return AllOf(Field(Action::which_action_type, expected.which_action_type),
-               Field(Action::action_type, expected.action_type.digital),
-               Field(Action::action_type,
-                     AnalogActionEq(expected.action_type.analog)), );
-}
 
 auto LayerEq(const Layer& expected) {
   return AllOf(

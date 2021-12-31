@@ -10,5 +10,6 @@ cmake .. && cmake --build . --verbose && {
         ./hall_joystick_test;
         ./ns_controller_test;
         ./pc_controller_test;
+        ./pins_test;
         ./util_test;
     }

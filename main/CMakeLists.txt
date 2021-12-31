@@ -60,7 +60,6 @@ set(SOURCE_FILES
   test/mock_nspad.h
   test/mock_teensy.h
   test/test_util.h
-  test/test_util.cpp
   util.h
   util.cpp
   )
@@ -136,6 +135,24 @@ target_include_directories(
   ${NANOPB_DIR}
   )
 gtest_discover_tests(pc_controller_test)
+
+add_executable(
+  pins_test
+  test/pins_test.cpp
+  ${SOURCE_FILES}
+  )
+target_link_libraries(
+  pins_test
+  gtest_main
+  gmock_main
+  )
+target_include_directories(
+  pins_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
+  )
+gtest_discover_tests(pins_test)
 
 add_executable(
   util_test
