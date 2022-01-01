@@ -11,6 +11,7 @@ namespace hs {
 
 using ::testing::AllOf;
 using ::testing::Field;
+using ::testing::InSequence;
 using ::testing::Return;
 
 auto CoordinatesEq(const HallJoystick::Coordinates& expected) {
@@ -25,21 +26,25 @@ class HallJoystickTest : public ::testing::Test {
     // Set x_out_, y_out_ to {200, 1200}
     // Set threshold to 50%
 
-    // Set neutral_x (in) to 10
-    EXPECT_CALL(teensy_, EEPROMRead(0)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(1)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(2)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(3)).WillOnce(Return(10));
-    // Set neutral_y (in) to 10
-    EXPECT_CALL(teensy_, EEPROMRead(4)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(5)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(6)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(7)).WillOnce(Return(10));
-    // Set range (in) to 100
-    EXPECT_CALL(teensy_, EEPROMRead(8)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(9)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(10)).WillOnce(Return(0));
-    EXPECT_CALL(teensy_, EEPROMRead(11)).WillOnce(Return(100));
+    {
+      InSequence seq;
+
+      // Set neutral_x (in) to 10
+      EXPECT_CALL(teensy_, EEPROMRead(0)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(1)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(2)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(3)).WillOnce(Return(10));
+      // Set neutral_y (in) to 10
+      EXPECT_CALL(teensy_, EEPROMRead(4)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(5)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(6)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(7)).WillOnce(Return(10));
+      // Set range (in) to 100
+      EXPECT_CALL(teensy_, EEPROMRead(8)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(9)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(10)).WillOnce(Return(0));
+      EXPECT_CALL(teensy_, EEPROMRead(11)).WillOnce(Return(100));
+    }
 
     joystick_ = std::make_unique<HallJoystick>(teensy_, /*min=*/200,
                                                /*max=*/1200, /*threshold=*/50);
@@ -79,13 +84,16 @@ TEST_F(HallJoystickTest, ResolveDigitalCoord_Neutral) {
 }
 
 TEST_F(HallJoystickTest, GetCoordinates) {
-  EXPECT_CALL(teensy_, UpdateHallData);
-  EXPECT_CALL(teensy_, GetHallZ).WillOnce(Return(1));
-  EXPECT_CALL(teensy_, GetHallX).WillOnce(Return(0.00005));
-  EXPECT_CALL(teensy_, GetHallY).WillOnce(Return(0.00005));
-  EXPECT_CALL(teensy_, Constrain(900, 200, 1200))
-      .Times(2)
-      .WillRepeatedly(Return(900));
+  {
+    InSequence seq;
+    EXPECT_CALL(teensy_, UpdateHallData);
+    EXPECT_CALL(teensy_, GetHallZ).WillOnce(Return(1));
+    EXPECT_CALL(teensy_, GetHallX).WillOnce(Return(0.00005));
+    EXPECT_CALL(teensy_, GetHallY).WillOnce(Return(0.00005));
+    EXPECT_CALL(teensy_, Constrain(900, 200, 1200))
+        .Times(2)
+        .WillRepeatedly(Return(900));
+  }
 
   HallJoystick::Coordinates expected = {700, 700};
   EXPECT_THAT(joystick_->GetCoordinates(teensy_), CoordinatesEq(expected));

@@ -43,7 +43,6 @@ TEST(ConfiguratorTest, FetchStoredBounds) {
         .With(Args<0, 1>(ElementsAreArray(expected_y)));
     EXPECT_CALL(teensy, SerialWrite(_, 4))
         .With(Args<0, 1>(ElementsAreArray(expected_range)));
-    ;
   }
 
   configurator::internal::FetchStoredBounds(teensy);

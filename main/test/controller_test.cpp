@@ -11,6 +11,7 @@
 namespace hs {
 
 using ::testing::AtLeast;
+using ::testing::InSequence;
 using ::testing::Return;
 
 TEST(ControllerTest, FetchProfile) {
@@ -29,8 +30,11 @@ TEST(ControllerTest, ResolveSOCD_Min) {
                                              {.value = -75, .pin = 2}};
   const int joystick_neutral = 0;
 
-  EXPECT_CALL(*mock_teensy, DigitalReadLow(1)).WillOnce(Return(false));
-  EXPECT_CALL(*mock_teensy, DigitalReadLow(2)).WillOnce(Return(true));
+  {
+    InSequence seq;
+    EXPECT_CALL(*mock_teensy, DigitalReadLow(1)).WillOnce(Return(false));
+    EXPECT_CALL(*mock_teensy, DigitalReadLow(2)).WillOnce(Return(true));
+  }
 
   std::unique_ptr<Teensy> teensy = std::move(mock_teensy);
   EXPECT_EQ(ResolveSOCD(*teensy, buttons, joystick_neutral), -75);
@@ -42,8 +46,11 @@ TEST(ControllerTest, ResolveSOCD_Max) {
                                              {.value = -75, .pin = 2}};
   const int joystick_neutral = 0;
 
-  EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(true));
-  EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(false));
+  {
+    InSequence seq;
+    EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(true));
+    EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(false));
+  }
 
   EXPECT_EQ(ResolveSOCD(*teensy, buttons, joystick_neutral), 100);
 }
@@ -54,8 +61,11 @@ TEST(ControllerTest, ResolveSOCD_Cancel) {
                                              {.value = -75, .pin = 2}};
   const int joystick_neutral = 0;
 
-  EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(true));
-  EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(true));
+  {
+    InSequence seq;
+    EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(true));
+    EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(true));
+  }
 
   EXPECT_EQ(ResolveSOCD(*teensy, buttons, joystick_neutral), 0);
 }
@@ -67,9 +77,12 @@ TEST(ControllerTest, ResolveSOCD_LargerMax) {
                                              {.value = -75, .pin = 3}};
   const int joystick_neutral = 0;
 
-  EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(true));
-  EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(true));
-  EXPECT_CALL(*teensy, DigitalReadLow(3)).WillOnce(Return(false));
+  {
+    InSequence seq;
+    EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(true));
+    EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(true));
+    EXPECT_CALL(*teensy, DigitalReadLow(3)).WillOnce(Return(false));
+  }
 
   EXPECT_EQ(ResolveSOCD(*teensy, buttons, joystick_neutral), 125);
 }
@@ -81,9 +94,12 @@ TEST(ControllerTest, ResolveSOCD_SmallerMin) {
                                              {.value = -110, .pin = 3}};
   const int joystick_neutral = 0;
 
-  EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(false));
-  EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(true));
-  EXPECT_CALL(*teensy, DigitalReadLow(3)).WillOnce(Return(true));
+  {
+    InSequence seq;
+    EXPECT_CALL(*teensy, DigitalReadLow(1)).WillOnce(Return(false));
+    EXPECT_CALL(*teensy, DigitalReadLow(2)).WillOnce(Return(true));
+    EXPECT_CALL(*teensy, DigitalReadLow(3)).WillOnce(Return(true));
+  }
 
   EXPECT_EQ(ResolveSOCD(*teensy, buttons, joystick_neutral), -110);
 }

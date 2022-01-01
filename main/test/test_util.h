@@ -7,13 +7,27 @@
 #include <memory>
 
 #include "controller.h"
+#include "profile.pb.h"
 
 namespace hs {
 
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Matcher;
-using Action = ::hs_profile_Profile_Layer_Action;
+
+hs_profile_Profile_Layer_Action DigitalLayerAction(
+    hs_profile_Profile_Layer_DigitalAction action) {
+  return hs_profile_Profile_Layer_Action{
+      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
+      .action_type = {.digital = action}};
+}
+
+hs_profile_Profile_Layer_Action AnalogLayerAction(
+    hs_profile_Profile_Layer_AnalogAction_ID id, int val) {
+  return hs_profile_Profile_Layer_Action{
+      .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
+      .action_type = {.analog = {.id = id, .value = val}}};
+}
 
 MATCHER_P(ActionTypeEq, expected, "") {
   return arg.action_type.digital == expected.digital &&
@@ -21,8 +35,9 @@ MATCHER_P(ActionTypeEq, expected, "") {
          arg.action_type.analog.value == expected.analog.value;
 }
 
-auto ActionEq(const Action& expected) {
-  return AllOf(Field(&Action::which_action_type, expected.which_action_type),
+auto ActionEq(const hs_profile_Profile_Layer_Action& expected) {
+  return AllOf(Field(&hs_profile_Profile_Layer_Action::which_action_type,
+                     expected.which_action_type),
                ActionTypeEq(expected.action_type));
 }
 

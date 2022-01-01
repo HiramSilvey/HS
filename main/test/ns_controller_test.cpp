@@ -60,84 +60,32 @@ class NSControllerTest : public ::testing::Test {
 
 TEST_F(NSControllerTest, GetButtonPinMapping_StandardDigital) {
   hs_profile_Profile_Layer layer = {
-      .thumb_top =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_X,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+      .thumb_top = DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
       .thumb_middle =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_CIRCLE,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_CIRCLE),
       .thumb_bottom =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_TRIANGLE,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_TRIANGLE),
       .index_top =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_SQUARE,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_SQUARE),
       .index_middle =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_L1,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L1),
       .middle_top =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_L2,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L2),
       .middle_middle =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_L3,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L3),
       .middle_bottom =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_R1,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-      .ring_top =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_R2,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R1),
+      .ring_top = DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R2),
       .ring_middle =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_R3,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R3),
       .ring_bottom =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_OPTIONS,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_OPTIONS),
       .pinky_top =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_SHARE,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_SHARE),
       .pinky_middle =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_HOME,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_HOME),
       .pinky_bottom =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_CAPTURE,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-  };
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_CAPTURE)};
 
   NSButtonPinMapping expected_mapping;
   expected_mapping.button_id_to_pins[1] = {pins::kThumbTop};
@@ -163,59 +111,23 @@ TEST_F(NSControllerTest, GetButtonPinMapping_StandardDigital) {
 TEST_F(NSControllerTest, GetButtonPinMapping_SpecialDigital) {
   hs_profile_Profile_Layer layer = {
       .thumb_top =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_R_STICK_UP,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-      .thumb_middle =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-      .thumb_bottom =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-      .left_ring_extra =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-      .left_middle_extra =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_D_PAD_UP,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R_STICK_UP),
+      .thumb_middle = DigitalLayerAction(
+          hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN),
+      .thumb_bottom = DigitalLayerAction(
+          hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT),
       .left_index_extra =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN),
+      .left_middle_extra =
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP),
+      .left_ring_extra = DigitalLayerAction(
+          hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT),
       .right_index_extra =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-      .right_middle_extra =
-          {
-              .action_type.digital =
-                  hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT),
+      .right_middle_extra = DigitalLayerAction(
+          hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT),
       .right_ring_extra =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_MOD,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-  };
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_MOD)};
 
   const int joystick_min = 0;
   const int joystick_max = 255;
@@ -238,23 +150,10 @@ TEST_F(NSControllerTest, GetButtonPinMapping_SpecialDigital) {
 
 TEST_F(NSControllerTest, GetButtonPinMapping_Analog) {
   hs_profile_Profile_Layer layer = {
-      .thumb_top =
-          {
-              .action_type.analog =
-                  {
-                      .id = hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y,
-                      .value = 100,
-                  },
-              .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
-          },
-      .thumb_middle = {
-          .action_type.analog =
-              {
-                  .id = hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X,
-                  .value = 101,
-              },
-          .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
-      }};
+      .thumb_top = AnalogLayerAction(
+          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 100),
+      .thumb_middle = AnalogLayerAction(
+          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X, 101)};
 
   NSButtonPinMapping expected_mapping;
   expected_mapping.z_y = {{100, pins::kThumbTop}};
@@ -267,49 +166,17 @@ TEST_F(NSControllerTest, GetButtonPinMapping_Analog) {
 
 TEST_F(NSControllerTest, GetButtonPinMapping_MultiplePinsOneButton) {
   hs_profile_Profile_Layer layer = {
-      .thumb_top =
-          {
-              .action_type.analog =
-                  {
-                      .id = hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y,
-                      .value = 100,
-                  },
-              .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
-          },
-      .thumb_middle =
-          {
-              .action_type.analog =
-                  {
-                      .id = hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y,
-                      .value = 101,
-                  },
-              .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
-          },
-      .thumb_bottom =
-          {
-              .action_type.analog =
-                  {
-                      .id = hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y,
-                      .value = 102,
-                  },
-              .which_action_type = hs_profile_Profile_Layer_Action_analog_tag,
-          },
-      .index_top =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_X,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+      .thumb_top = AnalogLayerAction(
+          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 100),
+      .thumb_middle = AnalogLayerAction(
+          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 101),
+      .thumb_bottom = AnalogLayerAction(
+          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 102),
+      .index_top = DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
       .index_middle =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_X,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
       .middle_top =
-          {
-              .action_type.digital = hs_profile_Profile_Layer_DigitalAction_X,
-              .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-          },
-  };
+          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X)};
 
   NSButtonPinMapping expected_mapping;
   expected_mapping.z_y = {{100, pins::kThumbTop},
@@ -321,7 +188,7 @@ TEST_F(NSControllerTest, GetButtonPinMapping_MultiplePinsOneButton) {
   NSController controller(std::move(teensy_), std::move(nspad_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
               MappingEq(expected_mapping));
-}
+}  // namespace hs
 
 TEST_F(NSControllerTest, GetDPadDirection) {
   const uint8_t pin = 1;
@@ -333,96 +200,52 @@ TEST_F(NSControllerTest, GetDPadDirection) {
   NSButtonPinMapping mapping;
   EXPECT_EQ(controller.GetDPadDirection(mapping), 0);
 
-  mapping = {
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 1);
 
-  mapping = {
-      .dpad_left = {pin},
-  };
+  mapping = {.dpad_left = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 2);
 
-  mapping = {
-      .dpad_left = {pin},
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_left = {pin}, .dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 0);
 
-  mapping = {
-      .dpad_down = {pin},
-  };
+  mapping = {.dpad_down = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 3);
 
-  mapping = {
-      .dpad_down = {pin},
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_down = {pin}, .dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 4);
 
-  mapping = {
-      .dpad_down = {pin},
-      .dpad_left = {pin},
-  };
+  mapping = {.dpad_down = {pin}, .dpad_left = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 5);
 
-  mapping = {
-      .dpad_down = {pin},
-      .dpad_left = {pin},
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_down = {pin}, .dpad_left = {pin}, .dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 3);
 
-  mapping = {
-      .dpad_up = {pin},
-  };
+  mapping = {.dpad_up = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 6);
 
-  mapping = {
-      .dpad_up = {pin},
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_up = {pin}, .dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 7);
 
-  mapping = {
-      .dpad_up = {pin},
-      .dpad_left = {pin},
-  };
+  mapping = {.dpad_up = {pin}, .dpad_left = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 8);
 
-  mapping = {
-      .dpad_up = {pin},
-      .dpad_left = {pin},
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_up = {pin}, .dpad_left = {pin}, .dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 6);
 
-  mapping = {
-      .dpad_up = {pin},
-      .dpad_down = {pin},
-  };
+  mapping = {.dpad_up = {pin}, .dpad_down = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 0);
 
-  mapping = {
-      .dpad_up = {pin},
-      .dpad_down = {pin},
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_up = {pin}, .dpad_down = {pin}, .dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 1);
 
-  mapping = {
-      .dpad_up = {pin},
-      .dpad_down = {pin},
-      .dpad_left = {pin},
-  };
+  mapping = {.dpad_up = {pin}, .dpad_down = {pin}, .dpad_left = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 2);
 
-  mapping = {
-      .dpad_up = {pin},
-      .dpad_down = {pin},
-      .dpad_left = {pin},
-      .dpad_right = {pin},
-  };
+  mapping = {.dpad_up = {pin},
+             .dpad_down = {pin},
+             .dpad_left = {pin},
+             .dpad_right = {pin}};
   EXPECT_EQ(controller.GetDPadDirection(mapping), 0);
 }
 
@@ -430,14 +253,12 @@ TEST_F(NSControllerTest, UpdateButtons) {
   const uint8_t pin = 1;
   const std::vector<int> digital = {pin};
   const std::vector<AnalogButton> analog = {{.value = 0, .pin = pin}};
-  NSButtonPinMapping mapping = {
-      .z_y = analog,
-      .z_x = analog,
-      .dpad_up = digital,
-      .dpad_down = digital,
-      .dpad_left = digital,
-      .dpad_right = digital,
-  };
+  NSButtonPinMapping mapping = {.z_y = analog,
+                                .z_x = analog,
+                                .dpad_up = digital,
+                                .dpad_down = digital,
+                                .dpad_left = digital,
+                                .dpad_right = digital};
   mapping.mod = digital;
   mapping.button_id_to_pins = {
       {0, digital},  {1, digital},  {2, digital},  {3, digital}, {4, digital},
@@ -450,7 +271,6 @@ TEST_F(NSControllerTest, UpdateButtons) {
 
   {
     InSequence seq;
-
     EXPECT_CALL(*nspad_, SetRightYAxis);
     EXPECT_CALL(*nspad_, SetRightXAxis);
     EXPECT_CALL(*nspad_, Press(_)).Times(14);

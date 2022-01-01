@@ -37,7 +37,7 @@ endif()
 enable_testing()
 include(GoogleTest)
 
-set(NANOPB_DIR /Users/hiram/Documents/Arduino/libraries/Nanopb)
+set(NANOPB_DIR build/Nanopb)
 set(SOURCE_FILES
   configurator.h
   configurator.cpp

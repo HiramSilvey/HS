@@ -24,14 +24,6 @@ std::vector<Matcher<pins::ActionPin>> ActionPinEq(
   return matchers;
 }
 
-hs_profile_Profile_Layer_Action DigitalLayerAction(
-    hs_profile_Profile_Layer_DigitalAction action) {
-  return hs_profile_Profile_Layer_Action{
-      .action_type.digital = action,
-      .which_action_type = hs_profile_Profile_Layer_Action_digital_tag,
-  };
-}
-
 TEST(PinsTest, GetActionPins) {
   const auto thumb_top =
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X);
@@ -61,12 +53,12 @@ TEST(PinsTest, GetActionPins) {
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_HOME);
   const auto pinky_bottom =
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_CAPTURE);
-  const auto left_ring_extra =
-      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP);
-  const auto left_middle_extra =
-      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN);
   const auto left_index_extra =
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT);
+  const auto left_middle_extra =
+      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN);
+  const auto left_ring_extra =
+      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP);
   const auto right_index_extra =
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT);
   const auto right_middle_extra =
@@ -89,9 +81,9 @@ TEST(PinsTest, GetActionPins) {
       .pinky_top = pinky_top,
       .pinky_middle = pinky_middle,
       .pinky_bottom = pinky_bottom,
-      .left_ring_extra = left_ring_extra,
-      .left_middle_extra = left_middle_extra,
       .left_index_extra = left_index_extra,
+      .left_middle_extra = left_middle_extra,
+      .left_ring_extra = left_ring_extra,
       .right_index_extra = right_index_extra,
       .right_middle_extra = right_middle_extra,
       .right_ring_extra = right_ring_extra,
