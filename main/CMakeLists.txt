@@ -39,6 +39,8 @@ include(GoogleTest)
 
 set(NANOPB_DIR /Users/hiram/Documents/Arduino/libraries/Nanopb)
 set(SOURCE_FILES
+  configurator.h
+  configurator.cpp
   controller.h
   controller.cpp
   decoder.h
@@ -63,6 +65,24 @@ set(SOURCE_FILES
   util.h
   util.cpp
   )
+
+add_executable(
+  configurator_test
+  test/configurator_test.cpp
+  ${SOURCE_FILES}
+  )
+target_link_libraries(
+  configurator_test
+  gtest_main
+  gmock_main
+  )
+target_include_directories(
+  configurator_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
+  )
+gtest_discover_tests(configurator_test)
 
 add_executable(
   controller_test

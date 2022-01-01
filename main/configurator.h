@@ -12,8 +12,8 @@ namespace configurator {
 namespace internal {
 
 void FetchStoredBounds(const Teensy& teensy);
-void FetchJoystickCoords(const Teensy& teensy);
-void CalibrateJoystick(const Teensy& teensy);
+void FetchJoystickCoords(Teensy& teensy);
+void CalibrateJoystick(Teensy& teensy);
 void SaveCalibration(const Teensy& teensy);
 void StoreProfiles(const Teensy& teensy);
 

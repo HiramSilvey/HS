@@ -13,7 +13,9 @@ namespace configurator {
 namespace {
 
 void WriteToSerial(const Teensy& teensy, int val) {
-  uint8_t bytes[4] = {val >> 24, val >> 16 & 0xFF, val >> 8 & 0xFF, val & 0xFF};
+  uint8_t bytes[4] = {
+      static_cast<uint8_t>(val >> 24), static_cast<uint8_t>(val >> 16 & 0xFF),
+      static_cast<uint8_t>(val >> 8 & 0xFF), static_cast<uint8_t>(val & 0xFF)};
   teensy.SerialWrite(bytes, 4);
 }
 
