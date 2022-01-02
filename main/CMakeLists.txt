@@ -103,6 +103,24 @@ target_include_directories(
 gtest_discover_tests(controller_test)
 
 add_executable(
+  decoder_test
+  test/decoder_test.cpp
+  ${SOURCE_FILES}
+  )
+target_link_libraries(
+  decoder_test
+  gtest_main
+  gmock_main
+  )
+target_include_directories(
+  decoder_test PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/test
+  ${NANOPB_DIR}
+  )
+gtest_discover_tests(decoder_test)
+
+add_executable(
   hall_joystick_test
   test/hall_joystick_test.cpp
   ${SOURCE_FILES}

@@ -40,7 +40,7 @@ std::vector<PlatformConfig> DecodeHeader(const Teensy& teensy, int addr) {
       if (configs.size() % 2 == 0) {
         config.position = teensy.EEPROMRead(addr) >> 4;
       } else {
-        config.position = teensy.EEPROMRead(addr++) & 0xFF;
+        config.position = teensy.EEPROMRead(addr++) & 0xF;
       }
       configs.push_back(config);
     }

@@ -7,6 +7,7 @@ cd "$src_dir/build"
 cmake .. && cmake --build . --verbose && {
         ./configurator_test;
         ./controller_test;
+        ./decoder_test;
         ./hall_joystick_test;
         ./ns_controller_test;
         ./pc_controller_test;
