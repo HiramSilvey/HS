@@ -131,4 +131,57 @@ TEST(ConfiguratorTest, CalibrateJoystick_RangeY) {
   configurator::internal::CalibrateJoystick(teensy);
 }
 
+TEST(ConfiguratorTest, SaveCalibration) {
+  MockTeensy teensy;
+
+  EXPECT_CALL(teensy, SerialAvailable).Times(12).WillRepeatedly(Return(true));
+  EXPECT_CALL(teensy, SerialRead).Times(12).WillRepeatedly(Return(1));
+  for (int i = 0; i < 12; i++) {
+    EXPECT_CALL(teensy, EEPROMUpdate(i, 1));
+  }
+  EXPECT_CALL(teensy, SerialWrite(0));
+
+  configurator::internal::SaveCalibration(teensy);
+}
+
+TEST(ConfiguratorTest, SaveCalibration_SerialUnavailable) {
+  MockTeensy teensy;
+
+  EXPECT_CALL(teensy, SerialAvailable)
+      .Times(13)
+      .WillOnce(Return(false))  // Expect it to retry upon seeing false.
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(teensy, SerialRead).Times(12).WillRepeatedly(Return(1));
+  for (int i = 0; i < 12; i++) {
+    EXPECT_CALL(teensy, EEPROMUpdate(i, 1));
+  }
+  EXPECT_CALL(teensy, SerialWrite(0));
+
+  configurator::internal::SaveCalibration(teensy);
+}
+
+TEST(ConfiguratorTest, StoreProfiles) {
+  MockTeensy teensy;
+
+  EXPECT_CALL(teensy, SerialAvailable)
+      .WillOnce(Return(1))  // Expect it to retry upon seeing less than 2.
+      .WillOnce(Return(2))
+      .WillOnce(Return(false))  // Expect it to retry upon seeing false.
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(teensy, SerialRead)
+      .WillOnce(Return(0))
+      .WillOnce(Return(3))
+      .WillOnce(Return(1))
+      .WillOnce(Return(1))
+      .WillOnce(Return(1));
+  for (int i = 12; i < 15; i++) {
+    EXPECT_CALL(teensy, EEPROMUpdate(i, 1));
+  }
+  EXPECT_CALL(teensy, SerialWrite(0));
+
+  configurator::internal::StoreProfiles(teensy);
+}
+
 }  // namespace hs
