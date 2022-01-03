@@ -5,8 +5,8 @@ platform_config {
 }
 layout {
     base {
-        index_top { digital: R_STICK_LEFT }     # C left
-        middle_top { digital: R_STICK_UP }      # C up
+        index_top { digital: R1 }               # Z
+        middle_top { digital: R_STICK_LEFT }    # C left
         ring_top { digital: R_STICK_RIGHT }     # C right
         index_middle { digital: L2 }            # L
         middle_middle { digital: TRIANGLE }     # Y
@@ -17,16 +17,16 @@ layout {
             value: 661
           }
         }
-        thumb_bottom { digital: R1 }            # Z
-        thumb_middle { digital: R_STICK_DOWN }  # C down
         thumb_top { digital: X }                # A
-        right_index_extra { digital: OPTIONS }  # Start
+        thumb_middle { digital: R_STICK_UP }    # C up
+        thumb_bottom { digital: R_STICK_DOWN }  # C down
+        left_middle_extra { digital: OPTIONS }  # Start
         left_ring_extra { digital: MOD }        # Mod layout
     }
     mod {
         index_middle { digital: D_PAD_LEFT }
         middle_middle { digital: D_PAD_UP }     # Taunt
         ring_middle { digital: D_PAD_RIGHT }
-        thumb_middle { digital: D_PAD_DOWN }
+        thumb_top { digital: D_PAD_DOWN }
     }
 }
