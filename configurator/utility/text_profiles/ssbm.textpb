@@ -20,8 +20,8 @@ layout {
         thumb_top { digital: X }                # A
         thumb_middle { digital: R_STICK_UP }    # C up
         thumb_bottom { digital: R_STICK_DOWN }  # C down
-        left_middle_extra { digital: OPTIONS }  # Start
-        left_ring_extra { digital: MOD }        # Mod layout
+        left_outer { digital: OPTIONS }         # Start
+        left_inner { digital: MOD }             # Mod layout
     }
     mod {
         index_middle { digital: D_PAD_LEFT }

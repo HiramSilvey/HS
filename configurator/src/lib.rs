@@ -44,12 +44,8 @@ impl fmt::Display for Layer {
             ("pinky top", self.pinky_top.as_ref()),
             ("pinky middle", self.pinky_middle.as_ref()),
             ("pinky bottom", self.pinky_bottom.as_ref()),
-            ("left index extra", self.left_index_extra.as_ref()),
-            ("left middle extra", self.left_middle_extra.as_ref()),
-            ("left ring extra", self.left_ring_extra.as_ref()),
-            ("right index extra", self.right_index_extra.as_ref()),
-            ("right middle extra", self.right_middle_extra.as_ref()),
-            ("right ring extra", self.right_ring_extra.as_ref()),
+            ("left outer", self.left_outer.as_ref()),
+            ("left inner", self.left_inner.as_ref()),
         ];
         for action in actions.iter() {
             if let Some(unwrapped) = action.1 {
