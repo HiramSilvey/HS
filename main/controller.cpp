@@ -14,11 +14,18 @@ using Platform = ::hs_profile_Profile_Platform;
 
 Layout FetchProfile(const Teensy& teensy, const Platform& platform) {
   std::pair<int, int> button_to_position[] = {
-      std::make_pair(pins::kLeftRingExtra, 1),
-      std::make_pair(pins::kLeftMiddleExtra, 2),
-      std::make_pair(pins::kRightMiddleExtra, 3),
-      std::make_pair(pins::kRightRingExtra, 4),
-  };
+      std::make_pair(pins::kIndexTop, 1),
+      std::make_pair(pins::kMiddleTop, 2),
+      std::make_pair(pins::kRingTop, 3),
+      std::make_pair(pins::kPinkyTop, 4),
+      std::make_pair(pins::kIndexMiddle, 5),
+      std::make_pair(pins::kMiddleMiddle, 6),
+      std::make_pair(pins::kRingMiddle, 7),
+      std::make_pair(pins::kPinkyMiddle, 8),
+      std::make_pair(pins::kThumbTop, 9),
+      std::make_pair(pins::kMiddleBottom, 10),
+      std::make_pair(pins::kRingBottom, 11),
+      std::make_pair(pins::kPinkyBottom, 12)};
   int position = 0;
   for (const auto& element : button_to_position) {
     if (teensy.DigitalReadLow(element.first)) {

@@ -100,12 +100,8 @@ fn encode_layer(layer: &Layer) -> Result<Vec<u8>> {
         layer.pinky_top.as_ref(),
         layer.pinky_middle.as_ref(),
         layer.pinky_bottom.as_ref(),
-        layer.left_index_extra.as_ref(),
-        layer.left_middle_extra.as_ref(),
-        layer.left_ring_extra.as_ref(),
-        layer.right_index_extra.as_ref(),
-        layer.right_middle_extra.as_ref(),
-        layer.right_ring_extra.as_ref(),
+        layer.left_outer.as_ref(),
+        layer.left_inner.as_ref(),
     ];
     let mut encoded: Vec<u8> = Vec::new();
     let mut curr_byte: u8 = 0;

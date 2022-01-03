@@ -71,16 +71,13 @@ int FetchData(const Teensy& teensy, int remaining, int& addr,
 
 Layer DecodeLayer(const Teensy& teensy, int& addr) {
   Layer layer;
-  Action* actions[20] = {&layer.thumb_top,          &layer.thumb_middle,
-                         &layer.thumb_bottom,       &layer.index_top,
-                         &layer.index_middle,       &layer.middle_top,
-                         &layer.middle_middle,      &layer.middle_bottom,
-                         &layer.ring_top,           &layer.ring_middle,
-                         &layer.ring_bottom,        &layer.pinky_top,
-                         &layer.pinky_middle,       &layer.pinky_bottom,
-                         &layer.left_index_extra,   &layer.left_middle_extra,
-                         &layer.left_ring_extra,    &layer.right_index_extra,
-                         &layer.right_middle_extra, &layer.right_ring_extra};
+  Action* actions[16] = {
+      &layer.thumb_top,     &layer.thumb_middle,  &layer.thumb_bottom,
+      &layer.index_top,     &layer.index_middle,  &layer.middle_top,
+      &layer.middle_middle, &layer.middle_bottom, &layer.ring_top,
+      &layer.ring_middle,   &layer.ring_bottom,   &layer.pinky_top,
+      &layer.pinky_middle,  &layer.pinky_bottom,  &layer.left_outer,
+      &layer.left_inner};
   uint8_t curr_byte = teensy.EEPROMRead(addr++);
   int unread = 8;
   for (Action* action : actions) {

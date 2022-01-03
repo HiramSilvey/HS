@@ -4,17 +4,17 @@ platform_config {
     position: 3
 }
 layout {
-    joystick_threshold: 45                      # Digital joystick
+    joystick_threshold: 45                   # Digital joystick
     base {
-        thumb_top { digital: SQUARE }              # Punch
-        index_middle { digital: X }                # Kick
-        middle_middle { digital: TRIANGLE }        # Slash
-        ring_middle { digital: CIRCLE }            # Heavy Slash
-        pinky_middle { digital: R1 }               # Dust
-        index_top { digital: L3 }                  # Dash
-        middle_top { digital: L1 }                 # Roman Cancel
-        pinky_top { digital: L2 }                  # Taunt
-        left_index_extra { digital: SHARE }        # Start 1
-        right_index_extra { digital: OPTIONS }     # Start 2
+        thumb_top { digital: SQUARE }        # Punch
+        index_middle { digital: X }          # Kick
+        middle_middle { digital: TRIANGLE }  # Slash
+        ring_middle { digital: CIRCLE }      # Heavy Slash
+        pinky_middle { digital: R1 }         # Dust
+        index_top { digital: L3 }            # Dash
+        middle_top { digital: L1 }           # Roman Cancel
+        pinky_top { digital: L2 }            # Taunt
+        left_outer { digital: SHARE }        # Start 1
+        left_inner { digital: OPTIONS }      # Start 2
     }
 }

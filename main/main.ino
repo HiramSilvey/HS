@@ -18,7 +18,7 @@ void setup() {
   delay(100);
 
   auto teensy = std::make_unique<hs::TeensyImpl>();
-  if (teensy->DigitalReadLow(hs::pins::kRightIndexExtra)) {
+  if (teensy->DigitalReadLow(hs::pins::kLeftOuter)) {
     hs::configurator::Configure(std::move(teensy));
     exit(0);
   }

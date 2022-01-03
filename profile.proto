@@ -92,12 +92,8 @@ message Profile {
     Action pinky_top = 12;
     Action pinky_middle = 13;
     Action pinky_bottom = 14;
-    Action left_index_extra = 15;
-    Action left_middle_extra = 16;
-    Action left_ring_extra = 17;
-    Action right_index_extra = 18;
-    Action right_middle_extra = 19;
-    Action right_ring_extra = 20;
+    Action left_outer = 15;
+    Action left_inner = 16;
   }
 
   // Next available ID: 4
