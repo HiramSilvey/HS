@@ -113,17 +113,17 @@ TEST_F(PCControllerTest, GetButtonPinMapping_SpecialDigital) {
           hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MAX),
       .middle_middle = DigitalLayerAction(
           hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MIN),
-      .left_index_extra =
+      .middle_bottom =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN),
-      .left_middle_extra =
+      .ring_top =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP),
-      .left_ring_extra = DigitalLayerAction(
+      .ring_middle = DigitalLayerAction(
           hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MAX),
-      .right_index_extra =
+      .ring_bottom =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT),
-      .right_middle_extra = DigitalLayerAction(
+      .left_outer = DigitalLayerAction(
           hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT),
-      .right_ring_extra =
+      .left_inner =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_MOD)};
 
   const int joystick_min = 0;
@@ -137,12 +137,12 @@ TEST_F(PCControllerTest, GetButtonPinMapping_SpecialDigital) {
   expected_mapping.slider_left = {{joystick_min, pins::kIndexMiddle},
                                   {joystick_max, pins::kMiddleTop}};
   expected_mapping.slider_right = {{joystick_min, pins::kMiddleMiddle},
-                                   {joystick_max, pins::kLeftRingExtra}};
-  expected_mapping.hat_up = {pins::kLeftMiddleExtra};
-  expected_mapping.hat_down = {pins::kLeftIndexExtra};
-  expected_mapping.hat_left = {pins::kRightIndexExtra};
-  expected_mapping.hat_right = {pins::kRightMiddleExtra};
-  expected_mapping.mod = {pins::kRightRingExtra};
+                                   {joystick_max, pins::kRingMiddle}};
+  expected_mapping.hat_up = {pins::kRingTop};
+  expected_mapping.hat_down = {pins::kMiddleBottom};
+  expected_mapping.hat_left = {pins::kRingBottom};
+  expected_mapping.hat_right = {pins::kLeftOuter};
+  expected_mapping.mod = {pins::kLeftInner};
 
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),

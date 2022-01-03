@@ -25,12 +25,8 @@ const int kRingBottom = 10;
 const int kPinkyTop = 11;
 const int kPinkyMiddle = 12;
 const int kPinkyBottom = 13;
-const int kLeftRingExtra = 14;
-const int kLeftMiddleExtra = 15;
-const int kLeftIndexExtra = 16;
-const int kRightIndexExtra = 17;
-const int kRightMiddleExtra = 20;
-const int kRightRingExtra = 21;
+const int kLeftOuter = 14;
+const int kLeftInner = 15;
 
 struct ActionPin {
   hs_profile_Profile_Layer_Action action;

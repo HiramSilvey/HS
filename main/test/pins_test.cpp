@@ -53,41 +53,27 @@ TEST(PinsTest, GetActionPins) {
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_HOME);
   const auto pinky_bottom =
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_CAPTURE);
-  const auto left_index_extra =
+  const auto left_outer =
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT);
-  const auto left_middle_extra =
+  const auto left_inner =
       DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN);
-  const auto left_ring_extra =
-      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP);
-  const auto right_index_extra =
-      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT);
-  const auto right_middle_extra =
-      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R_STICK_UP);
-  const auto right_ring_extra =
-      DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN);
 
-  const hs_profile_Profile_Layer layer = {
-      .thumb_top = thumb_top,
-      .thumb_middle = thumb_middle,
-      .thumb_bottom = thumb_bottom,
-      .index_top = index_top,
-      .index_middle = index_middle,
-      .middle_top = middle_top,
-      .middle_middle = middle_middle,
-      .middle_bottom = middle_bottom,
-      .ring_top = ring_top,
-      .ring_middle = ring_middle,
-      .ring_bottom = ring_bottom,
-      .pinky_top = pinky_top,
-      .pinky_middle = pinky_middle,
-      .pinky_bottom = pinky_bottom,
-      .left_index_extra = left_index_extra,
-      .left_middle_extra = left_middle_extra,
-      .left_ring_extra = left_ring_extra,
-      .right_index_extra = right_index_extra,
-      .right_middle_extra = right_middle_extra,
-      .right_ring_extra = right_ring_extra,
-  };
+  const hs_profile_Profile_Layer layer = {.thumb_top = thumb_top,
+                                          .thumb_middle = thumb_middle,
+                                          .thumb_bottom = thumb_bottom,
+                                          .index_top = index_top,
+                                          .index_middle = index_middle,
+                                          .middle_top = middle_top,
+                                          .middle_middle = middle_middle,
+                                          .middle_bottom = middle_bottom,
+                                          .ring_top = ring_top,
+                                          .ring_middle = ring_middle,
+                                          .ring_bottom = ring_bottom,
+                                          .pinky_top = pinky_top,
+                                          .pinky_middle = pinky_middle,
+                                          .pinky_bottom = pinky_bottom,
+                                          .left_outer = left_outer,
+                                          .left_inner = left_inner};
 
   const std::vector<pins::ActionPin> expected = {
       {thumb_top, pins::kThumbTop},
@@ -104,13 +90,8 @@ TEST(PinsTest, GetActionPins) {
       {pinky_top, pins::kPinkyTop},
       {pinky_middle, pins::kPinkyMiddle},
       {pinky_bottom, pins::kPinkyBottom},
-      {left_ring_extra, pins::kLeftRingExtra},
-      {left_middle_extra, pins::kLeftMiddleExtra},
-      {left_index_extra, pins::kLeftIndexExtra},
-      {right_index_extra, pins::kRightIndexExtra},
-      {right_middle_extra, pins::kRightMiddleExtra},
-      {right_ring_extra, pins::kRightRingExtra},
-  };
+      {left_outer, pins::kLeftOuter},
+      {left_inner, pins::kLeftInner}};
 
   EXPECT_THAT(pins::GetActionPins(layer),
               ElementsAreArray(ActionPinEq(expected)));

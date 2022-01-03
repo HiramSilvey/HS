@@ -17,7 +17,7 @@ using ::testing::Return;
 TEST(ControllerTest, FetchProfile) {
   const auto teensy = std::make_unique<MockTeensy>();
 
-  EXPECT_CALL(*teensy, DigitalReadLow).Times(4);
+  EXPECT_CALL(*teensy, DigitalReadLow).Times(12);
   EXPECT_CALL(*teensy, EEPROMRead).Times(AtLeast(1));
   EXPECT_CALL(*teensy, Exit);
 
