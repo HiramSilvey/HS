@@ -462,7 +462,7 @@ TEST(DecoderTest, DecodeBody_BaseAndMod) {
   EXPECT_EQ(addr, 38);
 }
 
-TEST(DecoderTest, Decode) {
+TEST(DecoderTest, Decode_FirstProfile) {
   const Layout expected = {
       .joystick_threshold = 50,
       // Layer taken from DecodeLayer tests.
@@ -543,6 +543,102 @@ TEST(DecoderTest, Decode) {
     EXPECT_CALL(teensy, EEPROMRead(33)).WillOnce(Return(223));  // 11011|111
     EXPECT_CALL(teensy, EEPROMRead(34)).WillOnce(Return(192));  // 11|000000
     EXPECT_CALL(teensy, EEPROMRead(35)).WillOnce(Return(64));   // 0100|0000
+  }
+
+  EXPECT_THAT(
+      decoder::Decode(teensy, hs_profile_Profile_Platform_PC, /*position=*/1),
+      BaseLayoutEq(expected));
+}
+
+TEST(DecoderTest, Decode_SecondProfile) {
+  const Layout expected = {
+      .joystick_threshold = 50,
+      // Layer taken from DecodeLayer tests.
+      .base = {.thumb_top = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_NO_OP),
+               .thumb_middle =
+                   DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
+               .thumb_bottom = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_CIRCLE),
+               .index_top = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_TRIANGLE),
+               .index_middle = AnalogLayerAction(
+                   hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 1),
+               .middle_top = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_R1),
+               .middle_middle = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_R2),
+               .middle_bottom = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_R3),
+               .ring_top = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_OPTIONS),
+               .ring_middle = AnalogLayerAction(
+                   hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X, 2),
+               .ring_bottom = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN),
+               .pinky_top = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT),
+               .pinky_middle = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT),
+               .pinky_bottom = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_R_STICK_UP),
+               .left_index_extra = AnalogLayerAction(
+                   hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_LEFT, 3),
+               .left_middle_extra = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MAX),
+               .left_ring_extra = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MIN),
+               .right_index_extra = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MAX),
+               .right_middle_extra = DigitalLayerAction(
+                   hs_profile_Profile_Layer_DigitalAction_MOD),
+               .right_ring_extra = AnalogLayerAction(
+                   hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_RIGHT, 4)},
+      .has_mod = false};
+
+  MockTeensy teensy;
+
+  {
+    InSequence seq;
+
+    // Encoded length = 22.
+    EXPECT_CALL(teensy, EEPROMRead(12)).WillOnce(Return(0));
+    EXPECT_CALL(teensy, EEPROMRead(13)).WillOnce(Return(44));
+    // First profile header.
+    EXPECT_CALL(teensy, EEPROMRead(14))
+        .WillOnce(Return(64));  // 0100000; Switch
+    EXPECT_CALL(teensy, EEPROMRead(15))
+        .WillOnce(Return(64));  // 0100 0000; Position = 4
+    // First profile body.
+    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(19));  // Body length
+
+    // Second profile header; taken from DecodeHeader tests.
+    EXPECT_CALL(teensy, EEPROMRead(36)).WillOnce(Return(128));  // 1000000; PC
+    EXPECT_CALL(teensy, EEPROMRead(37))
+        .WillOnce(Return(16));  // 0001 0000; Position = 1
+    // Second profile body; taken from DecodeBody tests.
+    EXPECT_CALL(teensy, EEPROMRead(38)).WillOnce(Return(19));  // Body length
+    EXPECT_CALL(teensy, EEPROMRead(39))
+        .WillOnce(Return(50));  // Joystick threshold
+    // Second profile layer; taken from DecodeLayer tests.
+    EXPECT_CALL(teensy, EEPROMRead(40)).WillOnce(Return(0));    // 00000|000
+    EXPECT_CALL(teensy, EEPROMRead(41)).WillOnce(Return(68));   // 01|00010|0
+    EXPECT_CALL(teensy, EEPROMRead(42)).WillOnce(Return(62));   // 0011|1110
+    EXPECT_CALL(teensy, EEPROMRead(43)).WillOnce(Return(0));    // 0|0000000
+    EXPECT_CALL(teensy, EEPROMRead(44)).WillOnce(Return(40));   // 001|01000
+    EXPECT_CALL(teensy, EEPROMRead(45)).WillOnce(Return(74));   // 01001|010
+    EXPECT_CALL(teensy, EEPROMRead(46)).WillOnce(Return(151));  // 10|01011|1
+    EXPECT_CALL(teensy, EEPROMRead(47)).WillOnce(Return(208));  // 1101|0000
+    EXPECT_CALL(teensy, EEPROMRead(48)).WillOnce(Return(10));   // 000010|10
+    EXPECT_CALL(teensy, EEPROMRead(49)).WillOnce(Return(17));   // 000|10001
+    EXPECT_CALL(teensy, EEPROMRead(50)).WillOnce(Return(148));  // 10010|100
+    EXPECT_CALL(teensy, EEPROMRead(51)).WillOnce(Return(252));  // 11|11110|0
+    EXPECT_CALL(teensy, EEPROMRead(52)).WillOnce(Return(1));    // 00000001
+    EXPECT_CALL(teensy, EEPROMRead(53)).WillOnce(Return(227));  // 1|11000|11
+    EXPECT_CALL(teensy, EEPROMRead(54)).WillOnce(Return(58));   // 001|11010
+    EXPECT_CALL(teensy, EEPROMRead(55)).WillOnce(Return(223));  // 11011|111
+    EXPECT_CALL(teensy, EEPROMRead(56)).WillOnce(Return(192));  // 11|000000
+    EXPECT_CALL(teensy, EEPROMRead(57)).WillOnce(Return(64));   // 0100|0000
   }
 
   EXPECT_THAT(
