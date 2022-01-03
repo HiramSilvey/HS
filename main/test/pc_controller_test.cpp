@@ -23,18 +23,21 @@ using ::testing::Return;
 
 auto MappingEq(const PCButtonPinMapping& expected) {
   return AllOf(
-      Field(&PCButtonPinMapping::button_id_to_pins, expected.button_id_to_pins),
-      Field(&PCButtonPinMapping::mod, expected.mod),
-      Field(&PCButtonPinMapping::z_y, ElementsAreArray(AnalogEq(expected.z_y))),
-      Field(&PCButtonPinMapping::z_x, ElementsAreArray(AnalogEq(expected.z_x))),
-      Field(&PCButtonPinMapping::slider_left,
+      Field("button_id_to_pins", &PCButtonPinMapping::button_id_to_pins,
+            expected.button_id_to_pins),
+      Field("mod", &PCButtonPinMapping::mod, expected.mod),
+      Field("z_y", &PCButtonPinMapping::z_y,
+            ElementsAreArray(AnalogEq(expected.z_y))),
+      Field("z_x", &PCButtonPinMapping::z_x,
+            ElementsAreArray(AnalogEq(expected.z_x))),
+      Field("slider_left", &PCButtonPinMapping::slider_left,
             ElementsAreArray(AnalogEq(expected.slider_left))),
-      Field(&PCButtonPinMapping::slider_right,
+      Field("slider_right", &PCButtonPinMapping::slider_right,
             ElementsAreArray(AnalogEq(expected.slider_right))),
-      Field(&PCButtonPinMapping::hat_up, expected.hat_up),
-      Field(&PCButtonPinMapping::hat_down, expected.hat_down),
-      Field(&PCButtonPinMapping::hat_left, expected.hat_left),
-      Field(&PCButtonPinMapping::hat_right, expected.hat_right));
+      Field("hat_up", &PCButtonPinMapping::hat_up, expected.hat_up),
+      Field("hat_down", &PCButtonPinMapping::hat_down, expected.hat_down),
+      Field("hat_left", &PCButtonPinMapping::hat_left, expected.hat_left),
+      Field("hat_right", &PCButtonPinMapping::hat_right, expected.hat_right));
 }
 
 class PCControllerTest : public ::testing::Test {

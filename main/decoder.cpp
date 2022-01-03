@@ -2,6 +2,7 @@
 
 #include "decoder.h"
 
+#include <iostream>
 #include <memory>
 #include <vector>
 

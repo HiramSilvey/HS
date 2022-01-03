@@ -17,9 +17,9 @@ std::vector<Matcher<pins::ActionPin>> ActionPinEq(
     const std::vector<pins::ActionPin>& expected) {
   std::vector<Matcher<pins::ActionPin>> matchers;
   for (const auto& action_pin : expected) {
-    matchers.push_back(
-        AllOf(Field(&pins::ActionPin::action, ActionEq(action_pin.action)),
-              Field(&pins::ActionPin::pin, action_pin.pin)));
+    matchers.push_back(AllOf(
+        Field("action", &pins::ActionPin::action, ActionEq(action_pin.action)),
+        Field("pin", &pins::ActionPin::pin, action_pin.pin)));
   }
   return matchers;
 }

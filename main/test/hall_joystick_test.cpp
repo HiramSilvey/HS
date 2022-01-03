@@ -15,8 +15,8 @@ using ::testing::InSequence;
 using ::testing::Return;
 
 auto CoordinatesEq(const HallJoystick::Coordinates& expected) {
-  return AllOf(Field(&HallJoystick::Coordinates::x, expected.x),
-               Field(&HallJoystick::Coordinates::y, expected.y));
+  return AllOf(Field("x", &HallJoystick::Coordinates::x, expected.x),
+               Field("y", &HallJoystick::Coordinates::y, expected.y));
 }
 
 class HallJoystickTest : public ::testing::Test {

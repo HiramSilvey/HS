@@ -24,14 +24,18 @@ using ::testing::Return;
 
 auto MappingEq(const NSButtonPinMapping& expected) {
   return AllOf(
-      Field(&NSButtonPinMapping::button_id_to_pins, expected.button_id_to_pins),
-      Field(&NSButtonPinMapping::mod, expected.mod),
-      Field(&NSButtonPinMapping::z_y, ElementsAreArray(AnalogEq(expected.z_y))),
-      Field(&NSButtonPinMapping::z_x, ElementsAreArray(AnalogEq(expected.z_x))),
-      Field(&NSButtonPinMapping::dpad_up, expected.dpad_up),
-      Field(&NSButtonPinMapping::dpad_down, expected.dpad_down),
-      Field(&NSButtonPinMapping::dpad_left, expected.dpad_left),
-      Field(&NSButtonPinMapping::dpad_right, expected.dpad_right));
+      Field("button_id_to_pins", &NSButtonPinMapping::button_id_to_pins,
+            expected.button_id_to_pins),
+      Field("mod", &NSButtonPinMapping::mod, expected.mod),
+      Field("z_y", &NSButtonPinMapping::z_y,
+            ElementsAreArray(AnalogEq(expected.z_y))),
+      Field("z_x", &NSButtonPinMapping::z_x,
+            ElementsAreArray(AnalogEq(expected.z_x))),
+      Field("dpad_up", &NSButtonPinMapping::dpad_up, expected.dpad_up),
+      Field("dpad_down", &NSButtonPinMapping::dpad_down, expected.dpad_down),
+      Field("dpad_left", &NSButtonPinMapping::dpad_left, expected.dpad_left),
+      Field("dpad_right", &NSButtonPinMapping::dpad_right,
+            expected.dpad_right));
 }
 
 class NSControllerTest : public ::testing::Test {
