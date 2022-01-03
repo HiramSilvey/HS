@@ -2,14 +2,13 @@
 
 #include "pins.h"
 
-#include "Arduino.h"
 #include "profile.pb.h"
 
-using Layer = hs_profile_Profile_Layer;
+namespace hs {
+namespace pins {
 
-std::vector<Pins::ActionPin> Pins::GetActionPins(const Layer& layer) {
-  return {
-          {layer.thumb_top, kThumbTop},
+std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layer& layer) {
+  return {{layer.thumb_top, kThumbTop},
           {layer.thumb_middle, kThumbMiddle},
           {layer.thumb_bottom, kThumbBottom},
           {layer.index_top, kIndexTop},
@@ -28,6 +27,8 @@ std::vector<Pins::ActionPin> Pins::GetActionPins(const Layer& layer) {
           {layer.left_index_extra, kLeftIndexExtra},
           {layer.right_index_extra, kRightIndexExtra},
           {layer.right_middle_extra, kRightMiddleExtra},
-          {layer.right_ring_extra, kRightRingExtra}
-  };
+          {layer.right_ring_extra, kRightRingExtra}};
 }
+
+}  // namespace pins
+}  // namespace hs

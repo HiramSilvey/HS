@@ -3,17 +3,25 @@
 #ifndef CONFIGURATOR_H_
 #define CONFIGURATOR_H_
 
-#include <Tlv493d.h>
+#include <memory>
 
-class Configurator {
-public:
-  static void Configure();
-private:
-  static void FetchStoredBounds();
-  static void FetchJoystickCoords(Tlv493d& sensor);
-  static void CalibrateJoystick(Tlv493d& sensor);
-  static void SaveCalibration();
-  static void StoreProfiles();
-};
+#include "teensy.h"
+
+namespace hs {
+namespace configurator {
+namespace internal {
+
+void FetchStoredBounds(const Teensy& teensy);
+void FetchJoystickCoords(Teensy& teensy);
+void CalibrateJoystick(Teensy& teensy);
+void SaveCalibration(const Teensy& teensy);
+void StoreProfiles(const Teensy& teensy);
+
+}  // namespace internal
+
+void Configure(std::unique_ptr<Teensy> teensy);
+
+}  // namespace configurator
+}  // namespace hs
 
 #endif  // CONFIGURATOR_H_

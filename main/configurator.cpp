@@ -2,63 +2,59 @@
 
 #include "configurator.h"
 
-#include "Arduino.h"
-#include <EEPROM.h>
-#include <Tlv493d.h>
+#include <memory>
+
+#include "teensy.h"
 #include "util.h"
 
-void WriteToSerial(int val) {
-  byte bytes[4] = {val >> 24,
-                   val >> 16 & 0xFF,
-                   val >> 8 & 0xFF,
-                   val & 0xFF};
-  Serial.write(bytes, 4);
+namespace hs {
+namespace configurator {
+
+namespace {
+
+void WriteToSerial(const Teensy& teensy, int val) {
+  uint8_t bytes[4] = {
+      static_cast<uint8_t>(val >> 24), static_cast<uint8_t>(val >> 16 & 0xFF),
+      static_cast<uint8_t>(val >> 8 & 0xFF), static_cast<uint8_t>(val & 0xFF)};
+  teensy.SerialWrite(bytes, 4);
 }
 
-void SaveToEEPROM(int val, int address) {
-  byte one = val >> 24;
-  byte two = val >> 16 & 0xFF;
-  byte three = val >> 8 & 0xFF;
-  byte four = val & 0xFF;
+}  // namespace
 
-  EEPROM.update(address, one);
-  EEPROM.update(address+1, two);
-  EEPROM.update(address+2, three);
-  EEPROM.update(address+3, four);
+namespace internal {
+
+void FetchStoredBounds(const Teensy& teensy) {
+  int center_x = util::GetIntFromEEPROM(teensy, 0);
+  int center_y = util::GetIntFromEEPROM(teensy, 4);
+  int range = util::GetIntFromEEPROM(teensy, 8);
+
+  WriteToSerial(teensy, center_x);
+  WriteToSerial(teensy, center_y);
+  WriteToSerial(teensy, range);
 }
 
-void Configurator::FetchStoredBounds() {
-  int center_x = Util::GetIntFromEEPROM(0);
-  int center_y = Util::GetIntFromEEPROM(4);
-  int range = Util::GetIntFromEEPROM(8);
+void FetchJoystickCoords(Teensy& teensy) {
+  teensy.UpdateHallData();
+  float z = teensy.GetHallZ();
+  int x = teensy.GetHallX() / z * 1000000;
+  int y = teensy.GetHallY() / z * 1000000;
 
-  WriteToSerial(center_x);
-  WriteToSerial(center_y);
-  WriteToSerial(range);
+  WriteToSerial(teensy, x);
+  WriteToSerial(teensy, y);
 }
 
-void Configurator::FetchJoystickCoords(Tlv493d& sensor) {
-  sensor.updateData();
-  float z = sensor.getZ();
-  int x = sensor.getX() / z * 1000000;
-  int y = sensor.getY() / z * 1000000;
-
-  WriteToSerial(x);
-  WriteToSerial(y);
-}
-
-void Configurator::CalibrateJoystick(Tlv493d& sensor) {
+void CalibrateJoystick(Teensy& teensy) {
   float min_x = 0;
   float max_x = 0;
   float min_y = 0;
   float max_y = 0;
 
-  uint64_t end_time = millis() + 15000;  // 15 seconds from now.
-  while (millis() < end_time) {
-    sensor.updateData();
-    float z = sensor.getZ();
-    float x = sensor.getX() / z;
-    float y = sensor.getY() / z;
+  uint64_t end_time = teensy.Millis() + 15000;  // 15 seconds from now.
+  while (teensy.Millis() < end_time) {
+    teensy.UpdateHallData();
+    float z = teensy.GetHallZ();
+    float x = teensy.GetHallX() / z;
+    float y = teensy.GetHallY() / z;
 
     if (x < min_x) {
       min_x = x;
@@ -79,69 +75,70 @@ void Configurator::CalibrateJoystick(Tlv493d& sensor) {
   int center_y = (min_y + range_y) * 1000000;
   int range = range_x >= range_y ? range_x * 1000000 : range_y * 1000000;
 
-  WriteToSerial(center_x);
-  WriteToSerial(center_y);
-  WriteToSerial(range);
+  WriteToSerial(teensy, center_x);
+  WriteToSerial(teensy, center_y);
+  WriteToSerial(teensy, range);
 }
 
-void Configurator::SaveCalibration() {
+void SaveCalibration(const Teensy& teensy) {
   int bytes_to_read = 12;
   int address = 0;
   while (address < bytes_to_read) {
-    if (Serial.available()) {
-      EEPROM.update(address, Serial.read());
+    if (teensy.SerialAvailable()) {
+      teensy.EEPROMUpdate(address, teensy.SerialRead());
       address++;
     }
   }
-  Serial.write(0);  // Done.
+  teensy.SerialWrite(0);  // Done.
 }
 
-void Configurator::StoreProfiles() {
-  while (Serial.available() < 2) {}
-  int num_bytes = Serial.read() << 8 | Serial.read();
+void StoreProfiles(const Teensy& teensy) {
+  while (teensy.SerialAvailable() < 2) {
+  }
+  int num_bytes = teensy.SerialRead() << 8 | teensy.SerialRead();
   int base_address = 12;  // 0-11 are reserved for joystick calibration values.
   int curr_address = base_address;
   while (curr_address < base_address + num_bytes) {
-    if (Serial.available()) {
-      byte data = Serial.read();
-      EEPROM.update(curr_address, data);
+    if (teensy.SerialAvailable()) {
+      uint8_t data = teensy.SerialRead();
+      teensy.EEPROMUpdate(curr_address, data);
       curr_address++;
     }
   }
-  Serial.write(0);  // Done.
+  teensy.SerialWrite(0);  // Done.
 }
 
-void Configurator::Configure() {
-  Tlv493d sensor = Tlv493d();
-  sensor.begin();
-  sensor.setAccessMode(sensor.LOWPOWERMODE);
-  sensor.disableTemp();
+}  // namespace internal
 
-  while(true) {
-    if (Serial.available() > 0) {
-      byte data = Serial.read();
+void Configure(std::unique_ptr<Teensy> teensy) {
+  while (true) {
+    if (teensy->SerialAvailable() > 0) {
+      uint8_t data = teensy->SerialRead();
       if (data > 4) {
-        Serial.write(1);  // Error.
+        teensy->SerialWrite(1);  // Error.
         continue;
       }
-      Serial.write(0);  // OK.
-      switch(data) {
-      case 0:
-        FetchStoredBounds();
-        break;
-      case 1:
-        FetchJoystickCoords(sensor);
-        break;
-      case 2:
-        CalibrateJoystick(sensor);
-        break;
-      case 3:
-        SaveCalibration();
-        break;
-      case 4:
-        StoreProfiles();
-        break;
+      teensy->SerialWrite(0);  // OK.
+      switch (data) {
+        case 0:
+          internal::FetchStoredBounds(*teensy);
+          break;
+        case 1:
+          internal::FetchJoystickCoords(*teensy);
+          break;
+        case 2:
+          internal::CalibrateJoystick(*teensy);
+          break;
+        case 3:
+          internal::SaveCalibration(*teensy);
+          break;
+        case 4:
+          internal::StoreProfiles(*teensy);
+          break;
       }
     }
   }
 }
+
+}  // namespace configurator
+}  // namespace hs

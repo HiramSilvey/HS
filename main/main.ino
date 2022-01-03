@@ -2,40 +2,40 @@
 
 #include <memory>
 
-#include "pins.h"
 #include "configurator.h"
 #include "controller.h"
 #include "ns_controller.h"
+#include "nspad_impl.h"
 #include "pc_controller.h"
+#include "pins.h"
+#include "teensy_impl.h"
 
-std::unique_ptr<Controller> controller;
+std::unique_ptr<hs::Controller> controller;
 extern uint8_t nsgamepad_active;
+extern volatile uint8_t usb_configuration;
 
 void setup() {
   delay(100);
 
-  if (digitalRead(kRightIndexExtra) == LOW) {
-    Configurator::Configure();
+  auto teensy = std::make_unique<hs::TeensyImpl>();
+  if (teensy->DigitalReadLow(hs::pins::kRightIndexExtra)) {
+    hs::configurator::Configure(std::move(teensy));
+    exit(0);
   }
 
-  std::vector<std::unique_ptr<Controller>> controllers;
-  if (nsgamepad_active) {
-    controllers.push_back(std::make_unique<NSController>());
-  } else {
-    controllers.push_back(std::make_unique<PCController>());
-  }
-
-  while(true) {
-    for (auto& c : controllers) {
-      if (c->Init()) {
-        controller = std::move(c);
-        return;
+  while (true) {
+    if (usb_configuration) {
+      if (nsgamepad_active) {
+        auto nspad = std::make_unique<hs::NSPadImpl>();
+        controller = std::make_unique<hs::NSController>(std::move(teensy),
+                                                        std::move(nspad));
+      } else {
+        controller = std::make_unique<hs::PCController>(std::move(teensy));
       }
+      break;
     }
     delay(50);
   }
 }
 
-void loop() {
-  controller->Loop();
-}
+void loop() { controller->Loop(); }

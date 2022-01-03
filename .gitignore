@@ -3,6 +3,7 @@ configurator/debug/
 configurator/target/
 *_pb2\.*
 __pycache__
-configurator/profiles
+configurator/profiles/
 *\.pb\.*
 .DS_Store
+main/build/

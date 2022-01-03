@@ -2,36 +2,39 @@
 
 #include "controller.h"
 
-#include "Arduino.h"
 #include "decoder.h"
 #include "pins.h"
 #include "profile.pb.h"
+#include "teensy.h"
 
-using Layout = hs_profile_Profile_Layout;
-using Platform = hs_profile_Profile_Platform;
+namespace hs {
 
-Layout Controller::FetchProfile(Platform platform) {
+using Layout = ::hs_profile_Profile_Layout;
+using Platform = ::hs_profile_Profile_Platform;
+
+Layout FetchProfile(const Teensy& teensy, const Platform& platform) {
   std::pair<int, int> button_to_position[] = {
-                                              std::make_pair(kLeftRingExtra, 1),
-                                              std::make_pair(kLeftMiddleExtra, 2),
-                                              std::make_pair(kRightMiddleExtra, 3),
-                                              std::make_pair(kRightRingExtra, 4),
+      std::make_pair(pins::kLeftRingExtra, 1),
+      std::make_pair(pins::kLeftMiddleExtra, 2),
+      std::make_pair(pins::kRightMiddleExtra, 3),
+      std::make_pair(pins::kRightRingExtra, 4),
   };
   int position = 0;
   for (const auto& element : button_to_position) {
-    if (digitalRead(element.first) == LOW) {
+    if (teensy.DigitalReadLow(element.first)) {
       position = element.second;
       break;
     }
   }
-  return Decoder::Decode(platform, position);
+  return decoder::Decode(teensy, platform, position);
 }
 
-int Controller::ResolveSOCD(std::vector<AnalogButton> buttons, int joystick_neutral) {
+int ResolveSOCD(const Teensy& teensy, const std::vector<AnalogButton>& buttons,
+                int joystick_neutral) {
   int min_value = joystick_neutral;
   int max_value = joystick_neutral;
   for (const auto& button : buttons) {
-    if (digitalRead(button.pin) == LOW) {
+    if (teensy.DigitalReadLow(button.pin)) {
       if (button.value < min_value) {
         min_value = button.value;
       } else if (button.value > max_value) {
@@ -46,3 +49,5 @@ int Controller::ResolveSOCD(std::vector<AnalogButton> buttons, int joystick_neut
   }
   return max_value;
 }
+
+}  // namespace hs

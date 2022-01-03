@@ -2,13 +2,20 @@
 
 #include "util.h"
 
-#include "Arduino.h"
-#include <EEPROM.h>
+#include <memory>
 
-int Util::GetIntFromEEPROM(int address) {
-  byte one = EEPROM.read(address);
-  byte two = EEPROM.read(address+1);
-  byte three = EEPROM.read(address+2);
-  byte four = EEPROM.read(address+3);
+#include "teensy.h"
+
+namespace hs {
+namespace util {
+
+int GetIntFromEEPROM(const Teensy& teensy, int address) {
+  uint8_t one = teensy.EEPROMRead(address);
+  uint8_t two = teensy.EEPROMRead(address + 1);
+  uint8_t three = teensy.EEPROMRead(address + 2);
+  uint8_t four = teensy.EEPROMRead(address + 3);
   return one << 24 | two << 16 | three << 8 | four;
 }
+
+}  // namespace util
+}  // namespace hs

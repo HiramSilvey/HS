@@ -3,10 +3,17 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-class Util {
-public:
-  // Read 4 bytes from EEPROM and return it as a single integer.
-  static int GetIntFromEEPROM(int address);
-};
+#include <memory>
+
+#include "teensy.h"
+
+namespace hs {
+namespace util {
+
+// Read 4 bytes from EEPROM and return it as a single integer.
+int GetIntFromEEPROM(const Teensy& teensy, int address);
+
+}  // namespace util
+}  // namespace hs
 
 #endif  // UTIL_H_
