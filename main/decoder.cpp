@@ -2,7 +2,6 @@
 
 #include "decoder.h"
 
-#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -110,6 +109,8 @@ Layout DecodeBody(const Teensy& teensy, int& addr) {
   if (addr < max_addr) {
     layout.has_mod = true;
     layout.mod = DecodeLayer(teensy, addr);
+  } else {
+    layout.has_mod = false;
   }
   return layout;
 }
@@ -117,11 +118,11 @@ Layout DecodeBody(const Teensy& teensy, int& addr) {
 }  // namespace internal
 
 Layout Decode(const Teensy& teensy, Platform platform, int position) {
+  int curr_addr = kMinAddr;
   const int encoded_len =
-      (teensy.EEPROMRead(kMinAddr) << 8) | teensy.EEPROMRead(kMinAddr + 1);
+      (teensy.EEPROMRead(curr_addr++) << 8) | teensy.EEPROMRead(curr_addr++);
   const int max_addr = kMinAddr + encoded_len + 1;
 
-  int curr_addr = kMinAddr + 2;
   while (curr_addr < max_addr) {
     std::vector<PlatformConfig> configs =
         internal::DecodeHeader(teensy, curr_addr);
