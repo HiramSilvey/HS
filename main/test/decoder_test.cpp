@@ -138,14 +138,12 @@ TEST(DecoderTest, FetchData_ByteEndsWith) {
   uint8_t curr_byte = 31;  // 00011111
   int unread = 5;
 
-  EXPECT_CALL(teensy, EEPROMRead(0)).WillOnce(Return(123));
-
   EXPECT_EQ(decoder::internal::FetchData(teensy, /*remaining=*/5, addr,
                                          curr_byte, unread),
             31);
-  EXPECT_EQ(addr, 1);
-  EXPECT_EQ(curr_byte, 123);
-  EXPECT_EQ(unread, 8);
+  EXPECT_EQ(addr, 0);
+  EXPECT_EQ(curr_byte, 31);
+  EXPECT_EQ(unread, 0);
 }
 
 TEST(DecoderTest, FetchData_AcrossTwoBytes) {
@@ -190,14 +188,12 @@ TEST(DecoderTest, FetchData_WholeByte) {
   uint8_t curr_byte = 255;  // 11111111
   int unread = 8;
 
-  EXPECT_CALL(teensy, EEPROMRead(0)).WillOnce(Return(123));
-
   EXPECT_EQ(decoder::internal::FetchData(teensy, /*remaining=*/8, addr,
                                          curr_byte, unread),
             255);
-  EXPECT_EQ(addr, 1);
-  EXPECT_EQ(curr_byte, 123);
-  EXPECT_EQ(unread, 8);
+  EXPECT_EQ(addr, 0);
+  EXPECT_EQ(curr_byte, 255);
+  EXPECT_EQ(unread, 0);
 }
 
 TEST(DecoderTest, DecodeLayer) {
@@ -570,6 +566,123 @@ TEST(DecoderTest, Decode_SecondProfile) {
   EXPECT_THAT(
       decoder::Decode(teensy, hs_profile_Profile_Platform_PC, /*position=*/1),
       BaseLayoutEq(expected));
+}
+
+// This test data comes from a real profile data dump.
+TEST(DecoderTest, Decode_BaseAndMod) {
+  const Layout expected = {
+      .joystick_threshold = 0,
+      .base =
+          {.thumb_top =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R2),
+           .thumb_middle =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L2),
+           .thumb_bottom =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L3),
+           .index_top = DigitalLayerAction(
+               hs_profile_Profile_Layer_DigitalAction_TRIANGLE),
+           .index_middle =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
+           .middle_top = DigitalLayerAction(
+               hs_profile_Profile_Layer_DigitalAction_SQUARE),
+           .middle_middle = DigitalLayerAction(
+               hs_profile_Profile_Layer_DigitalAction_CIRCLE),
+           .middle_bottom =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R3),
+           .ring_top = DigitalLayerAction(
+               hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT),
+           .ring_middle =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L1),
+           .ring_bottom = DigitalLayerAction(
+               hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN),
+           .pinky_top = DigitalLayerAction(
+               hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT),
+           .pinky_middle =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R1),
+           .pinky_bottom = DigitalLayerAction(
+               hs_profile_Profile_Layer_DigitalAction_R_STICK_UP),
+           .left_outer =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_SHARE),
+           .left_inner =
+               DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_MOD)},
+      .has_mod = true,
+      .mod = {
+          .thumb_top = DigitalLayerAction(
+              hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN),
+          .thumb_middle =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .thumb_bottom =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .index_top = DigitalLayerAction(
+              hs_profile_Profile_Layer_DigitalAction_OPTIONS),
+          .index_middle = DigitalLayerAction(
+              hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT),
+          .middle_top =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .middle_middle = DigitalLayerAction(
+              hs_profile_Profile_Layer_DigitalAction_D_PAD_UP),
+          .middle_bottom =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .ring_top =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .ring_middle = DigitalLayerAction(
+              hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT),
+          .ring_bottom =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .pinky_top =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .pinky_middle =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .pinky_bottom =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .left_outer =
+              DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_NO_OP),
+          .left_inner = DigitalLayerAction(
+              hs_profile_Profile_Layer_DigitalAction_NO_OP)}};
+
+  MockTeensy teensy;
+
+  {
+    InSequence seq;
+
+    // Encoded length = 24.
+    EXPECT_CALL(teensy, EEPROMRead(12)).WillOnce(Return(0));
+    EXPECT_CALL(teensy, EEPROMRead(13)).WillOnce(Return(24));
+    // Header.
+    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(128));  // 1000000; PC
+    EXPECT_CALL(teensy, EEPROMRead(15))
+        .WillOnce(Return(0));  // 0000 0000; Position = 0
+    // Body.
+    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(21));  // Body length
+    EXPECT_CALL(teensy, EEPROMRead(17))
+        .WillOnce(Return(0));  // Joystick threshold
+    // Layer.
+    EXPECT_CALL(teensy, EEPROMRead(18)).WillOnce(Return(73));   // 01001|001
+    EXPECT_CALL(teensy, EEPROMRead(19)).WillOnce(Return(142));  // 10|00111|0
+    EXPECT_CALL(teensy, EEPROMRead(20)).WillOnce(Return(48));   // 0011|0000
+    EXPECT_CALL(teensy, EEPROMRead(21)).WillOnce(Return(144));  // 1|00100|00
+    EXPECT_CALL(teensy, EEPROMRead(22)).WillOnce(Return(74));   // 010|01010
+    EXPECT_CALL(teensy, EEPROMRead(23)).WillOnce(Return(169));  // 10101|001
+    EXPECT_CALL(teensy, EEPROMRead(24)).WillOnce(Return(105));  // 01|10100|1
+    EXPECT_CALL(teensy, EEPROMRead(25)).WillOnce(Return(100));  // 0110|0100
+    EXPECT_CALL(teensy, EEPROMRead(26)).WillOnce(Return(77));   // 0|10011|01
+    EXPECT_CALL(teensy, EEPROMRead(27)).WillOnce(Return(155));  // 100|11011
+    EXPECT_CALL(teensy, EEPROMRead(28)).WillOnce(Return(128));  // 10000|000
+    EXPECT_CALL(teensy, EEPROMRead(29)).WillOnce(Return(0));    // 00|00000|0
+    EXPECT_CALL(teensy, EEPROMRead(30)).WillOnce(Return(184));  // 1011|1000
+    EXPECT_CALL(teensy, EEPROMRead(31)).WillOnce(Return(129));  // 1|00000|01
+    EXPECT_CALL(teensy, EEPROMRead(32)).WillOnce(Return(224));  // 111|00000
+    EXPECT_CALL(teensy, EEPROMRead(33)).WillOnce(Return(4));    // 00000|100
+    EXPECT_CALL(teensy, EEPROMRead(34)).WillOnce(Return(128));  // 10|00000|0
+    EXPECT_CALL(teensy, EEPROMRead(35)).WillOnce(Return(0));    // 0000|0000
+    EXPECT_CALL(teensy, EEPROMRead(36)).WillOnce(Return(0));    // 0|00000|00
+    EXPECT_CALL(teensy, EEPROMRead(37)).WillOnce(Return(0));    // 000|00000
+  }
+
+  EXPECT_THAT(decoder::Decode(teensy, hs_profile_Profile_Platform_PC,
+                              /*position=*/0),
+              AllOf(BaseLayoutEq(expected),
+                    Field("mod", &Layout::mod, LayerEq(expected.mod))));
 }
 
 TEST(DecoderTest, Decode_ProfileNotFound) {

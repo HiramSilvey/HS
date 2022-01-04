@@ -545,7 +545,7 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
     }
 
     let size = encoded.len();
-    hs.write_all(&[(size >> 8) as u8, (size & 255) as u8])?;
+    hs.write_all(&[(size >> 8) as u8, (size & 0xFF) as u8])?;
     hs.write_all(&encoded)?;
     wait_for_ack(hs)?;
 
