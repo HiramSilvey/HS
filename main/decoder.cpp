@@ -52,6 +52,10 @@ int FetchData(const Teensy& teensy, int remaining, int& addr,
               uint8_t& curr_byte, int& unread) {
   int data = 0;
   while (remaining > 0) {
+    if (unread == 0) {
+      curr_byte = teensy.EEPROMRead(addr++);
+      unread = 8;
+    }
     int offset = unread - remaining;
     if (offset >= 0) {
       data |= (curr_byte >> offset) & kMasks[remaining - 1];
@@ -61,10 +65,6 @@ int FetchData(const Teensy& teensy, int remaining, int& addr,
     int fetched = unread < remaining ? unread : remaining;
     remaining -= fetched;
     unread -= fetched;
-    if (unread == 0) {
-      curr_byte = teensy.EEPROMRead(addr++);
-      unread = 8;
-    }
   }
   return data;
 }
