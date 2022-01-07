@@ -4,17 +4,17 @@ platform_config: {
     position: 2
 }
 layout: {
-    joystick_threshold: 45                   # Digital joystick
+    joystick_threshold: 45                 # Digital joystick
     base: {
-      thumb_middle: { digital: TRIANGLE }      # Dream Nail
-      thumb_top: { digital: SQUARE }           # Attack
-      index_middle: { digital: R2 }            # Dash
-      middle_middle: { digital: X }            # Jump
-      ring_middle: { digital: CIRCLE }         # Focus / Cast
-      pinky_middle: { digital: R1 }            # Quick Cast
-      index_top: { digital: L2 }               # Super Dash
-      middle_top: { digital: L1 }              # Quick Map
-      ring_top: { digital: SHARE }             # Inventory
-      right_index_extra: { digital: OPTIONS }  # Pause Menu
+      thumb_middle: { digital: TRIANGLE }  # Dream Nail
+      thumb_top: { digital: SQUARE }       # Attack
+      index_middle: { digital: R2 }        # Dash
+      middle_middle: { digital: X }        # Jump
+      ring_middle: { digital: CIRCLE }     # Focus / Cast
+      pinky_middle: { digital: R1 }        # Quick Cast
+      index_top: { digital: L2 }           # Super Dash
+      middle_top: { digital: L1 }          # Quick Map
+      ring_top: { digital: SHARE }         # Inventory
+      left_outer: { digital: OPTIONS }     # Pause Menu
     }
 }

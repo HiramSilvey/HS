@@ -4,16 +4,16 @@ platform_config: {
     position: 4
 }
 layout: {
-    joystick_threshold: 45                   # Digital joystick
+    joystick_threshold: 45                  # Digital joystick
     base: {
-      thumb_middle: { digital: CIRCLE }        # Strong
-      thumb_top: { digital: X }                # Light
-      index_top: { digital: R1 }               # Grab
-      index_middle: { digital: R2 }            # Guard, air dash, tech
-      middle_middle: { digital: TRIANGLE }     # Jump
-      ring_middle: { digital: SQUARE }         # Special
-      pinky_middle: { digital: L2 }            # Strafe
-      pinky_top: { digital: L1 }               # Taunt
-      right_index_extra: { digital: OPTIONS }  # Start
+      thumb_middle: { digital: CIRCLE }     # Strong
+      thumb_top: { digital: X }             # Light
+      index_top: { digital: R1 }            # Grab
+      index_middle: { digital: R2 }         # Guard, air dash, tech
+      middle_middle: { digital: TRIANGLE }  # Jump
+      ring_middle: { digital: SQUARE }      # Special
+      pinky_middle: { digital: L2 }         # Strafe
+      pinky_top: { digital: L1 }            # Taunt
+      left_outer: { digital: OPTIONS }      # Start
     }
 }

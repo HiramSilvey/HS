@@ -22,12 +22,8 @@ std::vector<ActionPin> GetActionPins(const hs_profile_Profile_Layer& layer) {
           {layer.pinky_top, kPinkyTop},
           {layer.pinky_middle, kPinkyMiddle},
           {layer.pinky_bottom, kPinkyBottom},
-          {layer.left_ring_extra, kLeftRingExtra},
-          {layer.left_middle_extra, kLeftMiddleExtra},
-          {layer.left_index_extra, kLeftIndexExtra},
-          {layer.right_index_extra, kRightIndexExtra},
-          {layer.right_middle_extra, kRightMiddleExtra},
-          {layer.right_ring_extra, kRightRingExtra}};
+          {layer.left_outer, kLeftOuter},
+          {layer.left_inner, kLeftInner}};
 }
 
 }  // namespace pins

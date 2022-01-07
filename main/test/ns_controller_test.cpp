@@ -120,17 +120,17 @@ TEST_F(NSControllerTest, GetButtonPinMapping_SpecialDigital) {
           hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN),
       .thumb_bottom = DigitalLayerAction(
           hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT),
-      .left_index_extra =
+      .index_top =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN),
-      .left_middle_extra =
+      .index_middle =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP),
-      .left_ring_extra = DigitalLayerAction(
+      .middle_top = DigitalLayerAction(
           hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT),
-      .right_index_extra =
+      .middle_middle =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT),
-      .right_middle_extra = DigitalLayerAction(
+      .left_outer = DigitalLayerAction(
           hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT),
-      .right_ring_extra =
+      .left_inner =
           DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_MOD)};
 
   const int joystick_min = 0;
@@ -140,12 +140,12 @@ TEST_F(NSControllerTest, GetButtonPinMapping_SpecialDigital) {
   expected_mapping.z_y = {{joystick_max, pins::kThumbTop},
                           {joystick_min, pins::kThumbMiddle}};
   expected_mapping.z_x = {{joystick_min, pins::kThumbBottom},
-                          {joystick_max, pins::kLeftRingExtra}};
-  expected_mapping.dpad_up = {pins::kLeftMiddleExtra};
-  expected_mapping.dpad_down = {pins::kLeftIndexExtra};
-  expected_mapping.dpad_left = {pins::kRightIndexExtra};
-  expected_mapping.dpad_right = {pins::kRightMiddleExtra};
-  expected_mapping.mod = {pins::kRightRingExtra};
+                          {joystick_max, pins::kMiddleTop}};
+  expected_mapping.dpad_up = {pins::kIndexMiddle};
+  expected_mapping.dpad_down = {pins::kIndexTop};
+  expected_mapping.dpad_left = {pins::kMiddleMiddle};
+  expected_mapping.dpad_right = {pins::kLeftOuter};
+  expected_mapping.mod = {pins::kLeftInner};
 
   NSController controller(std::move(teensy_), std::move(nspad_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
