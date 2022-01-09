@@ -8,12 +8,18 @@ layout {
         index_top { digital: R1 }               # Z
         middle_top { digital: R_STICK_LEFT }    # C left
         ring_top { digital: R_STICK_RIGHT }     # C right
+        pinky_top {
+          analog {
+            id: SLIDER_LEFT                     # Map to R for light shield, L-cancel
+            value: 661
+          }
+        }
         index_middle { digital: L2 }            # L
         middle_middle { digital: TRIANGLE }     # Y
         ring_middle { digital: CIRCLE }         # B
         pinky_middle {
           analog {
-            id: SLIDER_LEFT                     # Map to R for light shield, L-cancel
+            id: SLIDER_LEFT                     # Map to R for light shield, L-cancel #2
             value: 661
           }
         }
