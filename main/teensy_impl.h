@@ -15,7 +15,7 @@ class TeensyImpl : public Teensy {
  public:
   TeensyImpl() {
     sensor_.begin();
-    sensor_.setAccessMode(sensor_.LOWPOWERMODE);
+    sensor_.setAccessMode(sensor_.MASTERCONTROLLEDMODE);
     sensor_.disableTemp();
   }
   inline bool DigitalReadLow(uint8_t pin) const override {
