@@ -86,7 +86,9 @@ TEST_F(HallJoystickTest, ResolveDigitalCoord_Neutral) {
 TEST_F(HallJoystickTest, GetCoordinates) {
   {
     InSequence seq;
+    EXPECT_CALL(teensy_, Micros).WillOnce(Return(600));
     EXPECT_CALL(teensy_, UpdateHallData);
+    EXPECT_CALL(teensy_, Micros);
     EXPECT_CALL(teensy_, GetHallZ).WillOnce(Return(1));
     EXPECT_CALL(teensy_, GetHallX).WillOnce(Return(0.00005));
     EXPECT_CALL(teensy_, GetHallY).WillOnce(Return(0.00005));

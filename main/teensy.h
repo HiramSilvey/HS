@@ -24,6 +24,7 @@ class Teensy {
 
   // Arduino: Time
   virtual unsigned long Millis() const = 0;
+  virtual unsigned long Micros() const = 0;
 
   // Arduino: Joystick
   virtual void JoystickUseManualSend() const = 0;

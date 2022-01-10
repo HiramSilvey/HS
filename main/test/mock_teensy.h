@@ -20,6 +20,7 @@ class MockTeensy : public Teensy {
   MOCK_METHOD(int, SerialRead, (), (const override));
   MOCK_METHOD(int, SerialAvailable, (), (const override));
   MOCK_METHOD(unsigned long, Millis, (), (const override));
+  MOCK_METHOD(unsigned long, Micros, (), (const override));
   MOCK_METHOD(void, JoystickUseManualSend, (), (const override));
   MOCK_METHOD(void, SetJoystickX, (int val), (const override));
   MOCK_METHOD(void, SetJoystickY, (int val), (const override));
