@@ -43,7 +43,7 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
 }
 
 HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
-  if (teensy.Micros() - last_fetch_micros_ < 600) {
+  if (teensy.Micros() - last_fetch_micros_ < 330) {
     return curr_coords_;
   }
 
