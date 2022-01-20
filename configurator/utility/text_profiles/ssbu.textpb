@@ -5,15 +5,14 @@ platform_config {
 }
 layout {
     base {
-        index_top { digital: R_STICK_LEFT }     # Left tilt
-        middle_top { digital: R_STICK_UP }      # Up tilt
+        index_top { digital: R1 }               # Grab
+        middle_top { digital: R_STICK_LEFT }    # Left tilt
         ring_top { digital: R_STICK_RIGHT }     # Right tilt
         index_middle { digital: R2 }            # Shield, dodge, tech
         middle_middle { digital: SQUARE }       # Jump
         ring_middle { digital: X }              # Special
-        pinky_middle { digital: R1 }            # Grab
-        thumb_bottom { digital: L1 }            # Grab
-        thumb_middle { digital: R_STICK_DOWN }  # Down tilt
+        thumb_bottom { digital: R_STICK_DOWN }  # Down tilt
+        thumb_middle { digital: R_STICK_UP }    # Up tilt
         thumb_top { digital: CIRCLE }           # Normal
         left_outer { digital: OPTIONS }         # Plus
         left_inner { digital: MOD }             # Mod layout

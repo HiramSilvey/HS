@@ -10,8 +10,8 @@ layout {
         ring_top { digital: R_STICK_RIGHT }     # C right
         pinky_top {
           analog {
-            id: SLIDER_LEFT                     # Map to R for light shield, L-cancel
-            value: 661
+            id: SLIDER_LEFT                     # R
+            value: 598                          # Lightest light shield value on Dolphin
           }
         }
         index_middle { digital: L2 }            # L
@@ -19,8 +19,8 @@ layout {
         ring_middle { digital: CIRCLE }         # B
         pinky_middle {
           analog {
-            id: SLIDER_LEFT                     # Map to R for light shield, L-cancel #2
-            value: 661
+            id: SLIDER_LEFT                     # R
+            value: 1022                         # Heaviest light shield value on Dolphin
           }
         }
         thumb_top { digital: X }                # A
@@ -30,6 +30,11 @@ layout {
         left_inner { digital: MOD }             # Mod layout
     }
     mod {
+        index_top { digital: L2 }               # L
+        middle_top { digital: R2 }              # R
+        ring_top { digital: X }                 # A
+        pinky_top { digital: OPTIONS }          # Start
+
         index_middle { digital: D_PAD_LEFT }
         middle_middle { digital: D_PAD_UP }     # Taunt
         ring_middle { digital: D_PAD_RIGHT }
