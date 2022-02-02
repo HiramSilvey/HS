@@ -452,31 +452,31 @@ TEST(DecoderTest, Decode_FirstProfile) {
     InSequence seq;
 
     // Encoded length = 18.
-    EXPECT_CALL(teensy, EEPROMRead(12)).WillOnce(Return(0));
-    EXPECT_CALL(teensy, EEPROMRead(13)).WillOnce(Return(18));
+    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(0));
+    EXPECT_CALL(teensy, EEPROMRead(15)).WillOnce(Return(18));
     // Header; taken from DecodeHeader tests.
-    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(128));  // 1000000; PC
-    EXPECT_CALL(teensy, EEPROMRead(15))
+    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(128));  // 1000000; PC
+    EXPECT_CALL(teensy, EEPROMRead(17))
         .WillOnce(Return(16));  // 0001 0000; Position = 1
     // Body; taken from DecodeBody tests.
-    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(15));  // Body length
-    EXPECT_CALL(teensy, EEPROMRead(17))
+    EXPECT_CALL(teensy, EEPROMRead(18)).WillOnce(Return(15));  // Body length
+    EXPECT_CALL(teensy, EEPROMRead(19))
         .WillOnce(Return(50));  // Joystick threshold
     // Layer; taken from DecodeLayer tests.
-    EXPECT_CALL(teensy, EEPROMRead(18)).WillOnce(Return(0));    // 00000|000
-    EXPECT_CALL(teensy, EEPROMRead(19)).WillOnce(Return(68));   // 01|00010|0
-    EXPECT_CALL(teensy, EEPROMRead(20)).WillOnce(Return(62));   // 0011|1110
-    EXPECT_CALL(teensy, EEPROMRead(21)).WillOnce(Return(0));    // 0|0000000
-    EXPECT_CALL(teensy, EEPROMRead(22)).WillOnce(Return(40));   // 001|01000
-    EXPECT_CALL(teensy, EEPROMRead(23)).WillOnce(Return(74));   // 01001|010
-    EXPECT_CALL(teensy, EEPROMRead(24)).WillOnce(Return(151));  // 10|01011|1
-    EXPECT_CALL(teensy, EEPROMRead(25)).WillOnce(Return(208));  // 1101|0000
-    EXPECT_CALL(teensy, EEPROMRead(26)).WillOnce(Return(10));   // 000010|10
-    EXPECT_CALL(teensy, EEPROMRead(27)).WillOnce(Return(17));   // 000|10001
-    EXPECT_CALL(teensy, EEPROMRead(28)).WillOnce(Return(148));  // 10010|100
-    EXPECT_CALL(teensy, EEPROMRead(29)).WillOnce(Return(252));  // 11|11110|0
-    EXPECT_CALL(teensy, EEPROMRead(30)).WillOnce(Return(1));    // 00000001
-    EXPECT_CALL(teensy, EEPROMRead(31)).WillOnce(Return(224));  // 1|11000|00
+    EXPECT_CALL(teensy, EEPROMRead(20)).WillOnce(Return(0));    // 00000|000
+    EXPECT_CALL(teensy, EEPROMRead(21)).WillOnce(Return(68));   // 01|00010|0
+    EXPECT_CALL(teensy, EEPROMRead(22)).WillOnce(Return(62));   // 0011|1110
+    EXPECT_CALL(teensy, EEPROMRead(23)).WillOnce(Return(0));    // 0|0000000
+    EXPECT_CALL(teensy, EEPROMRead(24)).WillOnce(Return(40));   // 001|01000
+    EXPECT_CALL(teensy, EEPROMRead(25)).WillOnce(Return(74));   // 01001|010
+    EXPECT_CALL(teensy, EEPROMRead(26)).WillOnce(Return(151));  // 10|01011|1
+    EXPECT_CALL(teensy, EEPROMRead(27)).WillOnce(Return(208));  // 1101|0000
+    EXPECT_CALL(teensy, EEPROMRead(28)).WillOnce(Return(10));   // 000010|10
+    EXPECT_CALL(teensy, EEPROMRead(29)).WillOnce(Return(17));   // 000|10001
+    EXPECT_CALL(teensy, EEPROMRead(30)).WillOnce(Return(148));  // 10010|100
+    EXPECT_CALL(teensy, EEPROMRead(31)).WillOnce(Return(252));  // 11|11110|0
+    EXPECT_CALL(teensy, EEPROMRead(32)).WillOnce(Return(1));    // 00000001
+    EXPECT_CALL(teensy, EEPROMRead(33)).WillOnce(Return(224));  // 1|11000|00
   }
 
   EXPECT_THAT(
@@ -528,39 +528,39 @@ TEST(DecoderTest, Decode_SecondProfile) {
     InSequence seq;
 
     // Encoded length = 36.
-    EXPECT_CALL(teensy, EEPROMRead(12)).WillOnce(Return(0));
-    EXPECT_CALL(teensy, EEPROMRead(13)).WillOnce(Return(36));
+    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(0));
+    EXPECT_CALL(teensy, EEPROMRead(15)).WillOnce(Return(36));
     // First profile header.
-    EXPECT_CALL(teensy, EEPROMRead(14))
+    EXPECT_CALL(teensy, EEPROMRead(16))
         .WillOnce(Return(64));  // 0100000; Switch
-    EXPECT_CALL(teensy, EEPROMRead(15))
+    EXPECT_CALL(teensy, EEPROMRead(17))
         .WillOnce(Return(64));  // 0100 0000; Position = 4
     // First profile body.
-    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(15));  // Body length
+    EXPECT_CALL(teensy, EEPROMRead(18)).WillOnce(Return(15));  // Body length
 
     // Second profile header; taken from DecodeHeader tests.
-    EXPECT_CALL(teensy, EEPROMRead(32)).WillOnce(Return(128));  // 1000000; PC
-    EXPECT_CALL(teensy, EEPROMRead(33))
+    EXPECT_CALL(teensy, EEPROMRead(34)).WillOnce(Return(128));  // 1000000; PC
+    EXPECT_CALL(teensy, EEPROMRead(35))
         .WillOnce(Return(16));  // 0001 0000; Position = 1
     // Second profile body; taken from DecodeBody tests.
-    EXPECT_CALL(teensy, EEPROMRead(34)).WillOnce(Return(15));  // Body length
-    EXPECT_CALL(teensy, EEPROMRead(35))
+    EXPECT_CALL(teensy, EEPROMRead(36)).WillOnce(Return(15));  // Body length
+    EXPECT_CALL(teensy, EEPROMRead(37))
         .WillOnce(Return(50));  // Joystick threshold
     // Second profile layer; taken from DecodeLayer tests.
-    EXPECT_CALL(teensy, EEPROMRead(36)).WillOnce(Return(0));    // 00000|000
-    EXPECT_CALL(teensy, EEPROMRead(37)).WillOnce(Return(68));   // 01|00010|0
-    EXPECT_CALL(teensy, EEPROMRead(38)).WillOnce(Return(62));   // 0011|1110
-    EXPECT_CALL(teensy, EEPROMRead(39)).WillOnce(Return(0));    // 0|0000000
-    EXPECT_CALL(teensy, EEPROMRead(40)).WillOnce(Return(40));   // 001|01000
-    EXPECT_CALL(teensy, EEPROMRead(41)).WillOnce(Return(74));   // 01001|010
-    EXPECT_CALL(teensy, EEPROMRead(42)).WillOnce(Return(151));  // 10|01011|1
-    EXPECT_CALL(teensy, EEPROMRead(43)).WillOnce(Return(208));  // 1101|0000
-    EXPECT_CALL(teensy, EEPROMRead(44)).WillOnce(Return(10));   // 000010|10
-    EXPECT_CALL(teensy, EEPROMRead(45)).WillOnce(Return(17));   // 000|10001
-    EXPECT_CALL(teensy, EEPROMRead(46)).WillOnce(Return(148));  // 10010|100
-    EXPECT_CALL(teensy, EEPROMRead(47)).WillOnce(Return(252));  // 11|11110|0
-    EXPECT_CALL(teensy, EEPROMRead(48)).WillOnce(Return(1));    // 00000001
-    EXPECT_CALL(teensy, EEPROMRead(49)).WillOnce(Return(224));  // 1|11000|00
+    EXPECT_CALL(teensy, EEPROMRead(38)).WillOnce(Return(0));    // 00000|000
+    EXPECT_CALL(teensy, EEPROMRead(39)).WillOnce(Return(68));   // 01|00010|0
+    EXPECT_CALL(teensy, EEPROMRead(40)).WillOnce(Return(62));   // 0011|1110
+    EXPECT_CALL(teensy, EEPROMRead(41)).WillOnce(Return(0));    // 0|0000000
+    EXPECT_CALL(teensy, EEPROMRead(42)).WillOnce(Return(40));   // 001|01000
+    EXPECT_CALL(teensy, EEPROMRead(43)).WillOnce(Return(74));   // 01001|010
+    EXPECT_CALL(teensy, EEPROMRead(44)).WillOnce(Return(151));  // 10|01011|1
+    EXPECT_CALL(teensy, EEPROMRead(45)).WillOnce(Return(208));  // 1101|0000
+    EXPECT_CALL(teensy, EEPROMRead(46)).WillOnce(Return(10));   // 000010|10
+    EXPECT_CALL(teensy, EEPROMRead(47)).WillOnce(Return(17));   // 000|10001
+    EXPECT_CALL(teensy, EEPROMRead(48)).WillOnce(Return(148));  // 10010|100
+    EXPECT_CALL(teensy, EEPROMRead(49)).WillOnce(Return(252));  // 11|11110|0
+    EXPECT_CALL(teensy, EEPROMRead(50)).WillOnce(Return(1));    // 00000001
+    EXPECT_CALL(teensy, EEPROMRead(51)).WillOnce(Return(224));  // 1|11000|00
   }
 
   EXPECT_THAT(
@@ -646,37 +646,37 @@ TEST(DecoderTest, Decode_BaseAndMod) {
     InSequence seq;
 
     // Encoded length = 24.
-    EXPECT_CALL(teensy, EEPROMRead(12)).WillOnce(Return(0));
-    EXPECT_CALL(teensy, EEPROMRead(13)).WillOnce(Return(24));
+    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(0));
+    EXPECT_CALL(teensy, EEPROMRead(15)).WillOnce(Return(24));
     // Header.
-    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(128));  // 1000000; PC
-    EXPECT_CALL(teensy, EEPROMRead(15))
+    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(128));  // 1000000; PC
+    EXPECT_CALL(teensy, EEPROMRead(17))
         .WillOnce(Return(0));  // 0000 0000; Position = 0
     // Body.
-    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(21));  // Body length
-    EXPECT_CALL(teensy, EEPROMRead(17))
+    EXPECT_CALL(teensy, EEPROMRead(18)).WillOnce(Return(21));  // Body length
+    EXPECT_CALL(teensy, EEPROMRead(19))
         .WillOnce(Return(0));  // Joystick threshold
     // Layer.
-    EXPECT_CALL(teensy, EEPROMRead(18)).WillOnce(Return(73));   // 01001|001
-    EXPECT_CALL(teensy, EEPROMRead(19)).WillOnce(Return(142));  // 10|00111|0
-    EXPECT_CALL(teensy, EEPROMRead(20)).WillOnce(Return(48));   // 0011|0000
-    EXPECT_CALL(teensy, EEPROMRead(21)).WillOnce(Return(144));  // 1|00100|00
-    EXPECT_CALL(teensy, EEPROMRead(22)).WillOnce(Return(74));   // 010|01010
-    EXPECT_CALL(teensy, EEPROMRead(23)).WillOnce(Return(169));  // 10101|001
-    EXPECT_CALL(teensy, EEPROMRead(24)).WillOnce(Return(105));  // 01|10100|1
-    EXPECT_CALL(teensy, EEPROMRead(25)).WillOnce(Return(100));  // 0110|0100
-    EXPECT_CALL(teensy, EEPROMRead(26)).WillOnce(Return(77));   // 0|10011|01
-    EXPECT_CALL(teensy, EEPROMRead(27)).WillOnce(Return(155));  // 100|11011
-    EXPECT_CALL(teensy, EEPROMRead(28)).WillOnce(Return(128));  // 10000|000
-    EXPECT_CALL(teensy, EEPROMRead(29)).WillOnce(Return(0));    // 00|00000|0
-    EXPECT_CALL(teensy, EEPROMRead(30)).WillOnce(Return(184));  // 1011|1000
-    EXPECT_CALL(teensy, EEPROMRead(31)).WillOnce(Return(129));  // 1|00000|01
-    EXPECT_CALL(teensy, EEPROMRead(32)).WillOnce(Return(224));  // 111|00000
-    EXPECT_CALL(teensy, EEPROMRead(33)).WillOnce(Return(4));    // 00000|100
-    EXPECT_CALL(teensy, EEPROMRead(34)).WillOnce(Return(128));  // 10|00000|0
-    EXPECT_CALL(teensy, EEPROMRead(35)).WillOnce(Return(0));    // 0000|0000
-    EXPECT_CALL(teensy, EEPROMRead(36)).WillOnce(Return(0));    // 0|00000|00
-    EXPECT_CALL(teensy, EEPROMRead(37)).WillOnce(Return(0));    // 000|00000
+    EXPECT_CALL(teensy, EEPROMRead(20)).WillOnce(Return(73));   // 01001|001
+    EXPECT_CALL(teensy, EEPROMRead(21)).WillOnce(Return(142));  // 10|00111|0
+    EXPECT_CALL(teensy, EEPROMRead(22)).WillOnce(Return(48));   // 0011|0000
+    EXPECT_CALL(teensy, EEPROMRead(23)).WillOnce(Return(144));  // 1|00100|00
+    EXPECT_CALL(teensy, EEPROMRead(24)).WillOnce(Return(74));   // 010|01010
+    EXPECT_CALL(teensy, EEPROMRead(25)).WillOnce(Return(169));  // 10101|001
+    EXPECT_CALL(teensy, EEPROMRead(26)).WillOnce(Return(105));  // 01|10100|1
+    EXPECT_CALL(teensy, EEPROMRead(27)).WillOnce(Return(100));  // 0110|0100
+    EXPECT_CALL(teensy, EEPROMRead(28)).WillOnce(Return(77));   // 0|10011|01
+    EXPECT_CALL(teensy, EEPROMRead(29)).WillOnce(Return(155));  // 100|11011
+    EXPECT_CALL(teensy, EEPROMRead(30)).WillOnce(Return(128));  // 10000|000
+    EXPECT_CALL(teensy, EEPROMRead(31)).WillOnce(Return(0));    // 00|00000|0
+    EXPECT_CALL(teensy, EEPROMRead(32)).WillOnce(Return(184));  // 1011|1000
+    EXPECT_CALL(teensy, EEPROMRead(33)).WillOnce(Return(129));  // 1|00000|01
+    EXPECT_CALL(teensy, EEPROMRead(34)).WillOnce(Return(224));  // 111|00000
+    EXPECT_CALL(teensy, EEPROMRead(35)).WillOnce(Return(4));    // 00000|100
+    EXPECT_CALL(teensy, EEPROMRead(36)).WillOnce(Return(128));  // 10|00000|0
+    EXPECT_CALL(teensy, EEPROMRead(37)).WillOnce(Return(0));    // 0000|0000
+    EXPECT_CALL(teensy, EEPROMRead(38)).WillOnce(Return(0));    // 0|00000|00
+    EXPECT_CALL(teensy, EEPROMRead(39)).WillOnce(Return(0));    // 000|00000
   }
 
   EXPECT_THAT(decoder::Decode(teensy, hs_profile_Profile_Platform_PC,
@@ -692,14 +692,14 @@ TEST(DecoderTest, Decode_ProfileNotFound) {
     InSequence seq;
 
     // Encoded length = 18.
-    EXPECT_CALL(teensy, EEPROMRead(12)).WillOnce(Return(0));
-    EXPECT_CALL(teensy, EEPROMRead(13)).WillOnce(Return(18));
+    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(0));
+    EXPECT_CALL(teensy, EEPROMRead(15)).WillOnce(Return(18));
     // Header; taken from DecodeHeader tests.
-    EXPECT_CALL(teensy, EEPROMRead(14)).WillOnce(Return(128));  // 1000000; PC
-    EXPECT_CALL(teensy, EEPROMRead(15))
+    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(128));  // 1000000; PC
+    EXPECT_CALL(teensy, EEPROMRead(17))
         .WillOnce(Return(16));  // 0001 0000; Position = 1
     // Body; taken from DecodeBody tests.
-    EXPECT_CALL(teensy, EEPROMRead(16)).WillOnce(Return(15));  // Body length
+    EXPECT_CALL(teensy, EEPROMRead(18)).WillOnce(Return(15));  // Body length
 
     EXPECT_CALL(teensy, Exit(1));
 

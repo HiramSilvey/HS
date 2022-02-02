@@ -9,6 +9,12 @@
 namespace hs {
 namespace util {
 
+int16_t GetShortFromEEPROM(const Teensy& teensy, int address) {
+  uint8_t one = teensy.EEPROMRead(address);
+  uint8_t two = teensy.EEPROMRead(address + 1);
+  return one << 8 | two;
+}
+
 int GetIntFromEEPROM(const Teensy& teensy, int address) {
   uint8_t one = teensy.EEPROMRead(address);
   uint8_t two = teensy.EEPROMRead(address + 1);

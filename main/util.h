@@ -10,6 +10,9 @@
 namespace hs {
 namespace util {
 
+// Read 2 bytes from EEPROM and return it as a single short.
+int16_t GetShortFromEEPROM(const Teensy& teensy, int address);
+
 // Read 4 bytes from EEPROM and return it as a single integer.
 int GetIntFromEEPROM(const Teensy& teensy, int address);
 

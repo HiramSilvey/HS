@@ -10,6 +10,18 @@ namespace hs {
 using ::testing::InSequence;
 using ::testing::Return;
 
+TEST(UtilTest, GetShortFromEEPROM) {
+  MockTeensy teensy;
+
+  {
+    InSequence seq;
+    EXPECT_CALL(teensy, EEPROMRead(0)).WillOnce(Return(1));
+    EXPECT_CALL(teensy, EEPROMRead(1)).WillOnce(Return(2));
+  }
+
+  EXPECT_EQ(util::GetShortFromEEPROM(teensy, 0), 258);
+}
+
 TEST(UtilTest, GetIntFromEEPROM) {
   MockTeensy teensy;
 

@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "math.h"
 #include "teensy.h"
 #include "util.h"
 
@@ -12,11 +13,17 @@ namespace configurator {
 
 namespace {
 
-void WriteToSerial(const Teensy& teensy, int val) {
+void WriteIntToSerial(const Teensy& teensy, int val) {
   uint8_t bytes[4] = {
       static_cast<uint8_t>(val >> 24), static_cast<uint8_t>(val >> 16 & 0xFF),
       static_cast<uint8_t>(val >> 8 & 0xFF), static_cast<uint8_t>(val & 0xFF)};
   teensy.SerialWrite(bytes, 4);
+}
+
+void WriteShortToSerial(const Teensy& teensy, int16_t val) {
+  uint8_t bytes[2] = {static_cast<uint8_t>(val >> 8 & 0xFF),
+                      static_cast<uint8_t>(val & 0xFF)};
+  teensy.SerialWrite(bytes, 2);
 }
 
 }  // namespace
@@ -27,10 +34,12 @@ void FetchStoredBounds(const Teensy& teensy) {
   int center_x = util::GetIntFromEEPROM(teensy, 0);
   int center_y = util::GetIntFromEEPROM(teensy, 4);
   int range = util::GetIntFromEEPROM(teensy, 8);
+  int16_t angle_ticks = util::GetShortFromEEPROM(teensy, 12);
 
-  WriteToSerial(teensy, center_x);
-  WriteToSerial(teensy, center_y);
-  WriteToSerial(teensy, range);
+  WriteIntToSerial(teensy, center_x);
+  WriteIntToSerial(teensy, center_y);
+  WriteIntToSerial(teensy, range);
+  WriteShortToSerial(teensy, angle_ticks);
 }
 
 void FetchJoystickCoords(Teensy& teensy) {
@@ -39,8 +48,8 @@ void FetchJoystickCoords(Teensy& teensy) {
   int x = teensy.GetHallX() / z * 1000000;
   int y = teensy.GetHallY() / z * 1000000;
 
-  WriteToSerial(teensy, x);
-  WriteToSerial(teensy, y);
+  WriteIntToSerial(teensy, x);
+  WriteIntToSerial(teensy, y);
 }
 
 void CalibrateJoystick(Teensy& teensy) {
@@ -75,13 +84,13 @@ void CalibrateJoystick(Teensy& teensy) {
   int center_y = (min_y + range_y) * 1000000;
   int range = range_x >= range_y ? range_x * 1000000 : range_y * 1000000;
 
-  WriteToSerial(teensy, center_x);
-  WriteToSerial(teensy, center_y);
-  WriteToSerial(teensy, range);
+  WriteIntToSerial(teensy, center_x);
+  WriteIntToSerial(teensy, center_y);
+  WriteIntToSerial(teensy, range);
 }
 
 void SaveCalibration(const Teensy& teensy) {
-  int bytes_to_read = 12;
+  int bytes_to_read = 14;
   int address = 0;
   while (address < bytes_to_read) {
     if (teensy.SerialAvailable()) {
@@ -96,7 +105,7 @@ void StoreProfiles(const Teensy& teensy) {
   while (teensy.SerialAvailable() < 2) {
   }
   int num_bytes = teensy.SerialRead() << 8 | teensy.SerialRead();
-  int base_address = 12;  // 0-11 are reserved for joystick calibration values.
+  int base_address = 14;  // 0-13 are reserved for joystick calibration values.
   int curr_address = base_address;
   while (curr_address < base_address + num_bytes) {
     if (teensy.SerialAvailable()) {

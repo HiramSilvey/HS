@@ -37,12 +37,18 @@ TEST(ConfiguratorTest, FetchStoredBounds) {
     EXPECT_CALL(teensy, EEPROMRead(11)).WillOnce(Return(3));
     uint8_t expected_range[4] = {3, 3, 3, 3};
 
+    EXPECT_CALL(teensy, EEPROMRead(12)).WillOnce(Return(4));
+    EXPECT_CALL(teensy, EEPROMRead(13)).WillOnce(Return(4));
+    uint8_t expected_angle_ticks[2] = {4, 4};
+
     EXPECT_CALL(teensy, SerialWrite(_, 4))
         .With(Args<0, 1>(ElementsAreArray(expected_x)));
     EXPECT_CALL(teensy, SerialWrite(_, 4))
         .With(Args<0, 1>(ElementsAreArray(expected_y)));
     EXPECT_CALL(teensy, SerialWrite(_, 4))
         .With(Args<0, 1>(ElementsAreArray(expected_range)));
+    EXPECT_CALL(teensy, SerialWrite(_, 2))
+        .With(Args<0, 1>(ElementsAreArray(expected_angle_ticks)));
   }
 
   configurator::internal::FetchStoredBounds(teensy);
@@ -134,9 +140,9 @@ TEST(ConfiguratorTest, CalibrateJoystick_RangeY) {
 TEST(ConfiguratorTest, SaveCalibration) {
   MockTeensy teensy;
 
-  EXPECT_CALL(teensy, SerialAvailable).Times(12).WillRepeatedly(Return(true));
-  EXPECT_CALL(teensy, SerialRead).Times(12).WillRepeatedly(Return(1));
-  for (int i = 0; i < 12; i++) {
+  EXPECT_CALL(teensy, SerialAvailable).Times(14).WillRepeatedly(Return(true));
+  EXPECT_CALL(teensy, SerialRead).Times(14).WillRepeatedly(Return(1));
+  for (int i = 0; i < 14; i++) {
     EXPECT_CALL(teensy, EEPROMUpdate(i, 1));
   }
   EXPECT_CALL(teensy, SerialWrite(0));
@@ -148,11 +154,11 @@ TEST(ConfiguratorTest, SaveCalibration_SerialUnavailable) {
   MockTeensy teensy;
 
   EXPECT_CALL(teensy, SerialAvailable)
-      .Times(13)
+      .Times(15)
       .WillOnce(Return(false))  // Expect it to retry upon seeing false.
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(teensy, SerialRead).Times(12).WillRepeatedly(Return(1));
-  for (int i = 0; i < 12; i++) {
+  EXPECT_CALL(teensy, SerialRead).Times(14).WillRepeatedly(Return(1));
+  for (int i = 0; i < 14; i++) {
     EXPECT_CALL(teensy, EEPROMUpdate(i, 1));
   }
   EXPECT_CALL(teensy, SerialWrite(0));
@@ -176,7 +182,7 @@ TEST(ConfiguratorTest, StoreProfiles) {
       .WillOnce(Return(1))
       .WillOnce(Return(1))
       .WillOnce(Return(1));
-  for (int i = 12; i < 15; i++) {
+  for (int i = 14; i < 17; i++) {
     EXPECT_CALL(teensy, EEPROMUpdate(i, 1));
   }
   EXPECT_CALL(teensy, SerialWrite(0));

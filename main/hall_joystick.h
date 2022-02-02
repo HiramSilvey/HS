@@ -31,7 +31,7 @@ class HallJoystick {
 
   // Map the provided int value from the specified input range to the global
   // output range.
-  int Normalize(const Teensy& teensy, int val, const Bounds& in);
+  int Normalize(const Teensy& teensy, double val, const Bounds& in);
 
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);
@@ -40,9 +40,10 @@ class HallJoystick {
   Coordinates GetCoordinates(Teensy& teensy);
 
  private:
-  // Input data bounds.
+  // Input data bounds and rotation angle.
   Bounds x_in_;
   Bounds y_in_;
+  double angle_;
 
   // Output data bounds.
   const Bounds out_;

@@ -19,7 +19,7 @@ using Action = hs_profile_Profile_Layer_Action;
 using AnalogAction_ID = hs_profile_Profile_Layer_AnalogAction_ID;
 using DigitalAction = hs_profile_Profile_Layer_DigitalAction;
 
-const int kMinAddr = 12;
+const int kMinAddr = 14;
 const int kMasks[10] = {
     0b1,      0b11,      0b111,      0b1111,      0b11111,
     0b111111, 0b1111111, 0b11111111, 0b111111111, 0b1111111111,

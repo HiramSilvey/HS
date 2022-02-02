@@ -2,6 +2,7 @@
 
 #include "hall_joystick.h"
 
+#include <cmath>
 #include <memory>
 
 #include "teensy.h"
@@ -20,13 +21,17 @@ HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
   int range = util::GetIntFromEEPROM(teensy, 8);
   x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
   y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
+  int16_t angle_ticks = util::GetShortFromEEPROM(teensy, 12);
+  angle_ = (M_PI * angle_ticks) / 2000.0;
   curr_coords_ = {out_neutral_, out_neutral_};
 }
 
-int HallJoystick::Normalize(const Teensy& teensy, int val, const Bounds& in) {
-  int mapped = static_cast<float>(val - in.min) /
-                   static_cast<float>(in.max - in.min) * (out_.max - out_.min) +
-               out_.min;
+int HallJoystick::Normalize(const Teensy& teensy, double val,
+                            const Bounds& in) {
+  int mapped =
+      round(static_cast<double>(val - in.min) /
+                static_cast<double>(in.max - in.min) * (out_.max - out_.min) +
+            out_.min);
   return teensy.Constrain(mapped, out_.min, out_.max);
 }
 
@@ -54,15 +59,21 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   int x = teensy.GetHallX() / z * 1000000;
   int y = teensy.GetHallY() / z * 1000000;
 
-  x = Normalize(teensy, x, x_in_);
-  y = Normalize(teensy, y, y_in_);
+  // Rotate the coordinates according to the configuration angle. This is a
+  // no-op if the angle is 0.
+  double rotated_x = x * cos(angle_) + y * sin(angle_);
+  double rotated_y = -x * sin(angle_) + y * cos(angle_);
+
+  x = Normalize(teensy, rotated_x, x_in_);
+  y = Normalize(teensy, rotated_y, y_in_);
 
   if (threshold_.first < 0) {
     // DIGITAL
-    curr_coords_ = {ResolveDigitalCoord(x), ResolveDigitalCoord(y)};
+    curr_coords_ = {ResolveDigitalCoord(rotated_x),
+                    ResolveDigitalCoord(rotated_y)};
   } else {
     // ANALOG
-    curr_coords_ = {x, y};
+    curr_coords_ = {rotated_x, rotated_y};
   }
   return curr_coords_;
 }
