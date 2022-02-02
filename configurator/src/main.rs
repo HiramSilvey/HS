@@ -565,11 +565,11 @@ fn fetch_stored_bounds(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) 
     let mut center_x = vec![0u8; 4];
     let mut center_y = vec![0u8; 4];
     let mut range = vec![0u8; 4];
-    // let mut angle_ticks = vec![0u8; 2];
+    let mut angle_ticks = vec![0u8; 2];
     wait_for_data(hs, &mut center_x)?;
     wait_for_data(hs, &mut center_y)?;
     wait_for_data(hs, &mut range)?;
-    // wait_for_data(hs, &mut angle_ticks)?;
+    wait_for_data(hs, &mut angle_ticks)?;
 
     event_sink.submit_command(
         SET_DEFAULT_BOUNDS,
@@ -577,7 +577,7 @@ fn fetch_stored_bounds(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) 
             bytes_to_float(&center_x)?,
             bytes_to_float(&center_y)?,
             bytes_to_float(&range)?,
-            0, // bytes_to_short(&angle_ticks)?,
+            bytes_to_short(&angle_ticks)?,
         ),
         Target::Auto,
     )?;
