@@ -19,7 +19,7 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 const MAX_EEPROM_BYTES: usize = 1064;
-const JOYSTICK_CURSOR_RADIUS: f64 = 3.0;
+const JOYSTICK_CURSOR_RADIUS: f64 = 3.;
 const JOYSTICK_BOX_LENGTH: f64 = 400.;
 const SET_CURSOR: Selector<Point> = Selector::new("hs.set-cursor");
 const SET_DEFAULT_BOUNDS: Selector<Bounds> = Selector::new("hs.set-default-bounds");
@@ -37,6 +37,7 @@ enum Command {
 struct Bounds {
     center: Point,
     range: f64,
+    angle_ticks: i16,
 }
 
 impl Bounds {
@@ -44,13 +45,15 @@ impl Bounds {
         Bounds {
             center: Point::new(0.0, 0.0),
             range: 0.0,
+            angle_ticks: 0,
         }
     }
 
-    pub fn from_parts(center_x: f64, center_y: f64, range: f64) -> Bounds {
+    pub fn from_parts(center_x: f64, center_y: f64, range: f64, angle_ticks: i16) -> Bounds {
         Bounds {
             center: Point::new(center_x, center_y),
             range: range,
+            angle_ticks: angle_ticks,
         }
     }
 
@@ -79,6 +82,8 @@ enum Direction {
     Right,
     In,
     Out,
+    AngleDec,
+    AngleInc,
 }
 
 #[derive(Clone, Data, Lens)]
@@ -87,7 +92,6 @@ struct JoystickState {
     default_bounds: Bounds,
     custom_bounds: Bounds,
     digital_threshold: f64,
-    tick: f64,
 }
 
 impl JoystickState {
@@ -97,7 +101,6 @@ impl JoystickState {
             default_bounds: Bounds::new(),
             custom_bounds: Bounds::new(),
             digital_threshold: 0.0,
-            tick: 0.0,
         }
     }
 
@@ -108,22 +111,28 @@ impl JoystickState {
     fn set_bounds(&mut self, bounds: &Bounds) {
         self.default_bounds = *bounds;
         self.custom_bounds = *bounds;
-        self.tick = bounds.range / 1000.0;
 
         println!(
-            "Set bounds to {}, {}, {}",
-            self.default_bounds.center.x, self.default_bounds.center.y, self.default_bounds.range
+            "Set bounds to x={}, y={}, range={}, angle_ticks={}",
+            self.default_bounds.center.x,
+            self.default_bounds.center.y,
+            self.default_bounds.range,
+            self.default_bounds.angle_ticks
         );
     }
 
     fn shift_bounds(&mut self, direction: Direction) {
+        let tick = self.default_bounds.range / 1000.0;
+
         match direction {
-            Direction::Up => self.custom_bounds.center.y += self.tick,
-            Direction::Down => self.custom_bounds.center.y -= self.tick,
-            Direction::Left => self.custom_bounds.center.x -= self.tick,
-            Direction::Right => self.custom_bounds.center.x += self.tick,
-            Direction::In => self.custom_bounds.range -= self.tick,
-            Direction::Out => self.custom_bounds.range += self.tick,
+            Direction::Up => self.custom_bounds.center.y += tick,
+            Direction::Down => self.custom_bounds.center.y -= tick,
+            Direction::Left => self.custom_bounds.center.x -= tick,
+            Direction::Right => self.custom_bounds.center.x += tick,
+            Direction::In => self.custom_bounds.range -= tick,
+            Direction::Out => self.custom_bounds.range += tick,
+            Direction::AngleDec => self.custom_bounds.angle_ticks -= 1,
+            Direction::AngleInc => self.custom_bounds.angle_ticks += 1,
         }
     }
 }
@@ -146,12 +155,14 @@ fn get_button_painter() -> Painter<JoystickState> {
 
 fn edit_bounds_button(direction: Direction) -> impl Widget<JoystickState> {
     let symbol = match direction {
-        Direction::Up => 'ᐱ',
-        Direction::Down => 'ᐯ',
-        Direction::Left => 'ᐸ',
-        Direction::Right => 'ᐳ',
+        Direction::Up => '↑',
+        Direction::Down => '↓',
+        Direction::Left => '←',
+        Direction::Right => '→',
         Direction::In => '-',
         Direction::Out => '+',
+        Direction::AngleDec => '⟲',
+        Direction::AngleInc => '⟳',
     };
 
     Label::new(format!("{}", symbol))
@@ -179,6 +190,24 @@ fn edit_threshold_button(direction: Direction) -> impl Widget<JoystickState> {
 
 fn map(x: f64, in_min: f64, in_max: f64, out_min: f64, out_max: f64) -> f64 {
     (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+}
+
+fn relative_rotated_point(x: f64, y: f64, origin_x: f64, origin_y: f64, angle_ticks: i16) -> Point {
+    let relative_x = x - origin_x;
+    let relative_y = y - origin_y;
+
+    // It takes 1000 angle ticks to reach PI/2, or 90 degrees. We alse flip the
+    // sign since ultimately we will be rotating the joystick point and not the
+    // axes.
+    let angle = -(std::f64::consts::PI * angle_ticks as f64) / 2000.;
+
+    let mut p = Point::new(
+        (relative_x * angle.cos()) + (relative_y * angle.sin()),
+        (-relative_x * angle.sin()) + (relative_y * angle.cos()),
+    );
+    p.x += origin_x;
+    p.y += origin_y;
+    p
 }
 
 impl Widget<JoystickState> for JoystickState {
@@ -281,19 +310,86 @@ impl Widget<JoystickState> for JoystickState {
             default_y_max,
         );
         let mutable_y_center = mutable_y_min + (mutable_y_max - mutable_y_min) / 2.0;
-
-        let mutable_top_left = Point::new(mutable_x_min, mutable_y_min);
-        let mutable_top_right = Point::new(mutable_x_max, mutable_y_min);
-        let mutable_bottom_left = Point::new(mutable_x_min, mutable_y_max);
-        let mutable_bottom_right = Point::new(mutable_x_max, mutable_y_max);
         let mutable_center = Point::new(mutable_x_center, mutable_y_center);
-        let mutable_center_left = Point::new(mutable_x_min, mutable_y_center);
-        let mutable_center_right = Point::new(mutable_x_max, mutable_y_center);
-        let mutable_center_top = Point::new(mutable_x_center, mutable_y_min);
-        let mutable_center_bottom = Point::new(mutable_x_center, mutable_y_max);
 
-        let mutable_bounds = Rect::from_points(mutable_top_left, mutable_bottom_right);
-        ctx.stroke(mutable_bounds, &env.get(theme::PRIMARY_LIGHT), 1.0);
+        let mutable_top_left = relative_rotated_point(
+            mutable_x_min,
+            mutable_y_min,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+        let mutable_top_right = relative_rotated_point(
+            mutable_x_max,
+            mutable_y_min,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+        let mutable_bottom_left = relative_rotated_point(
+            mutable_x_min,
+            mutable_y_max,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+        let mutable_bottom_right = relative_rotated_point(
+            mutable_x_max,
+            mutable_y_max,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+        let mutable_center_left = relative_rotated_point(
+            mutable_x_min,
+            mutable_y_center,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+        let mutable_center_right = relative_rotated_point(
+            mutable_x_max,
+            mutable_y_center,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+        let mutable_center_top = relative_rotated_point(
+            mutable_x_center,
+            mutable_y_min,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+        let mutable_center_bottom = relative_rotated_point(
+            mutable_x_center,
+            mutable_y_max,
+            mutable_x_center,
+            mutable_y_center,
+            data.custom_bounds.angle_ticks,
+        );
+
+        // Mutable bounds' box.
+        ctx.stroke(
+            Line::new(mutable_top_left, mutable_bottom_left),
+            &env.get(theme::PRIMARY_LIGHT),
+            1.0,
+        );
+        ctx.stroke(
+            Line::new(mutable_top_left, mutable_top_right),
+            &env.get(theme::PRIMARY_LIGHT),
+            1.0,
+        );
+        ctx.stroke(
+            Line::new(mutable_bottom_right, mutable_top_right),
+            &env.get(theme::PRIMARY_LIGHT),
+            1.0,
+        );
+        ctx.stroke(
+            Line::new(mutable_bottom_right, mutable_bottom_left),
+            &env.get(theme::PRIMARY_LIGHT),
+            1.0,
+        );
 
         // Mutable bounds' guidelines.
         let stroke_style = StrokeStyle::new().dash_pattern(&[1.0, 4.0]);
@@ -406,8 +502,8 @@ fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> 
     let timeout = Duration::new(70, 0);
     let mut status = hs.read_exact(buf);
     while status.is_err() && now.elapsed() < timeout {
-        println!("Waiting...");
-        sleep(Duration::new(1, 0));
+        // println!("Waiting...");
+        // sleep(Duration::new(1, 0));
         status = hs.read_exact(buf);
     }
     if status.is_err() {
@@ -428,6 +524,16 @@ fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
     Ok(())
 }
 
+fn bytes_to_short(bytes: &Vec<u8>) -> Result<i16> {
+    if bytes.len() != 2 {
+        return Err(anyhow!(
+            "Failed converting bytes to short. Expected 2 bytes, found {} bytes.",
+            bytes.len()
+        ));
+    }
+    Ok(((bytes[0] as i16) << 8) | bytes[1] as i16)
+}
+
 fn bytes_to_float(bytes: &Vec<u8>) -> Result<f64> {
     if bytes.len() != 4 {
         return Err(anyhow!(
@@ -439,6 +545,10 @@ fn bytes_to_float(bytes: &Vec<u8>) -> Result<f64> {
         | ((bytes[1] as i32) << 16)
         | ((bytes[2] as i32) << 8)
         | bytes[3] as i32) as f64)
+}
+
+fn short_to_bytes(data: i16) -> Vec<u8> {
+    vec![(data >> 8 & 0xFF) as u8, (data & 0xFF) as u8]
 }
 
 fn float_to_bytes(data: f64) -> Vec<u8> {
@@ -455,9 +565,11 @@ fn fetch_stored_bounds(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) 
     let mut center_x = vec![0u8; 4];
     let mut center_y = vec![0u8; 4];
     let mut range = vec![0u8; 4];
+    // let mut angle_ticks = vec![0u8; 2];
     wait_for_data(hs, &mut center_x)?;
     wait_for_data(hs, &mut center_y)?;
     wait_for_data(hs, &mut range)?;
+    // wait_for_data(hs, &mut angle_ticks)?;
 
     event_sink.submit_command(
         SET_DEFAULT_BOUNDS,
@@ -465,6 +577,7 @@ fn fetch_stored_bounds(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) 
             bytes_to_float(&center_x)?,
             bytes_to_float(&center_y)?,
             bytes_to_float(&range)?,
+            0, // bytes_to_short(&angle_ticks)?,
         ),
         Target::Auto,
     )?;
@@ -510,10 +623,12 @@ fn save_calibration(
     let center_x = receiver.recv()?;
     let center_y = receiver.recv()?;
     let range = receiver.recv()?;
+    let angle_ticks = receiver.recv()?;
 
     hs.write_all(&float_to_bytes(center_x))?;
     hs.write_all(&float_to_bytes(center_y))?;
     hs.write_all(&float_to_bytes(range))?;
+    hs.write_all(&short_to_bytes(angle_ticks as i16))?;
 
     wait_for_ack(hs)?;
 
@@ -589,7 +704,11 @@ fn build_ui(
                 .with_spacer(1.0)
                 .with_flex_child(edit_threshold_button(Direction::In), 1.0)
                 .with_spacer(1.0)
-                .with_flex_child(edit_threshold_button(Direction::Out), 1.0),
+                .with_flex_child(edit_threshold_button(Direction::Out), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(edit_bounds_button(Direction::AngleDec), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(edit_bounds_button(Direction::AngleInc), 1.0),
             1.0,
         )
         .with_flex_child(
@@ -623,10 +742,14 @@ fn build_ui(
                             return;
                         }
                     };
-                    println!("Setting bounds to {}, {}, {}", center_x, center_y, range);
+                    println!(
+                        "Setting bounds to x={}, y={}, range={}, angle_ticks={}",
+                        center_x, center_y, range, 0
+                    );
                     data.set_bounds(&Bounds {
                         center: Point::new(center_x, center_y),
                         range: range,
+                        angle_ticks: 0,
                     });
                 },
             ),
@@ -660,6 +783,13 @@ fn build_ui(
                         Ok(()) => println!("Sent range value."),
                         Err(e) => {
                             println!("Failed to send range value: {}", e);
+                            return;
+                        }
+                    }
+                    match data_sender.send(data.custom_bounds.angle_ticks.into()) {
+                        Ok(()) => println!("Sent angle ticks."),
+                        Err(e) => {
+                            println!("Failed to send angle ticks: {}", e);
                             return;
                         }
                     }
