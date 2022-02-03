@@ -82,8 +82,8 @@ enum Direction {
     Right,
     In,
     Out,
-    AngleDec,
     AngleInc,
+    AngleDec,
 }
 
 #[derive(Clone, Data, Lens)]
@@ -131,8 +131,8 @@ impl JoystickState {
             Direction::Right => self.custom_bounds.center.x += tick,
             Direction::In => self.custom_bounds.range -= tick,
             Direction::Out => self.custom_bounds.range += tick,
-            Direction::AngleDec => self.custom_bounds.angle_ticks -= 1,
             Direction::AngleInc => self.custom_bounds.angle_ticks += 1,
+            Direction::AngleDec => self.custom_bounds.angle_ticks -= 1,
         }
     }
 }
@@ -161,8 +161,8 @@ fn edit_bounds_button(direction: Direction) -> impl Widget<JoystickState> {
         Direction::Right => '→',
         Direction::In => '-',
         Direction::Out => '+',
-        Direction::AngleDec => '⟲',
-        Direction::AngleInc => '⟳',
+        Direction::AngleInc => '⟲',
+        Direction::AngleDec => '⟳',
     };
 
     Label::new(format!("{}", symbol))
@@ -196,10 +196,8 @@ fn relative_rotated_point(x: f64, y: f64, origin_x: f64, origin_y: f64, angle_ti
     let relative_x = x - origin_x;
     let relative_y = y - origin_y;
 
-    // It takes 1000 angle ticks to reach PI/2, or 90 degrees. We alse flip the
-    // sign since ultimately we will be rotating the joystick point and not the
-    // axes.
-    let angle = -(std::f64::consts::PI * angle_ticks as f64) / 2000.;
+    // It takes 1000 angle ticks to reach PI/2, or 90 degrees.
+    let angle = std::f64::consts::PI * angle_ticks as f64 / 2000.;
 
     let mut p = Point::new(
         (relative_x * angle.cos()) + (relative_y * angle.sin()),
