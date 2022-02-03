@@ -45,8 +45,8 @@ class HallJoystickTest : public ::testing::Test {
       EXPECT_CALL(teensy_, EEPROMRead(10)).WillOnce(Return(0));
       EXPECT_CALL(teensy_, EEPROMRead(11)).WillOnce(Return(100));
       // Set angle to (PI * 500) / 2000 = PI/4
-      EXPECT_CALL(teensy_, EEPROMRead(12)).WillOnce(Return(0));
-      EXPECT_CALL(teensy_, EEPROMRead(13)).WillOnce(Return(500));
+      EXPECT_CALL(teensy_, EEPROMRead(12)).WillOnce(Return(1));
+      EXPECT_CALL(teensy_, EEPROMRead(13)).WillOnce(Return(244));
     }
 
     joystick_ = std::make_unique<HallJoystick>(teensy_, /*min=*/200,
@@ -96,12 +96,13 @@ TEST_F(HallJoystickTest, GetCoordinates) {
     EXPECT_CALL(teensy_, GetHallX).WillOnce(Return(0.00005));
     EXPECT_CALL(teensy_, GetHallY).WillOnce(Return(0.00005));
     // Rotated x (50) by PI/4.
-    EXPECT_CALL(teensy_, Constrain(804, 200, 1200)).WillOnce(Return(804));
+    EXPECT_CALL(teensy_, Constrain(1004, 200, 1200)).WillOnce(Return(1004));
     // Rotated y (50) by PI/4.
-    EXPECT_CALL(teensy_, Constrain(0, 200, 1200)).WillOnce(Return(200));
+    EXPECT_CALL(teensy_, Constrain(650, 200, 1200)).WillOnce(Return(650));
   }
 
-  HallJoystick::Coordinates expected = {804, 0};
+  // Expect digital resolution.
+  HallJoystick::Coordinates expected = {1200, 700};
   EXPECT_THAT(joystick_->GetCoordinates(teensy_), CoordinatesEq(expected));
 }
 

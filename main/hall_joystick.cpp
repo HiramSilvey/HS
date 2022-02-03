@@ -69,11 +69,10 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
 
   if (threshold_.first < 0) {
     // DIGITAL
-    curr_coords_ = {ResolveDigitalCoord(rotated_x),
-                    ResolveDigitalCoord(rotated_y)};
+    curr_coords_ = {ResolveDigitalCoord(x), ResolveDigitalCoord(y)};
   } else {
     // ANALOG
-    curr_coords_ = {rotated_x, rotated_y};
+    curr_coords_ = {x, y};
   }
   return curr_coords_;
 }
