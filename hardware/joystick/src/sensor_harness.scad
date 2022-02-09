@@ -35,11 +35,9 @@ cutout_width2=width-min_thickness*2;
 cutout_depth=inner_depth-min_thickness;
 cutout_depth_offset=depth-cutout_depth;
 
-spacing=0.1;
-
 board_width=14;
 board_height=38.5;
-board_depth=1.65+spacing;
+board_depth=1.65;
 board_width_offset=19.5;
 board_height_offset=22.35;
 board_hole_offset=38.6;
@@ -68,8 +66,16 @@ difference () {
      hole(board_width_offset+board_width/2, board_hole_offset, depth-inner_depth);
 }
 
+spacing=-0.1;
+
+// Platform extension
+translate([width/2-rail_length/2, width, depth-inner_depth])
+     cube([rail_length, board_height_offset+board_height-width+min_thickness+spacing, min_thickness]);
+
 // Board rails
 translate([width/2-rail_length/2, board_height_offset-min_thickness-spacing,
+           cutout_depth_offset]) cube([rail_length, min_thickness, board_depth]);
+translate([width/2-rail_length/2, board_height_offset+board_height+spacing,
            cutout_depth_offset]) cube([rail_length, min_thickness, board_depth]);
 translate([board_width_offset-min_thickness-spacing, board_hole_offset-rail_length/2,
            cutout_depth_offset]) cube([min_thickness, rail_length, board_depth]);
