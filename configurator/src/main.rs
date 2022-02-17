@@ -15,7 +15,6 @@ use druid::{
 use serialport::SerialPort;
 use std::path::Path;
 use std::thread;
-use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 const MAX_EEPROM_BYTES: usize = 1064;
@@ -500,8 +499,6 @@ fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> 
     let timeout = Duration::new(70, 0);
     let mut status = hs.read_exact(buf);
     while status.is_err() && now.elapsed() < timeout {
-        // println!("Waiting...");
-        // sleep(Duration::new(1, 0));
         status = hs.read_exact(buf);
     }
     if status.is_err() {
