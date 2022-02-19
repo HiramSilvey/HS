@@ -7,3 +7,4 @@ configurator/profiles/
 *\.pb\.*
 .DS_Store
 main/build/
+hardware/joystick/src/third_party/
