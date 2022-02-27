@@ -2,6 +2,11 @@
 
 A highly customizable game controller with a fully analog arcade-style joystick.
 
+To see it in action, check out this [demo](https://www.youtube.com/watch?v=5yk12DYtFRA)!
+
+![HS-top-side](https://github.com/HiramSilvey/HS/blob/master/images/top.jpg)
+![HS-back-side](https://github.com/HiramSilvey/HS/blob/master/images/back.jpg)
+
 ## Key features
 * Fully analog joystick
 * Works on PC and Switch, with more platforms planned
