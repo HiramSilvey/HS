@@ -27,3 +27,8 @@ To see it in action, check out this [demo](https://www.youtube.com/watch?v=5yk12
 * 1 USB-B port
 * PJRC Teensy 4.0 microcontroller
 * Contactless joystick via the Infineon TLV493D-A1B6 3D hall effect sensor
+
+## Current Priorities
+1. Write up and publish build guide
+2. Rewrite configurator UI using [Electron](https://www.electronjs.org/), including both button and joystick customization features
+3. TBD
