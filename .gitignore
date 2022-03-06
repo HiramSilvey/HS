@@ -7,3 +7,10 @@ configurator/profiles/
 *\.pb\.*
 .DS_Store
 main/build/
+configurator/.yarn/*
+configurator/.pnp.*
+!configurator/.yarn/patches
+!configurator/.yarn/plugins
+!configurator/.yarn/releases
+!configurator/.yarn/sdks
+!configurator/.yarn/versions
