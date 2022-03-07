@@ -1,8 +1,14 @@
 {
-  "name": "hs-configurator",
-  "packageManager": "yarn@3.2.0",
-  "dependencies": {
-    "electron": "^17.1.0",
-    "neon-cli": "^0.9.1"
-  }
+    "name": "hs-configurator",
+    "version": "1.0.0",
+    "author": "Hiram Silvey",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "packageManager": "yarn@3.2.0",
+    "dependencies": {
+        "electron": "^17.1.0",
+        "neon-cli": "^0.9.1"
+    }
 }
