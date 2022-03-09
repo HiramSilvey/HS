@@ -1,3 +1,7 @@
+body {
+    margin:0;
+}
+
 #joystick {
     stroke:#FF0000;
 }
@@ -5,10 +9,14 @@
 .button {
     fill:none;
     stroke:#000000;
-    stroke-width: 1;
+    stroke-width:1;
     stroke-linecap:round;
     stroke-linejoin:round;
     stroke-miterlimit:10;
     stroke-dasharray:none;
     stroke-opacity:1
+}
+
+#outline {
+    background-color:#00FF00;
 }
