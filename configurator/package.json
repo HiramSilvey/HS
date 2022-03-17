@@ -8,7 +8,11 @@
     },
     "packageManager": "yarn@3.2.0",
     "dependencies": {
+        "@emotion/react": "^11.8.2",
+        "@emotion/styled": "^11.8.1",
+        "@mui/material": "^5.5.0",
         "electron": "^17.1.0",
-        "neon-cli": "^0.9.1"
+        "neon-cli": "^0.9.1",
+        "react": "^17.0.2"
     }
 }
