@@ -2,8 +2,8 @@ from google.protobuf import text_format
 from pathlib import Path
 import profile_pb2
 
-out_path = Path('../profiles')
-in_files = Path('text_profiles').rglob('*.textpb')
+out_path = Path('configurator/profiles/encoded')
+in_files = Path('configurator/profiles/textproto').rglob('*.textpb')
 for f_in_name in in_files:
     f_in = open(f_in_name, 'rb')
     buf = f_in.read()

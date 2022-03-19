@@ -632,7 +632,7 @@ fn save_calibration(
 }
 
 fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<()> {
-    let profiles = match profiles::load_all(&Path::new("../profiles")) {
+    let profiles = match profiles::load_all(&Path::new("../../profiles/encoded")) {
         Ok(x) => x,
         Err(e) => return Err(anyhow!("Unable to load profiles: {}", e)),
     };
