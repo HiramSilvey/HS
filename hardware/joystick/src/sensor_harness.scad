@@ -1,17 +1,18 @@
 min_thickness=1.5;
 depth=min_thickness;
-m3_dia=2.5;
+m4_dia=3.3;
+m4_head_height=2;
 
 module hole(x, y, d) {
-     translate([x, y, d]) cylinder(h=4.75, d=m3_dia, center=false, $fn=100);
+     translate([x, y, d]) cylinder(h=4.75, d=m4_dia, center=false, $fn=100);
 }
 
-width=53;
+width=36;
 length=width;
-edge_to_hole=3.75;
+edge_to_hole=min_thickness+(m4_dia/2);
 inner_offset=edge_to_hole*2;
 inner_width=width-inner_offset*2;
-inner_depth=4.75;
+inner_depth=min_thickness+m4_head_height;
 
 module core() {
      // Outer platform
@@ -38,9 +39,11 @@ cutout_depth_offset=depth-cutout_depth;
 board_width=14;
 board_height=38.5;
 board_depth=1.65;
-board_width_offset=19.5;
-board_height_offset=22.35;
-board_hole_offset=38.6;
+board_width_offset=(width-board_width)/2;
+board_height_edge_to_sensor_center=4.35;
+board_height_offset=(width/2)-board_height_edge_to_sensor_center;
+board_height_edge_to_hole_center=16.1;
+board_hole_offset=board_height_offset+board_height_edge_to_hole_center;
 rail_length=5;
 
 difference () {
@@ -66,7 +69,7 @@ difference () {
      hole(board_width_offset+board_width/2, board_hole_offset, depth-inner_depth);
 }
 
-spacing=-0.1;
+spacing=0;
 
 // Platform extension
 translate([width/2-rail_length/2, width, depth-inner_depth])
