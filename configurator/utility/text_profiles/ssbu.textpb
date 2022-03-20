@@ -8,9 +8,11 @@ layout {
         index_top { digital: R1 }               # Grab
         middle_top { digital: R_STICK_LEFT }    # Left tilt
         ring_top { digital: R_STICK_RIGHT }     # Right tilt
+        pinky_top { digital: TRIANGLE }         # Alt jump
         index_middle { digital: R2 }            # Shield, dodge, tech
         middle_middle { digital: SQUARE }       # Jump
         ring_middle { digital: X }              # Special
+        pinky_middle { digital: L2 }            # Alt shield, dodge, tech
         thumb_bottom { digital: R_STICK_DOWN }  # Down tilt
         thumb_middle { digital: R_STICK_UP }    # Up tilt
         thumb_top { digital: CIRCLE }           # Normal
