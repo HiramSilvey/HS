@@ -7,9 +7,9 @@ module hole(x, y, d) {
      translate([x, y, d]) cylinder(h=4.75, d=m4_dia, center=false, $fn=100);
 }
 
-width=36;
-length=width;
 edge_to_hole=min_thickness+(m4_dia/2);
+width=36+(edge_to_hole*2);
+length=width;
 inner_offset=edge_to_hole*2;
 inner_width=width-inner_offset*2;
 inner_depth=min_thickness+m4_head_height;
