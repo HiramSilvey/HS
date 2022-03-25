@@ -1,4 +1,4 @@
-spacing=0.5;
+spacing=0.4;
 
 min_thickness=1;
 shaft_height=2;
