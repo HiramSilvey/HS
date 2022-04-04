@@ -1,9 +1,27 @@
 configurator/backend/Cargo.lock
 configurator/backend/debug/
 configurator/backend/target/
-*_pb2\.*
-__pycache__
+configurator/frontend/Cargo.lock
+configurator/frontend/debug/
+configurator/frontend/target/
 configurator/profiles/encoded/
+
 *\.pb\.*
-.DS_Store
+*_pb2\.*
+
+__pycache__
+
 main/build/
+
+.DS_Store
+.thumbs.db
+node_modules
+
+# Quasar core related directories
+.quasar
+/dist
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,21 @@
+[package]
+name = "hs-configurator"
+version = "0.0.1"
+description = "HS Configurator"
+authors = ["Hiram Silvey <hello@iamhiram.com>"]
+license = "GPL-3.0-or-later"
+edition = "2018"
+exclude = ["index.node"]
+
+[lib]
+crate-type = ["cdylib"]
+path = "src-rust/lib.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dependencies.neon]
+version = "0.10"
+default-features = false
+features = ["napi-6"]
