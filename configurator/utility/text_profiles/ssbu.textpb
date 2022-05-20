@@ -8,10 +8,10 @@ layout {
 	index_top { digital: R1 }               # Grab
 	middle_top { digital: R_STICK_LEFT }    # Left tilt
 	ring_top { digital: R_STICK_RIGHT }     # Right tilt
+	pinky_top { digital: TRIANGLE }         # Jump (X)
 	index_middle { digital: R2 }            # Shield, dodge, tech
-	middle_middle { digital: SQUARE }       # Jump
+	middle_middle { digital: SQUARE }       # Jump (Y)
 	ring_middle { digital: X }              # Special
-	pinky_middle { digital: R_STICK_DOWN }  # Alt down tilt
 	thumb_bottom { digital: R_STICK_DOWN }  # Down tilt
 	thumb_middle { digital: R_STICK_UP }    # Up tilt
 	thumb_top { digital: CIRCLE }           # Normal
@@ -19,9 +19,9 @@ layout {
 	left_inner { digital: MOD }             # Mod layout
     }
     mod {
-	index_top { digital: L2 }               # L
-	middle_top { digital: R2 }              # R
-	ring_top { digital: X }                 # A
+	index_top { digital: L1 }               # L
+	middle_top { digital: R1 }              # R
+	ring_top { digital: CIRCLE }            # A
 	pinky_top { digital: OPTIONS }          # Start
 
 	left_outer { digital: HOME }            # Home
