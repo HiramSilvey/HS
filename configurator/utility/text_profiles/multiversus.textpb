@@ -1,0 +1,33 @@
+name: "Multiversus"
+platform_config: {
+    platform: PC
+    position: 4
+}
+layout: {
+    base: {
+      thumb_top: { digital: SUAQRE }          # Attack
+      index_middle: { digital: CIRCLE }       # Dodge
+      middle_middle: { digital: X }           # Jump
+      ring_middle: { digital: TRIANGLE }      # Special
+
+      index_top { digital: L2 }               # Pick up item
+      pinky_middle { digital: L1 }            # Neutral special
+      pinky_top { digital: R1 }               # Neutral attack
+
+      middle_top { digital: R_STICK_LEFT }    # Attack left
+      ring_top { digital: R_STICK_RIGHT }     # Attack right
+      thumb_middle { digital: R_STICK_UP }    # Attack up
+      thumb_bottom { digital: R_STICK_DOWN }  # Attack down
+
+      left_outer { digital: SHARE }           # Start
+      left_inner { digital: MOD }             # Mod layer
+    }
+    mod {
+      index_middle { digital: D_PAD_LEFT }    # Taunt
+      middle_middle { digital: D_PAD_UP }     # Taunt
+      ring_middle { digital: D_PAD_RIGHT }    # Taunt
+      thumb_top { digital: D_PAD_DOWN }       # Taunt
+
+      index_top { digital: OPTIONS }          # Extra
+    }
+}
