@@ -19,15 +19,21 @@ layout {
 	left_inner { digital: MOD }             # Mod layout
     }
     mod {
+	# Quick access to quit (L+R+A+S) combo.
 	index_top { digital: L1 }               # L
 	middle_top { digital: R1 }              # R
 	ring_top { digital: CIRCLE }            # A
 	pinky_top { digital: OPTIONS }          # Start
 
+	# Misc.
 	left_outer { digital: HOME }            # Home
 	index_middle { digital: D_PAD_LEFT }    # Left taunt
 	middle_middle { digital: D_PAD_UP }     # Up taunt
 	ring_middle { digital: D_PAD_RIGHT }    # Right taunt
 	thumb_top { digital: D_PAD_DOWN }       # Down taunt
+
+	# Bindings for Ultimate Training Modpack.
+	thumb_middle { digital: X }             # Special
+	pinky_middle { digital: R1 }            # Grab
     }
 }
