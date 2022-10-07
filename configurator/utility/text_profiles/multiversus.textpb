@@ -5,7 +5,7 @@ platform_config: {
 }
 layout: {
     base: {
-      thumb_top: { digital: SUAQRE }          # Attack
+      thumb_top: { digital: SQUARE }          # Attack
       index_middle: { digital: CIRCLE }       # Dodge
       middle_middle: { digital: X }           # Jump
       ring_middle: { digital: TRIANGLE }      # Special
