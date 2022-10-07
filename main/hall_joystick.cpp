@@ -2,16 +2,16 @@
 
 #include "hall_joystick.h"
 
-#include <cmath>
 #include <memory>
 
+#include "math.h"
 #include "teensy.h"
 #include "util.h"
 
 namespace hs {
 
 HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
-                           int threshold)
+			   int threshold)
     : out_({.min = min, .max = max}),
       out_neutral_((max - min + 1) / 2 + min),
       threshold_({threshold * -1, threshold}),
@@ -27,11 +27,11 @@ HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
 }
 
 int HallJoystick::Normalize(const Teensy& teensy, double val,
-                            const Bounds& in) {
+			    const Bounds& in) {
   int mapped =
       round(static_cast<double>(val - in.min) /
-                static_cast<double>(in.max - in.min) * (out_.max - out_.min) +
-            out_.min);
+		static_cast<double>(in.max - in.min) * (out_.max - out_.min) +
+	    out_.min);
   return teensy.Constrain(mapped, out_.min, out_.max);
 }
 
