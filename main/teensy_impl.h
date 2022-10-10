@@ -37,6 +37,7 @@ class TeensyImpl : public Teensy {
   inline int SerialAvailable() const override { return Serial.available(); }
 
   inline unsigned long Millis() const override { return millis(); }
+  inline unsigned long Micros() const override { return micros(); }
 
   inline void JoystickUseManualSend() const override {
     Joystick.useManualSend(true);
