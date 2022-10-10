@@ -14,7 +14,7 @@ class MockTeensy : public Teensy {
   MOCK_METHOD(bool, DigitalReadLow, (uint8_t pin), (const override));
   MOCK_METHOD(void, Exit, (int status), (const override));
   MOCK_METHOD(int, Constrain, (int amount, int low, int high),
-              (const override));
+	      (const override));
   MOCK_METHOD(void, SerialWrite, (uint8_t val), (const override));
   MOCK_METHOD(void, SerialWrite, (uint8_t * vals, int size), (const override));
   MOCK_METHOD(int, SerialRead, (), (const override));
@@ -29,15 +29,15 @@ class MockTeensy : public Teensy {
   MOCK_METHOD(void, SetJoystickSliderLeft, (int val), (const override));
   MOCK_METHOD(void, SetJoystickSliderRight, (int val), (const override));
   MOCK_METHOD(void, SetJoystickButton, (uint8_t pin, bool active),
-              (const override));
+	      (const override));
   MOCK_METHOD(void, SetJoystickHat, (int angle), (const override));
   MOCK_METHOD(void, JoystickSendNow, (), (const override));
   MOCK_METHOD(uint8_t, EEPROMRead, (int addr), (const override));
   MOCK_METHOD(void, EEPROMUpdate, (int addr, uint8_t val), (const override));
-  MOCK_METHOD(void, UpdateHallData, (), (override));
-  MOCK_METHOD(float, GetHallX, (), (override));
-  MOCK_METHOD(float, GetHallY, (), (override));
-  MOCK_METHOD(float, GetHallZ, (), (override));
+  MOCK_METHOD(void, HallDataAvailable, (), (const override));
+  MOCK_METHOD(float, GetHallX, (), (const override));
+  MOCK_METHOD(float, GetHallY, (), (const override));
+  MOCK_METHOD(float, GetHallZ, (), (const override));
 };
 
 }  // namespace hs

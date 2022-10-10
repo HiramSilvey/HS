@@ -14,8 +14,7 @@ HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
 			   int threshold)
     : out_({.min = min, .max = max}),
       out_neutral_((max - min + 1) / 2 + min),
-      threshold_({threshold * -1, threshold}),
-      last_fetch_micros_(0) {
+      threshold_({threshold * -1, threshold}) {
   int neutral_x = util::GetIntFromEEPROM(teensy, 0);
   int neutral_y = util::GetIntFromEEPROM(teensy, 4);
   int range = util::GetIntFromEEPROM(teensy, 8);
@@ -48,12 +47,9 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
 }
 
 HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
-  if (teensy.Micros() - last_fetch_micros_ < 330) {
+  if (!teensy.HallDataAvailable()) {
     return curr_coords_;
   }
-
-  teensy.UpdateHallData();
-  last_fetch_micros_ = teensy.Micros();
 
   float z = teensy.GetHallZ();
   int x = teensy.GetHallX() / z * 1000000;

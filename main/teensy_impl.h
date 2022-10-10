@@ -14,6 +14,8 @@ namespace hs {
 class TeensyImpl : public Teensy {
  public:
   TeensyImpl() {
+    attachInterrupt();
+
     sensor_.begin();
     sensor_.setAccessMode(sensor_.MASTERCONTROLLEDMODE);
     sensor_.disableTemp();
@@ -35,7 +37,6 @@ class TeensyImpl : public Teensy {
   inline int SerialAvailable() const override { return Serial.available(); }
 
   inline unsigned long Millis() const override { return millis(); }
-  inline unsigned long Micros() const override { return micros(); }
 
   inline void JoystickUseManualSend() const override {
     Joystick.useManualSend(true);
@@ -65,13 +66,35 @@ class TeensyImpl : public Teensy {
     EEPROM.update(addr, val);
   }
 
-  inline void UpdateHallData() override { sensor_.updateData(); }
-  inline float GetHallX() override { return sensor_.getX(); }
-  inline float GetHallY() override { return sensor_.getY(); }
-  inline float GetHallZ() override { return sensor_.getZ(); }
+  inline bool HallDataAvailable() const override {
+    if (hall_data_available_) {
+      hall_data_available_ = false;
+      return true;
+    }
+    return false;
+  }
+  inline float GetHallX() const override { return x_; }
+  inline float GetHallY() const override { return y_; }
+  inline float GetHallZ() const override { return z_; }
 
  private:
+  inline void UpdateHallData() {
+    detatchInterrupt();
+
+    sensor_.updateData();
+    x_ = sensor_.getX();
+    y_ = sensor_.getY();
+    z_ = sensor_.getZ();
+    hall_data_available_ = true;
+
+    attachInterrupt();
+  }
+
   Tlv493d sensor_;
+  bool hall_data_available_;
+  float x_;
+  float y_;
+  float z_;
 };
 
 }  // namespace hs

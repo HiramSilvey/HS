@@ -16,7 +16,7 @@ using ::testing::Return;
 
 auto CoordinatesEq(const HallJoystick::Coordinates& expected) {
   return AllOf(Field("x", &HallJoystick::Coordinates::x, expected.x),
-               Field("y", &HallJoystick::Coordinates::y, expected.y));
+	       Field("y", &HallJoystick::Coordinates::y, expected.y));
 }
 
 class HallJoystickTest : public ::testing::Test {
@@ -50,7 +50,7 @@ class HallJoystickTest : public ::testing::Test {
     }
 
     joystick_ = std::make_unique<HallJoystick>(teensy_, /*min=*/200,
-                                               /*max=*/1200, /*threshold=*/50);
+					       /*max=*/1200, /*threshold=*/50);
   }
 
   MockTeensy teensy_;
@@ -89,9 +89,7 @@ TEST_F(HallJoystickTest, ResolveDigitalCoord_Neutral) {
 TEST_F(HallJoystickTest, GetCoordinates) {
   {
     InSequence seq;
-    EXPECT_CALL(teensy_, Micros).WillOnce(Return(600));
-    EXPECT_CALL(teensy_, UpdateHallData);
-    EXPECT_CALL(teensy_, Micros);
+    EXPECT_CALL(teensy_, HallDataAvailable).WillOnce(Return(true));
     EXPECT_CALL(teensy_, GetHallZ).WillOnce(Return(1));
     EXPECT_CALL(teensy_, GetHallX).WillOnce(Return(0.00005));
     EXPECT_CALL(teensy_, GetHallY).WillOnce(Return(0.00005));

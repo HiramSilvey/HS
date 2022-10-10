@@ -22,7 +22,7 @@ void WriteIntToSerial(const Teensy& teensy, int val) {
 
 void WriteShortToSerial(const Teensy& teensy, int16_t val) {
   uint8_t bytes[2] = {static_cast<uint8_t>(val >> 8 & 0xFF),
-                      static_cast<uint8_t>(val & 0xFF)};
+		      static_cast<uint8_t>(val & 0xFF)};
   teensy.SerialWrite(bytes, 2);
 }
 
@@ -60,7 +60,9 @@ void CalibrateJoystick(Teensy& teensy) {
 
   uint64_t end_time = teensy.Millis() + 15000;  // 15 seconds from now.
   while (teensy.Millis() < end_time) {
-    teensy.UpdateHallData();
+    if (!teensy.HallDataAvailable()) {
+      continue;
+    }
     float z = teensy.GetHallZ();
     float x = teensy.GetHallX() / z;
     float y = teensy.GetHallY() / z;
@@ -124,26 +126,26 @@ void Configure(std::unique_ptr<Teensy> teensy) {
     if (teensy->SerialAvailable() > 0) {
       uint8_t data = teensy->SerialRead();
       if (data > 4) {
-        teensy->SerialWrite(1);  // Error.
-        continue;
+	teensy->SerialWrite(1);  // Error.
+	continue;
       }
       teensy->SerialWrite(0);  // OK.
       switch (data) {
-        case 0:
-          internal::FetchStoredBounds(*teensy);
-          break;
-        case 1:
-          internal::FetchJoystickCoords(*teensy);
-          break;
-        case 2:
-          internal::CalibrateJoystick(*teensy);
-          break;
-        case 3:
-          internal::SaveCalibration(*teensy);
-          break;
-        case 4:
-          internal::StoreProfiles(*teensy);
-          break;
+	case 0:
+	  internal::FetchStoredBounds(*teensy);
+	  break;
+	case 1:
+	  internal::FetchJoystickCoords(*teensy);
+	  break;
+	case 2:
+	  internal::CalibrateJoystick(*teensy);
+	  break;
+	case 3:
+	  internal::SaveCalibration(*teensy);
+	  break;
+	case 4:
+	  internal::StoreProfiles(*teensy);
+	  break;
       }
     }
   }

@@ -55,9 +55,6 @@ class HallJoystick {
   // A buffer holding the current joystick coordinates that can be used when the
   // sensor data isn't ready yet.
   Coordinates curr_coords_;
-
-  // Time since the last sensor data fetch.
-  unsigned long last_fetch_micros_;
 };
 
 }  // namespace hs

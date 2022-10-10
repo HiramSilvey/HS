@@ -24,7 +24,6 @@ class Teensy {
 
   // Arduino: Time
   virtual unsigned long Millis() const = 0;
-  virtual unsigned long Micros() const = 0;
 
   // Arduino: Joystick
   virtual void JoystickUseManualSend() const = 0;
@@ -43,10 +42,10 @@ class Teensy {
   virtual void EEPROMUpdate(int addr, uint8_t val) const = 0;
 
   // Tlv493d
-  virtual void UpdateHallData() = 0;
-  virtual float GetHallX() = 0;
-  virtual float GetHallY() = 0;
-  virtual float GetHallZ() = 0;
+  virtual bool HallDataAvailable() const = 0;
+  virtual float GetHallX() const = 0;
+  virtual float GetHallY() const = 0;
+  virtual float GetHallZ() const = 0;
 };
 
 }  // namespace hs
