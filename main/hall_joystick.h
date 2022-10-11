@@ -52,9 +52,10 @@ class HallJoystick {
   // Digital joystick activation thresholds (negative, positive).
   const std::pair<int, int> threshold_;
 
-  // A buffer holding the current joystick coordinates that can be used when the
+  // Buffers holding the current joystick coordinates that can be used when the
   // sensor data isn't ready yet.
-  Coordinates curr_coords_;
+  Coordinates analog_coords_;
+  Coordinates digital_coords_;
 };
 
 }  // namespace hs

@@ -22,7 +22,8 @@ HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
   y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
   int16_t angle_ticks = util::GetShortFromEEPROM(teensy, 12);
   angle_ = (M_PI * angle_ticks) / 2000.0;
-  curr_coords_ = {out_neutral_, out_neutral_};
+  analog_coords_ = {out_neutral_, out_neutral_};
+  digital_coords_ = {out_neutral_, out_neutral_};
 }
 
 int HallJoystick::Normalize(const Teensy& teensy, double val,
@@ -46,12 +47,32 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
   return out_neutral_;
 }
 
-HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
-  if (!teensy.HallDataAvailable()) {
-    return curr_coords_;
+  HallJoystick::Coordinates HallJoystick::FilterSnapback(int x, int y, long delta_t) {
+    const double delta_x = x - analog_coords_.x;
+    const double delta_y = y - analog_coords_.y;
+    const double distance = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+    curr_distance_ =
+	(curr_distance_ - distance) * exp(-frequency_cutoff_ * delta_t) +
+	distance;
+
+    const double total_delta = delta_x + delta_y;
+    return {(delta_x / total_delta) * curr_distance_,
+	    (delta_y / total_delta) * curr_distance_};
   }
 
-  float z = teensy.GetHallZ();
+  HallJoystick::Coordinates HallJoystick::CachedCoordinates() {
+
+  }
+
+HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
+  if (!teensy.HallDataAvailable()) {
+    if (threshold_.first < 0) {
+      return digital_coords_;
+    }
+    return analog_coords_;
+  }
+
+  const float z = teensy.GetHallZ();
   int x = teensy.GetHallX() / z * 1000000;
   int y = teensy.GetHallY() / z * 1000000;
 
@@ -63,14 +84,13 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   x = Normalize(teensy, rotated_x, x_in_);
   y = Normalize(teensy, rotated_y, y_in_);
 
+  analog_coords_ = FilterSnapback(x, y);
+
   if (threshold_.first < 0) {
-    // DIGITAL
-    curr_coords_ = {ResolveDigitalCoord(x), ResolveDigitalCoord(y)};
-  } else {
-    // ANALOG
-    curr_coords_ = {x, y};
+    digital_coords_ = {ResolveDigitalCoord(x), ResolveDigitalCoord(y)};
+    return digital_coords_;
   }
-  return curr_coords_;
+  return analog_coords_;
 }
 
 int HallJoystick::get_min() { return out_.min; }
