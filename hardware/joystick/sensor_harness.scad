@@ -12,12 +12,13 @@ inner_depth=4.75;
 cutout_depth=inner_depth-min_thickness;
 cutout_depth_offset=depth-cutout_depth;
 
-board_width=14;
-board_height=38.5;
+board_spacing=0;
+board_width=14+board_spacing;
+board_height=38.5+board_spacing;
 board_width_offset=(width-board_width)/2;
-board_height_edge_to_sensor_center=4.35;
+board_height_edge_to_sensor_center=4.35+(board_spacing/2);
 board_height_offset=(width/2)-board_height_edge_to_sensor_center;
-board_height_edge_to_hole_center=16.1;
+board_height_edge_to_hole_center=16.1+(board_spacing/2);
 board_hole_offset=board_height_offset+board_height_edge_to_hole_center;
 rail_length=6;
 notch_width=(board_width-rail_length)/2;
