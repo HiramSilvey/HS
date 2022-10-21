@@ -1,8 +1,10 @@
+spacing=0.4;
+
 min_thickness=1;
 shaft_height=2;
-shaft_dia=6.85;
-magnet_height=1.6;
-magnet_dia=9.525;
+shaft_dia=6.85+spacing;
+magnet_height=1.59;
+magnet_dia=25.4+spacing;
 outer_dia=magnet_dia+(2*min_thickness);
 
 $fn=360;
