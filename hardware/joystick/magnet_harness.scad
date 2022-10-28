@@ -1,4 +1,4 @@
-spacing=0.4;
+spacing=0.1;  // Calibrated for the Prusa i3 FDM printer.
 
 min_thickness=1;
 shaft_height=2;

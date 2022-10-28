@@ -12,7 +12,7 @@ inner_depth=4.75;
 cutout_depth=inner_depth-min_thickness;
 cutout_depth_offset=depth-cutout_depth;
 
-board_spacing=0;
+board_spacing=0.1;  // Calibrated for the Prusa i3 FDM printer.
 board_width=14+board_spacing;
 board_height=38.5+board_spacing;
 board_width_offset=(width-board_width)/2;
