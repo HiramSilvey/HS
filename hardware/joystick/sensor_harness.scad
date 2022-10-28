@@ -1,3 +1,5 @@
+// All units are in mm.
+
 min_thickness=1.5;
 depth=min_thickness;
 m3_dia=2.5;
