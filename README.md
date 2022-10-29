@@ -24,11 +24,11 @@ To see it in action, check out this [demo](https://www.youtube.com/watch?v=5yk12
 * 11-14 right-hand buttons, depending on the panel style chosen
 * 2 left-hand buttons (recommended), either on the panel top or the back
 * 1 on/off rocker switch, to specify platform (PC or Switch)
-* 1 USB-B port
+* 1 USB-C 2.0 port
 * PJRC Teensy 4.0 microcontroller
 * Contactless joystick via the Infineon TLV493D-A1B6 3D hall effect sensor
 
-## Current Priorities
+## TO DO
 1. Write up and publish build guide
-2. Rewrite configurator UI using [Electron](https://www.electronjs.org/), including both button and joystick customization features
-3. TBD
+2. Rewrite the configurator frontend to support Windows & MacOS (currently Linux only)
+3. Support native GameCube output
