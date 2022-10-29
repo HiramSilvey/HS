@@ -1,8 +1,12 @@
+// All units are in mm.
+
+spacing=0.1;  // Calibrated for the Prusa i3 FDM printer.
+
 min_thickness=1;
 shaft_height=2;
-shaft_dia=6.85;
-magnet_height=1.6;
-magnet_dia=9.525;
+shaft_dia=6.85+spacing;
+magnet_height=3.175;  // 0.125"
+magnet_dia=19.05+spacing;  // 0.750"
 outer_dia=magnet_dia+(2*min_thickness);
 
 $fn=360;
