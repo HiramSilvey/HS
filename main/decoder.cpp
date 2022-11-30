@@ -19,7 +19,7 @@ using Action = hs_profile_Profile_Layer_Action;
 using AnalogAction_ID = hs_profile_Profile_Layer_AnalogAction_ID;
 using DigitalAction = hs_profile_Profile_Layer_DigitalAction;
 
-const int kMinAddr = 14;
+const int kMinAddr = 18;
 const int kMasks[10] = {
     0b1,      0b11,      0b111,      0b1111,      0b11111,
     0b111111, 0b1111111, 0b11111111, 0b111111111, 0b1111111111,
@@ -38,9 +38,9 @@ std::vector<PlatformConfig> DecodeHeader(const Teensy& teensy, int addr) {
       PlatformConfig config;
       config.platform = static_cast<Platform>(platform);
       if (configs.size() % 2 == 0) {
-        config.position = teensy.EEPROMRead(addr) >> 4;
+	config.position = teensy.EEPROMRead(addr) >> 4;
       } else {
-        config.position = teensy.EEPROMRead(addr++) & 0xF;
+	config.position = teensy.EEPROMRead(addr++) & 0xF;
       }
       configs.push_back(config);
     }
@@ -49,7 +49,7 @@ std::vector<PlatformConfig> DecodeHeader(const Teensy& teensy, int addr) {
 }
 
 int FetchData(const Teensy& teensy, int remaining, int& addr,
-              uint8_t& curr_byte, int& unread) {
+	      uint8_t& curr_byte, int& unread) {
   int data = 0;
   while (remaining > 0) {
     if (unread == 0) {
@@ -84,9 +84,9 @@ Layer DecodeLayer(const Teensy& teensy, int& addr) {
     int button_id = FetchData(teensy, kLenActionID, addr, curr_byte, unread);
     if (button_id > _hs_profile_Profile_Layer_DigitalAction_MAX) {
       action->action_type.analog.id = static_cast<AnalogAction_ID>(
-          button_id - _hs_profile_Profile_Layer_DigitalAction_MAX);
+	  button_id - _hs_profile_Profile_Layer_DigitalAction_MAX);
       int button_value =
-          FetchData(teensy, kLenAnalogActionValue, addr, curr_byte, unread);
+	  FetchData(teensy, kLenAnalogActionValue, addr, curr_byte, unread);
       action->action_type.analog.value = button_value;
       action->which_action_type = hs_profile_Profile_Layer_Action_analog_tag;
     } else {
@@ -122,17 +122,17 @@ Layout Decode(const Teensy& teensy, Platform platform, int position) {
 
   while (curr_addr < max_addr) {
     std::vector<PlatformConfig> configs =
-        internal::DecodeHeader(teensy, curr_addr);
+	internal::DecodeHeader(teensy, curr_addr);
     // Advance past the header.
     curr_addr += configs.size() / 2 + configs.size() % 2 + 1;
     if ([&] {
-          for (const auto& config : configs) {
-            if (config.platform == platform && config.position == position) {
-              return true;
-            }
-          }
-          return false;
-        }()) {
+	  for (const auto& config : configs) {
+	    if (config.platform == platform && config.position == position) {
+	      return true;
+	    }
+	  }
+	  return false;
+	}()) {
       break;
     }
     // Advance to the header of the next profile.

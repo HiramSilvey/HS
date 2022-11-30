@@ -19,10 +19,11 @@ HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
   int neutral_x = util::GetIntFromEEPROM(teensy, 0);
   int neutral_y = util::GetIntFromEEPROM(teensy, 4);
   int range = util::GetIntFromEEPROM(teensy, 8);
-  x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
-  y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
-  int16_t angle_ticks = util::GetShortFromEEPROM(teensy, 12);
-  angle_ = (M_PI * angle_ticks) / 2000.0;
+  set_x_in(neutral_x, range);
+  set_y_in(neutral_y, range);
+  set_xy_angle(util::GetShortFromEEPROM(teensy, 12));
+  set_xz_angle(util::GetShortFromEEPROM(teensy, 14));
+  set_yz_angle(util::GetShortFromEEPROM(teensy, 16));
   curr_coords_ = {out_neutral_, out_neutral_};
 }
 
@@ -55,17 +56,27 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   teensy.UpdateHallData();
   last_fetch_micros_ = teensy.Micros();
 
-  float z = teensy.GetHallZ();
-  int x = teensy.GetHallX() / z * 1000000;
-  int y = teensy.GetHallY() / z * 1000000;
+  float raw_x = teensy.GetHallX();
+  float raw_y = teensy.GetHallY();
+  float raw_z = teensy.GetHallZ();
 
-  // Rotate the coordinates according to the configuration angle. This is a
-  // no-op if the angle is 0.
-  double rotated_x = x * cos(angle_) + y * sin(angle_);
-  double rotated_y = -x * sin(angle_) + y * cos(angle_);
+  // Apply rotations piecewise. No-op if the angle is 0.
+  // 1. XY plane rotation.
+  double rotated_x = raw_x * cos(xy_angle_) + raw_y * sin(xy_angle_);
+  double rotated_y = -raw_x * sin(xy_angle_) + raw_y * cos(xy_angle_);
+  // 2. XZ plane rotation.
+  rotated_x = rotated_x * cos(xz_angle_) - raw_z * sin(xz_angle_);
+  double rotated_z = rotated_x * sin(xz_angle_) + raw_z * cos(xz_angle_);
+  // 3. YZ axis rotation.
+  rotated_y = rotated_y * cos(yz_angle_) + rotated_z * sin(yz_angle_);
+  rotated_z = -rotated_y * sin(yz_angle_) + rotated_z * cos(yz_angle_);
 
-  x = Normalize(teensy, rotated_x, x_in_);
-  y = Normalize(teensy, rotated_y, y_in_);
+  // Flatten points onto the XY plane.
+  int x = rotated_x / rotated_z * 1000000;
+  int y = rotated_y / rotated_z * 1000000;
+
+  x = Normalize(teensy, x, x_in_);
+  y = Normalize(teensy, y, y_in_);
 
   if (threshold_.first < 0) {
     // DIGITAL
@@ -76,11 +87,5 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   }
   return curr_coords_;
 }
-
-int HallJoystick::get_min() { return out_.min; }
-
-int HallJoystick::get_max() { return out_.max; }
-
-int HallJoystick::get_neutral() { return out_neutral_; }
 
 }  // namespace hs
