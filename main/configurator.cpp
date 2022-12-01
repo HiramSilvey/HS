@@ -42,43 +42,38 @@ void WriteShortToSerial(const Teensy& teensy, int16_t val) {
 
 namespace internal {
 
-void FetchStoredBounds(const Teensy& teensy) {
-  int center_x = util::GetIntFromEEPROM(teensy, 0);
-  int center_y = util::GetIntFromEEPROM(teensy, 4);
-  int range = util::GetIntFromEEPROM(teensy, 8);
-  int16_t xy_angle_ticks = util::GetShortFromEEPROM(teensy, 12);
-  int16_t xz_angle_ticks = util::GetShortFromEEPROM(teensy, 14);
-  int16_t yz_angle_ticks = util::GetShortFromEEPROM(teensy, 16);
+const double kTickAngle = HallJoystick::GetAngleFromTicks(/*ticks=*/1);
 
-  WriteIntToSerial(teensy, center_x);
-  WriteIntToSerial(teensy, center_y);
-  WriteIntToSerial(teensy, range);
-  WriteShortToSerial(teensy, xy_angle_ticks);
-  WriteShortToSerial(teensy, xz_angle_ticks);
-  WriteShortToSerial(teensy, yz_angle_ticks);
+void SetXYIn(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  int range = ReadIntFromSerial(teensy);
+  joystick->set_x_in(ReadIntFromSerial(teensy), range);
+  joystick->set_y_in(ReadIntFromSerial(teensy), range);
+  teensy.SerialWrite(0);  // Done.
+}
+
+void IncXYAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_xy_angle(joystick->xy_angle() + kTickAngle);
+  teensy.SerialWrite(0);  // Done.
+}
+
+void SetXZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_xz_angle(ReadShortFromSerial(teensy));
+  teensy.SerialWrite(0);  // Done.
+}
+
+void SetYZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_yz_angle(ReadShortFromSerial(teensy));
+  teensy.SerialWrite(0);  // Done.
 }
 
 void FetchJoystickCoords(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
-  int neutral_x = ReadIntFromSerial(teensy);
-  int neutral_y = ReadIntFromSerial(teensy);
-  int range = ReadIntFromSerial(teensy);
-  uint16_t xy_angle_ticks = ReadShortFromSerial(teensy);
-  uint16_t xz_angle_ticks = ReadShortFromSerial(teensy);
-  uint16_t yz_angle_ticks = ReadShortFromSerial(teensy);
-
-  joystick->set_x_in(neutral_x, range);
-  joystick->set_y_in(neutral_y, range);
-  joystick->set_xy_angle(xy_angle_ticks);
-  joystick->set_xz_angle(xz_angle_ticks);
-  joystick->set_yz_angle(yz_angle_ticks);
-
   HallJoystick::Coordinates coords = joystick->GetCoordinates(teensy);
 
   WriteIntToSerial(teensy, coords.x);
   WriteIntToSerial(teensy, coords.y);
 }
 
-void CalibrateJoystick(Teensy& teensy) {
+void CalibrateJoystick(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
   float min_x = 0;
   float max_x = 0;
   float min_y = 0;
@@ -106,13 +101,12 @@ void CalibrateJoystick(Teensy& teensy) {
   float range_x = (max_x - min_x) / 2.0;
   float range_y = (max_y - min_y) / 2.0;
 
-  int center_x = (min_x + range_x) * 1000000;
-  int center_y = (min_y + range_y) * 1000000;
+  int neutral_x = (min_x + range_x) * 1000000;
+  int neutral_y = (min_y + range_y) * 1000000;
   int range = range_x >= range_y ? range_x * 1000000 : range_y * 1000000;
 
-  WriteIntToSerial(teensy, center_x);
-  WriteIntToSerial(teensy, center_y);
-  WriteIntToSerial(teensy, range);
+  joystick->set_x_in(neutral_x, range);
+  joystick->set_y_in(neutral_y, range);
 }
 
 void SaveCalibration(const Teensy& teensy) {
@@ -157,19 +151,28 @@ void Configure(std::unique_ptr<Teensy> teensy) {
       teensy->SerialWrite(0);  // OK.
       switch (data) {
 	case 0:
-	  internal::FetchStoredBounds(*teensy);
-	  break;
-	case 1:
 	  internal::FetchJoystickCoords(*teensy, joystick);
 	  break;
-	case 2:
-	  internal::CalibrateJoystick(*teensy);
+	case 1:
+	  internal::CalibrateJoystick(*teensy, joystick);
 	  break;
-	case 3:
+	case 2:
 	  internal::SaveCalibration(*teensy);
 	  break;
-	case 4:
+	case 3:
 	  internal::StoreProfiles(*teensy);
+	  break;
+	case 4:
+	  internal::SetXYIn(*teensy, joystick);
+	  break;
+	case 5:
+	  internal::SetXYAngle(*teensy, joystick);
+	  break;
+	case 6:
+	  internal::SetXZAngle(*teensy, joystick);
+	  break;
+	case 7:
+	  internal::SetYZAngle(*teensy, joystick);
 	  break;
       }
     }

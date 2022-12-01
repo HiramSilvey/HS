@@ -26,9 +26,16 @@ class HallJoystick {
     int max;
   };
 
-  inline double GetAngleFromTicks(uint16_t ticks) {
+  static inline double GetAngleFromTicks(uint16_t ticks) {
     return (M_PI * ticks) / 2000.0;
   }
+
+  inline double xy_angle() { return xy_angle_; }
+  inline double xz_angle() { return xz_angle_; }
+  inline double yz_angle() { return yz_angle_; }
+  inline int out_min() { return out_.min; }
+  inline int out_max() { return out_.max; }
+  inline int out_neutral() { return out_neutral_; }
 
   inline void set_x_in(int neutral_x, int range) {
     x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
@@ -49,10 +56,6 @@ class HallJoystick {
   inline void set_max(int max) { out_.max = max; }
   inline void set_neutral(int neutral) { out_neutral_ = neutral; }
   inline void set_threshold(std::pair<int, int> threshold) { threshold_ = threshold; }
-
-  inline int get_min() { return out_.min; }
-  inline int get_max() { return out_.max; }
-  inline int get_neutral() { return out_neutral_; }
 
   // Map the provided int value from the specified input range to the global
   // output range.
