@@ -57,10 +57,10 @@ class HallJoystickTest : public ::testing::Test {
   std::unique_ptr<HallJoystick> joystick_;
 };
 
-TEST_F(HallJoystickTest, GetMin) { EXPECT_EQ(joystick_->get_min(), 200); }
-TEST_F(HallJoystickTest, GetMax) { EXPECT_EQ(joystick_->get_max(), 1200); }
+TEST_F(HallJoystickTest, GetMin) { EXPECT_EQ(joystick_->out_min(), 200); }
+TEST_F(HallJoystickTest, GetMax) { EXPECT_EQ(joystick_->out_max(), 1200); }
 TEST_F(HallJoystickTest, GetNeutral) {
-  EXPECT_EQ(joystick_->get_neutral(), 700);
+  EXPECT_EQ(joystick_->out_neutral(), 700);
 }
 
 TEST_F(HallJoystickTest, Normalize) {

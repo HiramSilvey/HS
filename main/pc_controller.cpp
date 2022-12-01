@@ -79,28 +79,28 @@ PCButtonPinMapping PCController::GetButtonPinMapping(const Layer& layer) {
       } else {
         switch (digital) {
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_UP:
-            mapping.z_y.push_back({joystick_->get_max(), pin});
+            mapping.z_y.push_back({joystick_->out_max(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN:
-            mapping.z_y.push_back({joystick_->get_min(), pin});
+            mapping.z_y.push_back({joystick_->out_min(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT:
-            mapping.z_x.push_back({joystick_->get_min(), pin});
+            mapping.z_x.push_back({joystick_->out_min(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT:
-            mapping.z_x.push_back({joystick_->get_max(), pin});
+            mapping.z_x.push_back({joystick_->out_max(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MIN:
-            mapping.slider_left.push_back({joystick_->get_min(), pin});
+            mapping.slider_left.push_back({joystick_->out_min(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MAX:
-            mapping.slider_left.push_back({joystick_->get_max(), pin});
+            mapping.slider_left.push_back({joystick_->out_max(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MIN:
-            mapping.slider_right.push_back({joystick_->get_min(), pin});
+            mapping.slider_right.push_back({joystick_->out_min(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MAX:
-            mapping.slider_right.push_back({joystick_->get_max(), pin});
+            mapping.slider_right.push_back({joystick_->out_max(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_D_PAD_UP:
             mapping.hat_up.push_back(pin);
@@ -187,13 +187,13 @@ int PCController::GetDPadAngle(const PCButtonPinMapping& mapping) {
 
 void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
   teensy_->SetJoystickZ(
-      ResolveSOCD(*teensy_, mapping.z_y, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.z_y, joystick_->out_neutral()));
   teensy_->SetJoystickZRotate(
-      ResolveSOCD(*teensy_, mapping.z_x, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.z_x, joystick_->out_neutral()));
   teensy_->SetJoystickSliderLeft(
-      ResolveSOCD(*teensy_, mapping.slider_left, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.slider_left, joystick_->out_neutral()));
   teensy_->SetJoystickSliderRight(
-      ResolveSOCD(*teensy_, mapping.slider_right, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.slider_right, joystick_->out_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     bool active = false;
@@ -212,7 +212,7 @@ void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
 void PCController::Loop() {
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(*teensy_);
   teensy_->SetJoystickX(coords.x);
-  teensy_->SetJoystickY(joystick_->get_max() - coords.y);
+  teensy_->SetJoystickY(joystick_->out_max() - coords.y);
 
   bool mod_active = false;
   for (const auto& pin : base_mapping_.mod) {

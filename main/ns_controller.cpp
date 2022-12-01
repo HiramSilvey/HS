@@ -83,16 +83,16 @@ NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
       } else {
         switch (digital) {
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_UP:
-            mapping.z_y.push_back({joystick_->get_max(), pin});
+            mapping.z_y.push_back({joystick_->out_max(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN:
-            mapping.z_y.push_back({joystick_->get_min(), pin});
+            mapping.z_y.push_back({joystick_->out_min(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT:
-            mapping.z_x.push_back({joystick_->get_min(), pin});
+            mapping.z_x.push_back({joystick_->out_min(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT:
-            mapping.z_x.push_back({joystick_->get_max(), pin});
+            mapping.z_x.push_back({joystick_->out_max(), pin});
             break;
           case hs_profile_Profile_Layer_DigitalAction_D_PAD_UP:
             mapping.dpad_up.push_back(pin);
@@ -173,10 +173,10 @@ int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
 
 void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
   nspad_->SetRightYAxis(
-      joystick_->get_max() -
-      ResolveSOCD(*teensy_, mapping.z_y, joystick_->get_neutral()));
+      joystick_->out_max() -
+      ResolveSOCD(*teensy_, mapping.z_y, joystick_->out_neutral()));
   nspad_->SetRightXAxis(
-      ResolveSOCD(*teensy_, mapping.z_x, joystick_->get_neutral()));
+      ResolveSOCD(*teensy_, mapping.z_x, joystick_->out_neutral()));
 
   for (const auto& element : mapping.button_id_to_pins) {
     for (const auto& pin : element.second) {
@@ -194,7 +194,7 @@ void NSController::Loop() {
   nspad_->ReleaseAll();
 
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(*teensy_);
-  nspad_->SetLeftYAxis(joystick_->get_max() - coords.y);
+  nspad_->SetLeftYAxis(joystick_->out_max() - coords.y);
   nspad_->SetLeftXAxis(coords.x);
 
   bool mod_active = false;
