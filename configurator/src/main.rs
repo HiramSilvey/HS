@@ -29,9 +29,12 @@ enum Command {
     SaveCalibration,
     StoreProfiles,
     SetXYIn,
-    SetXYAngle,
-    SetXZAngle,
-    SetYZAngle,
+    IncXYAngle,
+    DecXYAngle,
+    IncXZAngle,
+    DecXZAngle,
+    IncYZAngle,
+    DecYZAngle,
 }
 
 #[derive(Clone, Copy)]

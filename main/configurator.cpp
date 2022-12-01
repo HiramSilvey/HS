@@ -56,13 +56,28 @@ void IncXYAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
   teensy.SerialWrite(0);  // Done.
 }
 
-void SetXZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
-  joystick->set_xz_angle(ReadShortFromSerial(teensy));
+void DecXYAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_xy_angle(joystick->xy_angle() - kTickAngle);
   teensy.SerialWrite(0);  // Done.
 }
 
-void SetYZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
-  joystick->set_yz_angle(ReadShortFromSerial(teensy));
+void IncXZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_xz_angle(joystick->xz_angle() + kTickAngle);
+  teensy.SerialWrite(0);  // Done.
+}
+
+void DecXZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_xz_angle(joystick->xz_angle() - kTickAngle);
+  teensy.SerialWrite(0);  // Done.
+}
+
+void IncYZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_yz_angle(joystick->yz_angle() + kTickAngle);
+  teensy.SerialWrite(0);  // Done.
+}
+
+void DecYZAngle(Teensy& teensy, std::unique_ptr<HallJoystick>& joystick) {
+  joystick->set_yz_angle(joystick->yz_angle() - kTickAngle);
   teensy.SerialWrite(0);  // Done.
 }
 
@@ -166,13 +181,22 @@ void Configure(std::unique_ptr<Teensy> teensy) {
 	  internal::SetXYIn(*teensy, joystick);
 	  break;
 	case 5:
-	  internal::SetXYAngle(*teensy, joystick);
+	  internal::IncXYAngle(*teensy, joystick);
 	  break;
 	case 6:
-	  internal::SetXZAngle(*teensy, joystick);
+	  internal::DecXYAngle(*teensy, joystick);
 	  break;
 	case 7:
-	  internal::SetYZAngle(*teensy, joystick);
+	  internal::IncXZAngle(*teensy, joystick);
+	  break;
+	case 8:
+	  internal::DecXZAngle(*teensy, joystick);
+	  break;
+	case 9:
+	  internal::IncYZAngle(*teensy, joystick);
+	  break;
+	case 10:
+	  internal::DecYZAngle(*teensy, joystick);
 	  break;
       }
     }
