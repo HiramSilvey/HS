@@ -10,6 +10,12 @@
 namespace hs {
 namespace util {
 
+// Write the 2 bytes from a short to EEPROM.
+void WriteShortToEEPROM(const Teensy& teensy, int address, uint16_t val);
+
+// Write the 4 bytes from an int to EEPROM.
+void WriteIntToEEPROM(const Teensy& teensy, int address, int val);
+
 // Read 2 bytes from EEPROM and return it as a single short.
 int16_t GetShortFromEEPROM(const Teensy& teensy, int address);
 

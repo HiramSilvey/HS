@@ -5,23 +5,40 @@
 
 #include <memory>
 
+#include "hall_joystick.h"
 #include "teensy.h"
 
 namespace hs {
-namespace configurator {
-namespace internal {
 
-void FetchStoredBounds(const Teensy& teensy);
-void FetchJoystickCoords(Teensy& teensy);
-void CalibrateJoystick(Teensy& teensy);
-void SaveCalibration(const Teensy& teensy);
-void StoreProfiles(const Teensy& teensy);
+class Configurator {
+ public:
+  explicit Configurator(std::unique_ptr<Teensy> teensy);
+  void Loop();
 
-}  // namespace internal
+ private:
+  void FetchJoystickCoords();
+  void CalibrateJoystick();
+  void SaveCalibration();
+  void StoreProfiles();
+  void IncXYAngle();
+  void DecXYAngle();
+  void IncXZAngle();
+  void DecXZAngle();
+  void IncYZAngle();
+  void DecYZAngle();
+  void WriteOk();
 
-void Configure(std::unique_ptr<Teensy> teensy);
+  std::unique_ptr<Teensy> teensy_;
+  std::unique_ptr<HallJoystick> joystick_;
+  int neutral_x_ = 0;
+  int neutral_y_ = 0;
+  int range_ = 0;
+  int range_tick_ = 0;
+  uint16_t xy_angle_ticks_ = 0;
+  uint16_t xz_angle_ticks_ = 0;
+  uint16_t yz_angle_ticks_ = 0;
+};
 
-}  // namespace configurator
 }  // namespace hs
 
 #endif  // CONFIGURATOR_H_

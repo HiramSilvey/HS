@@ -27,9 +27,11 @@ class HallJoystick {
   };
 
   static inline double GetAngleFromTicks(uint16_t ticks) {
-    return (M_PI * ticks) / 2000.0;
+    return (M_PI * ticks) / 1024.0;
   }
 
+  inline Bounds x_in() { return x_in_; }
+  inline Bounds y_in() { return y_in_; }
   inline double xy_angle() { return xy_angle_; }
   inline double xz_angle() { return xz_angle_; }
   inline double yz_angle() { return yz_angle_; }
