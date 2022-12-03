@@ -16,14 +16,14 @@ HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
       out_neutral_((max - min + 1) / 2 + min),
       threshold_({threshold * -1, threshold}),
       last_fetch_micros_(0) {
-  int neutral_x = util::GetIntFromEEPROM(teensy, 0);
-  int neutral_y = util::GetIntFromEEPROM(teensy, 4);
-  int range = util::GetIntFromEEPROM(teensy, 8);
+  int neutral_x = util::ReadIntFromEEPROM(teensy, 0);
+  int neutral_y = util::ReadIntFromEEPROM(teensy, 4);
+  int range = util::ReadIntFromEEPROM(teensy, 8);
   set_x_in(neutral_x, range);
   set_y_in(neutral_y, range);
-  set_xy_angle(util::GetShortFromEEPROM(teensy, 12));
-  set_xz_angle(util::GetShortFromEEPROM(teensy, 14));
-  set_yz_angle(util::GetShortFromEEPROM(teensy, 16));
+  set_xy_angle(util::ReadShortFromEEPROM(teensy, 12));
+  set_xz_angle(util::ReadShortFromEEPROM(teensy, 14));
+  set_yz_angle(util::ReadShortFromEEPROM(teensy, 16));
   curr_coords_ = {out_neutral_, out_neutral_};
 }
 

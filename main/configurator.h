@@ -16,17 +16,19 @@ class Configurator {
   void Loop();
 
  private:
-  void FetchJoystickCoords();
-  void CalibrateJoystick();
-  void SaveCalibration();
-  void StoreProfiles();
+  void IncRange();
+  void DecRange();
   void IncXYAngle();
   void DecXYAngle();
   void IncXZAngle();
   void DecXZAngle();
   void IncYZAngle();
   void DecYZAngle();
-  void WriteOk();
+
+  void FetchJoystickCoords();
+  void CalibrateJoystick();
+  void SaveCalibration();
+  void StoreProfiles();
 
   std::unique_ptr<Teensy> teensy_;
   std::unique_ptr<HallJoystick> joystick_;
