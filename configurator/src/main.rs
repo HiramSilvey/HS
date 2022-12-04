@@ -21,6 +21,7 @@ const MAX_EEPROM_BYTES: usize = 1064;
 const JOYSTICK_CURSOR_RADIUS: f64 = 3.;
 const JOYSTICK_BOX_LENGTH: f64 = 400.;
 const SET_CURSOR: Selector<Point> = Selector::new("hs.set-cursor");
+const ZERO_STATE: Selector<()> = Selector::new("hs.zero-state");
 
 #[derive(Clone, Copy)]
 enum Command {
@@ -28,7 +29,12 @@ enum Command {
     CalibrateJoystick,
     SaveCalibration,
     StoreProfiles,
-    SetXYIn,
+    IncNeutralX,
+    DecNeutralX,
+    IncNeutralY,
+    DecNeutralY,
+    IncRange,
+    DecRange,
     IncXYAngle,
     DecXYAngle,
     IncXZAngle,
@@ -38,31 +44,92 @@ enum Command {
 }
 
 #[derive(Clone, Copy)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-    In,
-    Out,
+enum Action {
     Inc,
     Dec,
+}
+
+#[derive(Clone, Copy)]
+enum Field {
+    NeutralX,
+    NeutralY,
+    Range,
+    XYAngle,
+    XZAngle,
+    YZAngle,
 }
 
 #[derive(Clone, Data, Lens)]
 struct JoystickState {
     cursor: Point,
+    neutral_x: i32,
+    neutral_y: i32,
+    range: i32,
+    xy_angle: i32,
+    xz_angle: i32,
+    yz_angle: i32,
 }
 
 impl JoystickState {
     pub fn new() -> JoystickState {
         JoystickState {
             cursor: Point::new(0.0, 0.0),
+            neutral_x: 0,
+            neutral_y: 0,
+            range: 0,
+            xy_angle: 0,
+            xz_angle: 0,
+            yz_angle: 0,
         }
+    }
+
+    fn zero_state(&mut self) {
+        self.neutral_x = 0;
+        self.neutral_y = 0;
+        self.range = 0;
+        self.xy_angle = 0;
+        self.xz_angle = 0;
+        self.yz_angle = 0;
     }
 
     fn set_cursor(&mut self, point: &Point) {
         self.cursor = *point;
+    }
+    fn inc_neutral_x(&mut self) {
+        self.neutral_x += 1;
+    }
+    fn dec_neutral_x(&mut self) {
+        self.neutral_x -= 1;
+    }
+    fn inc_neutral_y(&mut self) {
+        self.neutral_y += 1;
+    }
+    fn dec_neutral_y(&mut self) {
+        self.neutral_y -= 1;
+    }
+    fn inc_range(&mut self) {
+        self.range += 1;
+    }
+    fn dec_range(&mut self) {
+        self.range -= 1;
+    }
+    fn inc_xy_angle(&mut self) {
+        self.xy_angle += 1;
+    }
+    fn dec_xy_angle(&mut self) {
+        self.xy_angle -= 1;
+    }
+    fn inc_xz_angle(&mut self) {
+        self.xz_angle += 1;
+    }
+    fn dec_xz_angle(&mut self) {
+        self.xz_angle -= 1;
+    }
+    fn inc_yz_angle(&mut self) {
+        self.yz_angle += 1;
+    }
+    fn dec_yz_angle(&mut self) {
+        self.yz_angle -= 1;
     }
 }
 
@@ -82,45 +149,113 @@ fn get_button_painter() -> Painter<JoystickState> {
     })
 }
 
-fn edit_threshold_button(
-    direction: Direction,
-    cmd_sender: Sender<Command>,
-    data_sender: Sender<f64>,
-    receiver: Receiver<f64>,
-) -> impl Widget<JoystickState> {
-    let (symbol, val) = match direction {
-        Direction::In => ("D-", -1.0),
-        Direction::Out => ("D+", 1.0),
-        _ => ("", 0.0),
+fn edit_button(action: Action, field: Field) -> impl Widget<JoystickState> {
+    let symbol = match action {
+        Action::Inc => "+",
+        Action::Dec => "-",
     };
-
     Label::new(format!("{}", symbol))
         .with_text_size(14.0)
         .center()
         .background(get_button_painter())
         .expand()
-        .on_click(move |_ctx, data: &mut JoystickState, _env| {
-            match cmd_sender.send(Command::SetThreshold) {
-                Ok(()) => println!("Setting digital threshold..."),
-                Err(e) => {
-                    println!("Failed issuing 'set threshold' command: {}", e);
-                    return;
+        .on_click(move |_ctx, data: &mut JoystickState, _env| match field {
+            Field::NeutralX => match action {
+                Action::Inc => {
+                    if let Err(e) = cmd_sender.send(Command::IncNeutralX) {
+                        println!("Failed issuing 'increment neutral x' command: {}", e);
+                        return;
+                    }
+                    data.inc_neutral_x();
                 }
-            }
-            match data_sender.send(data.digital_threshold) {
-                Ok(()) => println!("Sent digital threshold {}.", data.digital_threshold),
-                Err(e) => {
-                    println!(
-                        "Failed to send digital threshold {}: {}",
-                        data.digital_threshold, e
-                    );
-                    return;
+                Action::Dec => {
+                    if let Err(e) = cmd_sender.send(Command::DecNeutralX) {
+                        println!("Failed issuing 'decrement neutral x' command: {}", e);
+                        return;
+                    }
+                    data.dec_neutral_x();
                 }
-            }
-            if let Err(e) = receiver.recv() {
-                println!("Failed to update threshold: {}", e);
-            };
-            data.digital_threshold += val
+            },
+            Field::NeutralY => match action {
+                Action::Inc => {
+                    if let Err(e) = cmd_sender.send(Command::IncNeutralY) {
+                        println!("Failed issuing 'increment neutral y' command: {}", e);
+                        return;
+                    }
+                    data.inc_neutral_y();
+                }
+                Action::Dec => {
+                    if let Err(e) = cmd_sender.send(Command::DecNeutralY) {
+                        println!("Failed issuing 'decrement neutral y' command: {}", e);
+                        return;
+                    }
+                    data.dec_neutral_y();
+                }
+            },
+            Field::Range => match action {
+                Action::Inc => {
+                    if let Err(e) = cmd_sender.send(Command::IncRange) {
+                        println!("Failed issuing 'increment range' command: {}", e);
+                        return;
+                    }
+                    data.inc_range();
+                }
+                Action::Dec => {
+                    if let Err(e) = cmd_sender.send(Command::DecRange) {
+                        println!("Failed issuing 'decrement range' command: {}", e);
+                        return;
+                    }
+                    data.dec_range();
+                }
+            },
+            Field::XYAngle => match action {
+                Action::Inc => {
+                    if let Err(e) = cmd_sender.send(Command::IncXYAngle) {
+                        println!("Failed issuing 'increment xy angle' command: {}", e);
+                        return;
+                    }
+                    data.inc_xy_angle();
+                }
+                Action::Dec => {
+                    if let Err(e) = cmd_sender.send(Command::DecXYAngle) {
+                        println!("Failed issuing 'decrement xy angle' command: {}", e);
+                        return;
+                    }
+                    data.dec_xy_angle();
+                }
+            },
+            Field::XZAngle => match action {
+                Action::Inc => {
+                    if let Err(e) = cmd_sender.send(Command::IncXZAngle) {
+                        println!("Failed issuing 'increment xz angle' command: {}", e);
+                        return;
+                    }
+                    data.inc_xz_angle();
+                }
+                Action::Dec => {
+                    if let Err(e) = cmd_sender.send(Command::DecXZAngle) {
+                        println!("Failed issuing 'decrement xz angle' command: {}", e);
+                        return;
+                    }
+                    data.dec_xz_angle();
+                }
+            },
+            Field::YZAngle => match action {
+                Action::Inc => {
+                    if let Err(e) = cmd_sender.send(Command::IncYZAngle) {
+                        println!("Failed issuing 'increment yz angle' command: {}", e);
+                        return;
+                    }
+                    data.inc_yz_angle();
+                }
+                Action::Dec => {
+                    if let Err(e) = cmd_sender.send(Command::DecYZAngle) {
+                        println!("Failed issuing 'decrement yz angle' command: {}", e);
+                        return;
+                    }
+                    data.dec_yz_angle();
+                }
+            },
         })
 }
 
@@ -134,6 +269,10 @@ impl Widget<JoystickState> for JoystickState {
             Event::Command(cmd) if cmd.is(SET_CURSOR) => {
                 let point = cmd.get_unchecked(SET_CURSOR).clone();
                 data.set_cursor(&point);
+            }
+            _ => (),
+            Event::Command(cmd) if cmd.is(ZERO_STATE) => {
+                data.zero_state();
             }
             _ => (),
         }
@@ -259,7 +398,7 @@ fn wait_for_data(hs: &mut Box<dyn SerialPort>, buf: &mut Vec<u8>) -> Result<()> 
     Ok(())
 }
 
-fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
+fn wait_for_ok(hs: &mut Box<dyn SerialPort>) -> Result<()> {
     let mut buf = vec![0u8; 1];
     wait_for_data(hs, &mut buf)?;
     if buf[0] != 0 {
@@ -268,41 +407,17 @@ fn wait_for_ack(hs: &mut Box<dyn SerialPort>) -> Result<()> {
     Ok(())
 }
 
-fn bytes_to_short(bytes: &Vec<u8>) -> Result<i16> {
-    if bytes.len() != 2 {
-        return Err(anyhow!(
-            "Failed converting bytes to short. Expected 2 bytes, found {} bytes.",
-            bytes.len()
-        ));
-    }
-    Ok(((bytes[0] as i16) << 8) | bytes[1] as i16)
-}
-
-fn bytes_to_float(bytes: &Vec<u8>) -> Result<f64> {
+fn bytes_to_i32(bytes: &Vec<u8>) -> Result<i32> {
     if bytes.len() != 4 {
         return Err(anyhow!(
-            "Failed converting bytes to float. Expected 4 bytes, found {} bytes.",
+            "Failed converting bytes to i32. Expected 4 bytes, found {} bytes.",
             bytes.len()
         ));
     }
-    Ok((((bytes[0] as i32) << 24)
+    Ok(((bytes[0] as i32) << 24)
         | ((bytes[1] as i32) << 16)
         | ((bytes[2] as i32) << 8)
-        | bytes[3] as i32) as f64)
-}
-
-fn short_to_bytes(data: i16) -> Vec<u8> {
-    vec![(data >> 8 & 0xFF) as u8, (data & 0xFF) as u8]
-}
-
-fn float_to_bytes(data: f64) -> Vec<u8> {
-    let i32_data = data as i32;
-    vec![
-        (i32_data >> 24) as u8,
-        (i32_data >> 16 & 0xFF) as u8,
-        (i32_data >> 8 & 0xFF) as u8,
-        (i32_data & 0xFF) as u8,
-    ]
+        | bytes[3] as i32)
 }
 
 fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
@@ -313,50 +428,17 @@ fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink
 
     event_sink.submit_command(
         SET_CURSOR,
-        Point::new(bytes_to_float(&x)?, bytes_to_float(&y)?),
+        Point::new(bytes_to_i32(&x)?, bytes_to_i32(&y)?),
         Target::Auto,
     )?;
 
     Ok(())
 }
 
-fn calibrate_joystick(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<()> {
-    let mut center_x_buf = vec![0u8; 4];
-    let mut center_y_buf = vec![0u8; 4];
-    let mut range_buf = vec![0u8; 4];
-    wait_for_data(hs, &mut center_x_buf)?;
-    wait_for_data(hs, &mut center_y_buf)?;
-    wait_for_data(hs, &mut range_buf)?;
+fn calibrate_joystick(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
+    wait_for_ok(hs)?;
+    event_sink.submit_command(ZERO_STATE, Target::Auto)?;
 
-    sender.send(bytes_to_float(&center_x_buf)?)?;
-    sender.send(bytes_to_float(&center_y_buf)?)?;
-    sender.send(bytes_to_float(&range_buf)?)?;
-
-    Ok(())
-}
-
-fn save_calibration(
-    hs: &mut Box<dyn SerialPort>,
-    sender: &Sender<f64>,
-    receiver: &Receiver<f64>,
-) -> Result<()> {
-    let center_x = receiver.recv()?;
-    let center_y = receiver.recv()?;
-    let range = receiver.recv()?;
-    let xy_angle_ticks = receiver.recv()?;
-    let xz_angle_ticks = receiver.recv()?;
-    let yz_angle_ticks = receiver.recv()?;
-
-    hs.write_all(&float_to_bytes(center_x))?;
-    hs.write_all(&float_to_bytes(center_y))?;
-    hs.write_all(&float_to_bytes(range))?;
-    hs.write_all(&short_to_bytes(xy_angle_ticks as i16))?;
-    hs.write_all(&short_to_bytes(xz_angle_ticks as i16))?;
-    hs.write_all(&short_to_bytes(yz_angle_ticks as i16))?;
-
-    wait_for_ack(hs)?;
-
-    sender.send(0.0)?;
     Ok(())
 }
 
@@ -386,101 +468,113 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
     let size = encoded.len();
     hs.write_all(&[(size >> 8) as u8, (size & 0xFF) as u8])?;
     hs.write_all(&encoded)?;
-    wait_for_ack(hs)?;
+    wait_for_ok(hs)?;
 
     sender.send(0.0)?;
     Ok(())
 }
-
-fn set_xy_in(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<()> {}
 
 fn build_ui(
     cmd_sender: Sender<Command>,
     data_sender: Sender<f64>,
     receiver: Receiver<f64>,
 ) -> impl Widget<JoystickState> {
-    let (cmd_sender2, data_sender2, receiver2) =
-        (cmd_sender.clone(), data_sender.clone(), receiver.clone());
-    let (cmd_sender3, data_sender3, receiver3) =
-        (cmd_sender.clone(), data_sender.clone(), receiver.clone());
-    let (cmd_sender4, data_sender4, receiver4) =
-        (cmd_sender.clone(), data_sender.clone(), receiver.clone());
-    let (cmd_sender5, data_sender5, receiver5) =
-        (cmd_sender.clone(), data_sender.clone(), receiver.clone());
-    let (cmd_sender6, receiver6) = (cmd_sender.clone(), receiver.clone());
-    let (cmd_sender7, receiver7) = (cmd_sender.clone(), receiver.clone());
-
-    let threshold_display = Label::new(|data: &f64, _env: &_| format!("{}%", data))
-        .with_text_size(14.0)
-        .lens(JoystickState::digital_threshold);
-
     Flex::column()
         .with_child(JoystickState::new())
         .with_flex_child(
             Flex::row()
-                .with_flex_child(edit_bounds_button(Direction::Left), 1.0)
+                .with_flex_child(Label::new("X").with_text_size(14.0).center())
                 .with_spacer(1.0)
-                .with_flex_child(
-                    Flex::column()
-                        .with_flex_child(edit_bounds_button(Direction::Up), 1.0)
-                        .with_spacer(1.0)
-                        .with_flex_child(edit_bounds_button(Direction::Down), 1.0),
-                    1.0,
-                )
+                .with_flex_child(edit_button(Action::Dec, Field::NeutralX), 1.0)
                 .with_spacer(1.0)
-                .with_flex_child(edit_bounds_button(Direction::Right), 1.0)
+                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
+                    Label::new(format!("{}", data.neutral_x))
+                        .with_text_size(14.0)
+                        .center()
+                })
                 .with_spacer(1.0)
-                .with_flex_child(edit_bounds_button(Direction::In), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(edit_bounds_button(Direction::Out), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(threshold_display, 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_threshold_button(Direction::In, cmd_sender, data_sender, receiver),
-                    1.0,
-                )
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_threshold_button(Direction::Out, cmd_sender, data_sender, receiver),
-                    1.0,
-                )
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_xy_angle_button(Direction::Dec, cmd_sender2, data_sender2, receiver2),
-                    1.0,
-                )
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_xy_angle_button(Direction::Inc, cmd_sender2, data_sender2, receiver2),
-                    1.0,
-                )
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_xz_angle_button(Direction::Dec, cmd_sender3, data_sender3, receiver3),
-                    1.0,
-                )
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_xz_angle_button(Direction::Inc, cmd_sender3, data_sender3, receiver3),
-                    1.0,
-                )
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_yz_angle_button(Direction::Dec, cmd_sender4, data_sender4, receiver4),
-                    1.0,
-                )
-                .with_spacer(1.0)
-                .with_flex_child(
-                    edit_yz_angle_button(Direction::Inc, cmd_sender4, data_sender4, receiver4),
-                    1.0,
-                ),
-            1.0,
+                .with_flex_child(edit_button(Action::Inc, Field::NeutralX), 1.0),
         )
+        .with_spacer(1.0)
+        .with_flex_child(
+            Flex::row()
+                .with_flex_child(Label::new("Y").with_text_size(14.0).center())
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::NeutralY), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
+                    Label::new(format!("{}", data.neutral_y))
+                        .with_text_size(14.0)
+                        .center()
+                })
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Inc, Field::NeutralY), 1.0),
+        )
+        .with_spacer(1.0)
+        .with_flex_child(
+            Flex::row()
+                .with_flex_child(Label::new("Range").with_text_size(14.0).center())
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::Range), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
+                    Label::new(format!("{}", data.range))
+                        .with_text_size(14.0)
+                        .center()
+                })
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Inc, Field::Range), 1.0),
+        )
+        .with_spacer(1.0)
+        .with_flex_child(
+            Flex::row()
+                .with_flex_child(Label::new("XY Angle").with_text_size(14.0).center())
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::XYAngle), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
+                    Label::new(format!("{}", data.xy_angle))
+                        .with_text_size(14.0)
+                        .center()
+                })
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Inc, Field::XYAngle), 1.0),
+        )
+        .with_spacer(1.0)
+        .with_flex_child(
+            Flex::row()
+                .with_flex_child(Label::new("XZ Angle").with_text_size(14.0).center())
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::XZAngle), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
+                    Label::new(format!("{}", data.xz_angle))
+                        .with_text_size(14.0)
+                        .center()
+                })
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Inc, Field::XZAngle), 1.0),
+        )
+        .with_spacer(1.0)
+        .with_flex_child(
+            Flex::row()
+                .with_flex_child(Label::new("YZ Angle").with_text_size(14.0).center())
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::YZAngle), 1.0)
+                .with_spacer(1.0)
+                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
+                    Label::new(format!("{}", data.yz_angle))
+                        .with_text_size(14.0)
+                        .center()
+                })
+                .with_spacer(1.0)
+                .with_flex_child(edit_button(Action::Inc, Field::YZAngle), 1.0),
+        )
+        .with_spacer(1.0)
         .with_flex_child(
             Button::new("Calibrate Joystick").on_click(
                 move |_event, data: &mut JoystickState, _env| {
-                    match cmd_sender5.send(Command::CalibrateJoystick) {
+                    match cmd_sender.send(Command::CalibrateJoystick) {
                         Ok(()) => println!("Calibration starting..."),
                         Err(e) => {
                             println!("Failed issuing 'calibrate joystick' command: {}", e);
@@ -613,12 +707,12 @@ fn drive(
         };
 
         hs.write_all(&[cmd as u8])?;
-        wait_for_ack(&mut hs)?;
+        wait_for_ok(&mut hs)?;
         match cmd {
             Command::FetchJoystickCoords => fetch_joystick_coords(&mut hs, &event_sink)?,
-            Command::CalibrateJoystick => calibrate_joystick(&mut hs, &sender)?,
-            Command::SaveCalibration => save_calibration(&mut hs, &sender, &data_receiver)?,
+            Command::CalibrateJoystick => calibrate_joystick(&mut hs, &event_sink)?,
             Command::StoreProfiles => store_profiles(&mut hs, &sender)?,
+            _ => wait_for_ok(hs)?,
         };
     }
 }

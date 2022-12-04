@@ -37,12 +37,28 @@ Configurator::Configurator(std::unique_ptr<Teensy> teensy)
       xz_angle_ticks_(util::ReadShortFromEEPROM(*teensy_, 14)),
       yz_angle_ticks_(util::ReadShortFromEEPROM(*teensy_, 16)) {}
 
+void Configurator::IncNeutralX() {
+  joystick_->set_x_in(neutral_x_ + range_tick_, range_tick_);
+  WriteOk(*teensy_);
+}
+void Configurator::DecNeutralX() {
+  joystick_->set_x_in(neutral_x_ - range_tick_, range_tick_);
+  WriteOk(*teensy_);
+}
+void Configurator::IncNeutralY() {
+  joystick_->set_y_in(neutral_y_ + range_tick_, range_tick_);
+  WriteOk(*teensy_);
+}
+void Configurator::DecNeutralY() {
+  joystick_->set_y_in(neutral_y_ - range_tick_, range_tick_);
+  WriteOk(*teensy_);
+}
 void Configurator::IncRange() {
-  joystick_->set_x_in(neutral_x_, ++range_tick_);
+  joystick_->set_x_in(neutral_x_, range_ + range_tick_);
   WriteOk(*teensy_);
 }
 void Configurator::DecRange() {
-  joystick_->set_x_in(neutral_x_, --range_tick_);
+  joystick_->set_x_in(neutral_x_, range_ - range_tick_);
   WriteOk(*teensy_);
 }
 void Configurator::IncXYAngle() {
@@ -173,27 +189,39 @@ void Configurator::Loop() {
 	  StoreProfiles();
 	  break;
 	case 4:
-	  IncRange();
+	  IncNeutralX();
 	  break;
 	case 5:
-	  DecRange();
+	  DecNeutralX();
 	  break;
 	case 6:
-	  IncXYAngle();
+	  IncNeutralY();
 	  break;
 	case 7:
-	  DecXYAngle();
+	  DecNeutralY();
 	  break;
 	case 8:
-	  IncXZAngle();
+	  IncRange();
 	  break;
 	case 9:
-	  DecXZAngle();
+	  DecRange();
 	  break;
 	case 10:
-	  IncYZAngle();
+	  IncXYAngle();
 	  break;
 	case 11:
+	  DecXYAngle();
+	  break;
+	case 12:
+	  IncXZAngle();
+	  break;
+	case 13:
+	  DecXZAngle();
+	  break;
+	case 14:
+	  IncYZAngle();
+	  break;
+	case 15:
 	  DecYZAngle();
 	  break;
       }

@@ -16,6 +16,10 @@ class Configurator {
   void Loop();
 
  private:
+  void IncNeutralX();
+  void DecNeutralX();
+  void IncNeutralY();
+  void DecNeutralY();
   void IncRange();
   void DecRange();
   void IncXYAngle();
