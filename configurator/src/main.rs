@@ -149,7 +149,11 @@ fn get_button_painter() -> Painter<JoystickState> {
     })
 }
 
-fn edit_button(action: Action, field: Field) -> impl Widget<JoystickState> {
+fn edit_button(
+    action: Action,
+    field: Field,
+    cmd_sender: Sender<Command>,
+) -> impl Widget<JoystickState> {
     let symbol = match action {
         Action::Inc => "+",
         Action::Dec => "-",
@@ -479,13 +483,48 @@ fn build_ui(
     data_sender: Sender<f64>,
     receiver: Receiver<f64>,
 ) -> impl Widget<JoystickState> {
+    (
+        cmd_sender2,
+        cmd_sender3,
+        cmd_sender4,
+        cmd_sender5,
+        cmd_sender6,
+        cmd_sender7,
+        cmd_sender8,
+        cmd_sender9,
+        cmd_sender10,
+        cmd_sender11,
+        cmd_sender12,
+        cmd_sender13,
+        cmd_sender14,
+        cmd_sender15,
+        cmd_sender16,
+        cmd_sender17,
+    ) = (
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+        cmd_sender.clone(),
+    );
     Flex::column()
         .with_child(JoystickState::new())
         .with_flex_child(
             Flex::row()
                 .with_flex_child(Label::new("X").with_text_size(14.0).center())
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Dec, Field::NeutralX), 1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::NeutralX, cmd_sender), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(move |_event, data: &mut JoystickState, _env| {
                     Label::new(format!("{}", data.neutral_x))
@@ -493,14 +532,14 @@ fn build_ui(
                         .center()
                 })
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Inc, Field::NeutralX), 1.0),
+                .with_flex_child(edit_button(Action::Inc, Field::NeutralX, cmd_sender2), 1.0),
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
                 .with_flex_child(Label::new("Y").with_text_size(14.0).center())
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Dec, Field::NeutralY), 1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::NeutralY, cmd_sender3), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(move |_event, data: &mut JoystickState, _env| {
                     Label::new(format!("{}", data.neutral_y))
@@ -508,14 +547,14 @@ fn build_ui(
                         .center()
                 })
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Inc, Field::NeutralY), 1.0),
+                .with_flex_child(edit_button(Action::Inc, Field::NeutralY, cmd_sender4), 1.0),
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
                 .with_flex_child(Label::new("Range").with_text_size(14.0).center())
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Dec, Field::Range), 1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::Range, cmd_sender5), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(move |_event, data: &mut JoystickState, _env| {
                     Label::new(format!("{}", data.range))
@@ -523,14 +562,14 @@ fn build_ui(
                         .center()
                 })
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Inc, Field::Range), 1.0),
+                .with_flex_child(edit_button(Action::Inc, Field::Range, cmd_sender6), 1.0),
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
                 .with_flex_child(Label::new("XY Angle").with_text_size(14.0).center())
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Dec, Field::XYAngle), 1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::XYAngle, cmd_sender7), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(move |_event, data: &mut JoystickState, _env| {
                     Label::new(format!("{}", data.xy_angle))
@@ -538,14 +577,14 @@ fn build_ui(
                         .center()
                 })
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Inc, Field::XYAngle), 1.0),
+                .with_flex_child(edit_button(Action::Inc, Field::XYAngle, cmd_sender8), 1.0),
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
                 .with_flex_child(Label::new("XZ Angle").with_text_size(14.0).center())
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Dec, Field::XZAngle), 1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::XZAngle, cmd_sender9), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(move |_event, data: &mut JoystickState, _env| {
                     Label::new(format!("{}", data.xz_angle))
@@ -553,14 +592,14 @@ fn build_ui(
                         .center()
                 })
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Inc, Field::XZAngle), 1.0),
+                .with_flex_child(edit_button(Action::Inc, Field::XZAngle, cmd_sender10), 1.0),
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
                 .with_flex_child(Label::new("YZ Angle").with_text_size(14.0).center())
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Dec, Field::YZAngle), 1.0)
+                .with_flex_child(edit_button(Action::Dec, Field::YZAngle, cmd_sender11), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(move |_event, data: &mut JoystickState, _env| {
                     Label::new(format!("{}", data.yz_angle))
@@ -568,123 +607,49 @@ fn build_ui(
                         .center()
                 })
                 .with_spacer(1.0)
-                .with_flex_child(edit_button(Action::Inc, Field::YZAngle), 1.0),
+                .with_flex_child(edit_button(Action::Inc, Field::YZAngle, cmd_sender12), 1.0),
         )
         .with_spacer(1.0)
         .with_flex_child(
             Button::new("Calibrate Joystick").on_click(
-                move |_event, data: &mut JoystickState, _env| {
-                    match cmd_sender.send(Command::CalibrateJoystick) {
-                        Ok(()) => println!("Calibration starting..."),
-                        Err(e) => {
-                            println!("Failed issuing 'calibrate joystick' command: {}", e);
-                            return;
-                        }
+                move |_event, data: &mut JoystickState, _env| match cmd_sender13
+                    .send(Command::CalibrateJoystick)
+                {
+                    Ok(()) => println!("Calibration starting..."),
+                    Err(e) => {
+                        println!("Failed issuing 'calibrate joystick' command: {}", e);
+                        return;
                     }
-                    let center_x = match receiver5.recv() {
-                        Ok(x) => x,
-                        Err(e) => {
-                            println!("Failed getting joystick center x value: {}", e);
-                            return;
-                        }
-                    };
-                    let center_y = match receiver5.recv() {
-                        Ok(y) => y,
-                        Err(e) => {
-                            println!("Failed getting joystick center y value: {}", e);
-                            return;
-                        }
-                    };
-                    let range = match receiver5.recv() {
-                        Ok(r) => r,
-                        Err(e) => {
-                            println!("Failed getting joystick range value: {}", e);
-                            return;
-                        }
-                    };
-                    println!(
-                        "Setting bounds to x={}, y={}, range={}, angle_ticks={}",
-                        center_x, center_y, range, 0
-                    );
-                    data.set_bounds(&Bounds {
-                        center: Point::new(center_x, center_y),
-                        range: range,
-                        angle_ticks: 0,
-                    });
                 },
             ),
             1.0,
         )
+        .with_spacer(1.0)
         .with_flex_child(
             Button::new("Save Calibration").on_click(
-                move |_event, data: &mut JoystickState, _env| {
-                    match cmd_sender6.send(Command::SaveCalibration) {
-                        Ok(()) => println!("Saving calibration..."),
-                        Err(e) => {
-                            println!("Failed issuing 'save calibration' command: {}", e);
-                            return;
-                        }
+                move |_event, data: &mut JoystickState, _env| match cmd_sender14
+                    .send(Command::SaveCalibration)
+                {
+                    Ok(()) => println!("Saving calibration..."),
+                    Err(e) => {
+                        println!("Failed issuing 'save calibration' command: {}", e);
+                        return;
                     }
-                    match data_sender5.send(data.custom_bounds.center.x) {
-                        Ok(()) => println!("Sent center x coordinate."),
-                        Err(e) => {
-                            println!("Failed to send center x coordinate: {}", e);
-                            return;
-                        }
-                    }
-                    match data_sender5.send(data.custom_bounds.center.y) {
-                        Ok(()) => println!("Sent center y coordinate."),
-                        Err(e) => {
-                            println!("Failed to send center y coordinate: {}", e);
-                            return;
-                        }
-                    }
-                    match data_sender5.send(data.custom_bounds.range) {
-                        Ok(()) => println!("Sent range value."),
-                        Err(e) => {
-                            println!("Failed to send range value: {}", e);
-                            return;
-                        }
-                    }
-                    match data_sender5.send(data.custom_bounds.xy_angle_ticks.into()) {
-                        Ok(()) => println!("Sent XY angle ticks."),
-                        Err(e) => {
-                            println!("Failed to send XY angle ticks: {}", e);
-                            return;
-                        }
-                    }
-                    match data_sender5.send(data.custom_bounds.xz_angle_ticks.into()) {
-                        Ok(()) => println!("Sent XZ angle ticks."),
-                        Err(e) => {
-                            println!("Failed to send XZ angle ticks: {}", e);
-                            return;
-                        }
-                    }
-                    match data_sender5.send(data.custom_bounds.yz_angle_ticks.into()) {
-                        Ok(()) => println!("Sent YZ angle ticks."),
-                        Err(e) => {
-                            println!("Failed to send YZ angle ticks: {}", e);
-                            return;
-                        }
-                    }
-
-                    if let Err(e) = receiver6.recv() {
-                        println!("Failed to save calibration: {}", e);
-                    };
                 },
             ),
             1.0,
         )
+        .with_spacer(1.0)
         .with_flex_child(
             Button::new("Store Profiles").on_click(move |_event, _data, _env| {
-                match cmd_sender7.send(Command::StoreProfiles) {
+                match cmd_sender15.send(Command::StoreProfiles) {
                     Ok(()) => println!("Storing profiles..."),
                     Err(e) => {
                         println!("Failed issuing 'store profiles' command: {}", e);
                         return;
                     }
                 }
-                if let Err(e) = receiver7.recv() {
+                if let Err(e) = receiver.recv() {
                     println!("Failed to store profiles: {}", e);
                 };
             }),
