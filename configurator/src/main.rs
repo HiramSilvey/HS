@@ -9,7 +9,7 @@ use druid::piet::StrokeStyle;
 use druid::widget::prelude::*;
 use druid::widget::{Button, Flex, Label, Painter};
 use druid::{
-    theme, AppLauncher, Color, Data, ExtEventSink, Lens, PlatformError, Point, Rect, RenderContext,
+    theme, AppLauncher, Color, Data, ExtEventSink, Lens, PlatformError, Point, RenderContext,
     Selector, Target, Widget, WidgetExt, WindowDesc,
 };
 use serialport::SerialPort;
@@ -270,13 +270,13 @@ fn map(x: f64, in_min: f64, in_max: f64, out_min: f64, out_max: f64) -> f64 {
 impl Widget<JoystickState> for JoystickState {
     fn event(&mut self, _ctx: &mut EventCtx, event: &Event, data: &mut JoystickState, _env: &Env) {
         match event {
-            Event::Command(cmd) if cmd.is(SET_CURSOR) => {
-                let point = cmd.get_unchecked(SET_CURSOR).clone();
-                data.set_cursor(&point);
-            }
-            _ => (),
-            Event::Command(cmd) if cmd.is(ZERO_STATE) => {
-                data.zero_state();
+            Event::Command(cmd) => {
+                if cmd.is(SET_CURSOR) {
+                    let point = cmd.get_unchecked(SET_CURSOR).clone();
+                    data.set_cursor(&point);
+                } else if cmd.is(ZERO_STATE) {
+                    data.zero_state();
+                }
             }
             _ => (),
         }
@@ -361,8 +361,8 @@ impl Widget<JoystickState> for JoystickState {
         );
 
         // Cursor.
-        let cursor_x = map(data.cursor.x, 0, 1023, rect.min_x(), rect.max_x());
-        let cursor_y = map(data.cursor.y, 0, 1023, rect.min_y(), rect.max_y());
+        let cursor_x = map(data.cursor.x, 0., 1023., rect.min_x(), rect.max_x());
+        let cursor_y = map(data.cursor.y, 0., 1023., rect.min_y(), rect.max_y());
         let cursor_color = env.get(theme::CURSOR_COLOR);
         ctx.paint_with_z_index(1, move |ctx| {
             let cursor = Circle::new(Point::new(cursor_x, cursor_y), JOYSTICK_CURSOR_RADIUS);
@@ -432,7 +432,7 @@ fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink
 
     event_sink.submit_command(
         SET_CURSOR,
-        Point::new(bytes_to_i32(&x)?, bytes_to_i32(&y)?),
+        Point::new(bytes_to_i32(&x)?.into(), bytes_to_i32(&y)?.into()),
         Target::Auto,
     )?;
 
@@ -441,7 +441,7 @@ fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink
 
 fn calibrate_joystick(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
     wait_for_ok(hs)?;
-    event_sink.submit_command(ZERO_STATE, Target::Auto)?;
+    event_sink.submit_command(ZERO_STATE, (), Target::Auto)?;
 
     Ok(())
 }
@@ -478,12 +478,8 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
     Ok(())
 }
 
-fn build_ui(
-    cmd_sender: Sender<Command>,
-    data_sender: Sender<f64>,
-    receiver: Receiver<f64>,
-) -> impl Widget<JoystickState> {
-    (
+fn build_ui(cmd_sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget<JoystickState> {
+    let (
         cmd_sender2,
         cmd_sender3,
         cmd_sender4,
@@ -498,11 +494,7 @@ fn build_ui(
         cmd_sender13,
         cmd_sender14,
         cmd_sender15,
-        cmd_sender16,
-        cmd_sender17,
     ) = (
-        cmd_sender.clone(),
-        cmd_sender.clone(),
         cmd_sender.clone(),
         cmd_sender.clone(),
         cmd_sender.clone(),
@@ -522,99 +514,79 @@ fn build_ui(
         .with_child(JoystickState::new())
         .with_flex_child(
             Flex::row()
-                .with_flex_child(Label::new("X").with_text_size(14.0).center())
+                .with_flex_child(Label::new("X").with_text_size(14.0).center(), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Dec, Field::NeutralX, cmd_sender), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
-                    Label::new(format!("{}", data.neutral_x))
-                        .with_text_size(14.0)
-                        .center()
-                })
+                // .with_spacer(1.0)
+                // .with_flex_child(state_label(Field::NeutralX), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Inc, Field::NeutralX, cmd_sender2), 1.0),
+            1.0,
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
-                .with_flex_child(Label::new("Y").with_text_size(14.0).center())
+                .with_flex_child(Label::new("Y").with_text_size(14.0).center(), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Dec, Field::NeutralY, cmd_sender3), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
-                    Label::new(format!("{}", data.neutral_y))
-                        .with_text_size(14.0)
-                        .center()
-                })
+                // .with_spacer(1.0)
+                // .with_flex_child(state_label(Field::NeutralY), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Inc, Field::NeutralY, cmd_sender4), 1.0),
+            1.0,
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
-                .with_flex_child(Label::new("Range").with_text_size(14.0).center())
+                .with_flex_child(Label::new("Range").with_text_size(14.0).center(), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Dec, Field::Range, cmd_sender5), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
-                    Label::new(format!("{}", data.range))
-                        .with_text_size(14.0)
-                        .center()
-                })
+                // .with_spacer(1.0)
+                // .with_flex_child(state_label(Field::Range), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Inc, Field::Range, cmd_sender6), 1.0),
+            1.0,
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
-                .with_flex_child(Label::new("XY Angle").with_text_size(14.0).center())
+                .with_flex_child(Label::new("XY Angle").with_text_size(14.0).center(), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Dec, Field::XYAngle, cmd_sender7), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
-                    Label::new(format!("{}", data.xy_angle))
-                        .with_text_size(14.0)
-                        .center()
-                })
+                // .with_spacer(1.0)
+                // .with_flex_child(state_label(Field::XYAngle), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Inc, Field::XYAngle, cmd_sender8), 1.0),
+            1.0,
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
-                .with_flex_child(Label::new("XZ Angle").with_text_size(14.0).center())
+                .with_flex_child(Label::new("XZ Angle").with_text_size(14.0).center(), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Dec, Field::XZAngle, cmd_sender9), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
-                    Label::new(format!("{}", data.xz_angle))
-                        .with_text_size(14.0)
-                        .center()
-                })
+                // .with_spacer(1.0)
+                // .with_flex_child(state_label(Field::XZAngle), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Inc, Field::XZAngle, cmd_sender10), 1.0),
+            1.0,
         )
         .with_spacer(1.0)
         .with_flex_child(
             Flex::row()
-                .with_flex_child(Label::new("YZ Angle").with_text_size(14.0).center())
+                .with_flex_child(Label::new("YZ Angle").with_text_size(14.0).center(), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Dec, Field::YZAngle, cmd_sender11), 1.0)
-                .with_spacer(1.0)
-                .with_flex_child(move |_event, data: &mut JoystickState, _env| {
-                    Label::new(format!("{}", data.yz_angle))
-                        .with_text_size(14.0)
-                        .center()
-                })
+                // .with_spacer(1.0)
+                // .with_flex_child(state_label(Field::YZAngle), 1.0)
                 .with_spacer(1.0)
                 .with_flex_child(edit_button(Action::Inc, Field::YZAngle, cmd_sender12), 1.0),
+            1.0,
         )
         .with_spacer(1.0)
         .with_flex_child(
             Button::new("Calibrate Joystick").on_click(
-                move |_event, data: &mut JoystickState, _env| match cmd_sender13
-                    .send(Command::CalibrateJoystick)
-                {
+                move |_event, _data, _env| match cmd_sender13.send(Command::CalibrateJoystick) {
                     Ok(()) => println!("Calibration starting..."),
                     Err(e) => {
                         println!("Failed issuing 'calibrate joystick' command: {}", e);
@@ -626,17 +598,15 @@ fn build_ui(
         )
         .with_spacer(1.0)
         .with_flex_child(
-            Button::new("Save Calibration").on_click(
-                move |_event, data: &mut JoystickState, _env| match cmd_sender14
-                    .send(Command::SaveCalibration)
-                {
-                    Ok(()) => println!("Saving calibration..."),
-                    Err(e) => {
-                        println!("Failed issuing 'save calibration' command: {}", e);
-                        return;
-                    }
-                },
-            ),
+            Button::new("Save Calibration").on_click(move |_event, _data, _env| match cmd_sender14
+                .send(Command::SaveCalibration)
+            {
+                Ok(()) => println!("Saving calibration..."),
+                Err(e) => {
+                    println!("Failed issuing 'save calibration' command: {}", e);
+                    return;
+                }
+            }),
             1.0,
         )
         .with_spacer(1.0)
@@ -659,7 +629,6 @@ fn build_ui(
 
 fn drive(
     sender: Sender<f64>,
-    data_receiver: Receiver<f64>,
     command_receiver: Receiver<Command>,
     event_sink: ExtEventSink,
 ) -> Result<()> {
@@ -677,7 +646,7 @@ fn drive(
             Command::FetchJoystickCoords => fetch_joystick_coords(&mut hs, &event_sink)?,
             Command::CalibrateJoystick => calibrate_joystick(&mut hs, &event_sink)?,
             Command::StoreProfiles => store_profiles(&mut hs, &sender)?,
-            _ => wait_for_ok(hs)?,
+            _ => wait_for_ok(&mut hs)?,
         };
     }
 }
@@ -685,28 +654,16 @@ fn drive(
 pub fn main() -> Result<(), PlatformError> {
     let (cmd_sender, cmd_receiver) = unbounded();
     let (child_data_sender, parent_data_receiver) = unbounded();
-    let (parent_data_sender, child_data_receiver) = unbounded();
 
     let launcher = AppLauncher::with_window(
-        WindowDesc::new(build_ui(
-            cmd_sender,
-            parent_data_sender,
-            parent_data_receiver,
-        ))
-        .title("HS Configurator")
-        .window_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH + 150.0))
-        .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
+        WindowDesc::new(build_ui(cmd_sender, parent_data_receiver))
+            .title("HS Configurator")
+            .window_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH + 150.0))
+            .with_min_size((JOYSTICK_BOX_LENGTH, JOYSTICK_BOX_LENGTH)),
     );
 
     let event_sink = launcher.get_external_handle();
-    thread::spawn(move || -> Result<()> {
-        drive(
-            child_data_sender,
-            child_data_receiver,
-            cmd_receiver,
-            event_sink,
-        )
-    });
+    thread::spawn(move || -> Result<()> { drive(child_data_sender, cmd_receiver, event_sink) });
 
     launcher.launch(JoystickState::new())?;
 

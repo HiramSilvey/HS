@@ -38,19 +38,19 @@ Configurator::Configurator(std::unique_ptr<Teensy> teensy)
       yz_angle_ticks_(util::ReadShortFromEEPROM(*teensy_, 16)) {}
 
 void Configurator::IncNeutralX() {
-  joystick_->set_x_in(neutral_x_ + range_tick_, range_tick_);
+  joystick_->set_x_in(neutral_x_ + range_tick_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::DecNeutralX() {
-  joystick_->set_x_in(neutral_x_ - range_tick_, range_tick_);
+  joystick_->set_x_in(neutral_x_ - range_tick_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::IncNeutralY() {
-  joystick_->set_y_in(neutral_y_ + range_tick_, range_tick_);
+  joystick_->set_y_in(neutral_y_ + range_tick_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::DecNeutralY() {
-  joystick_->set_y_in(neutral_y_ - range_tick_, range_tick_);
+  joystick_->set_y_in(neutral_y_ - range_tick_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::IncRange() {
@@ -170,7 +170,7 @@ void Configurator::Loop() {
   while (true) {
     if (teensy_->SerialAvailable() > 0) {
       uint8_t data = teensy_->SerialRead();
-      if (data > 4) {
+      if (data > 15) {
 	WriteErr(*teensy_);
 	continue;
       }
