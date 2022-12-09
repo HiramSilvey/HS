@@ -40,9 +40,9 @@ class Configurator {
   int neutral_y_ = 0;
   int range_ = 0;
   int range_tick_ = 0;
-  uint16_t xy_angle_ticks_ = 0;
-  uint16_t xz_angle_ticks_ = 0;
-  uint16_t yz_angle_ticks_ = 0;
+  int16_t xy_angle_ticks_ = 0;
+  int16_t xz_angle_ticks_ = 0;
+  int16_t yz_angle_ticks_ = 0;
 };
 
 }  // namespace hs
