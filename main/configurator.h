@@ -34,6 +34,8 @@ class Configurator {
   void SaveCalibration();
   void StoreProfiles();
 
+  void FetchJoystickState();
+
   std::unique_ptr<Teensy> teensy_;
   std::unique_ptr<HallJoystick> joystick_;
   int neutral_x_ = 0;

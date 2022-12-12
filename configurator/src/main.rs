@@ -13,6 +13,7 @@ use druid::{
     Selector, Target, Widget, WidgetExt, WindowDesc,
 };
 use serialport::SerialPort;
+use std::convert::TryInto;
 use std::path::Path;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -41,6 +42,7 @@ enum Command {
     DecXZAngle,
     IncYZAngle,
     DecYZAngle,
+    FetchJoystickState,
 }
 
 #[derive(Clone, Copy)]
@@ -411,28 +413,28 @@ fn wait_for_ok(hs: &mut Box<dyn SerialPort>) -> Result<()> {
     Ok(())
 }
 
-fn bytes_to_i32(bytes: &Vec<u8>) -> Result<i32> {
-    if bytes.len() != 4 {
-        return Err(anyhow!(
-            "Failed converting bytes to i32. Expected 4 bytes, found {} bytes.",
-            bytes.len()
-        ));
+fn wait_for_i32(hs: &mut Box<dyn SerialPort>) -> Result<i32> {
+    let mut buf = vec![0u8; 4];
+    wait_for_data(hs, &mut buf)?;
+    match buf.try_into() {
+        Ok(arr) => Ok(i32::from_le_bytes(arr)),
+        Err(_) => return Err(anyhow!("Failed converting vec to arr of size 4!")),
     }
-    Ok(((bytes[0] as i32) << 24)
-        | ((bytes[1] as i32) << 16)
-        | ((bytes[2] as i32) << 8)
-        | bytes[3] as i32)
+}
+
+fn wait_for_f64(hs: &mut Box<dyn SerialPort>) -> Result<f64> {
+    let mut buf = vec![0u8; 8];
+    wait_for_data(hs, &mut buf)?;
+    match buf.try_into() {
+        Ok(arr) => Ok(f64::from_le_bytes(arr)),
+        Err(_) => return Err(anyhow!("Failed converting vec to arr of size 8!")),
+    }
 }
 
 fn fetch_joystick_coords(hs: &mut Box<dyn SerialPort>, event_sink: &ExtEventSink) -> Result<()> {
-    let mut x = vec![0u8; 4];
-    let mut y = vec![0u8; 4];
-    wait_for_data(hs, &mut x)?;
-    wait_for_data(hs, &mut y)?;
-
     event_sink.submit_command(
         SET_CURSOR,
-        Point::new(bytes_to_i32(&x)?.into(), bytes_to_i32(&y)?.into()),
+        Point::new(wait_for_i32(hs)?.into(), wait_for_i32(hs)?.into()),
         Target::Auto,
     )?;
 
@@ -478,6 +480,22 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
     Ok(())
 }
 
+fn fetch_joystick_state(hs: &mut Box<dyn SerialPort>) -> Result<()> {
+    println!("Joystick state:");
+    println!("x_in_min = {}", wait_for_i32(hs)?);
+    println!("x_in_max = {}", wait_for_i32(hs)?);
+    println!("y_in_min = {}", wait_for_i32(hs)?);
+    println!("y_in_max = {}", wait_for_i32(hs)?);
+    println!("xy_angle = {}", wait_for_f64(hs)?);
+    println!("xz_angle = {}", wait_for_f64(hs)?);
+    println!("yz_angle = {}", wait_for_f64(hs)?);
+    println!("out_min = {}", wait_for_i32(hs)?);
+    println!("out_max = {}", wait_for_i32(hs)?);
+    println!("out_neutral = {}", wait_for_i32(hs)?);
+
+    Ok(())
+}
+
 fn build_ui(cmd_sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget<JoystickState> {
     let (
         cmd_sender2,
@@ -494,7 +512,9 @@ fn build_ui(cmd_sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget
         cmd_sender13,
         cmd_sender14,
         cmd_sender15,
+        cmd_sender16,
     ) = (
+        cmd_sender.clone(),
         cmd_sender.clone(),
         cmd_sender.clone(),
         cmd_sender.clone(),
@@ -625,6 +645,19 @@ fn build_ui(cmd_sender: Sender<Command>, receiver: Receiver<f64>) -> impl Widget
             }),
             1.0,
         )
+        .with_spacer(1.0)
+        .with_flex_child(
+            Button::new("Fetch Joystick State").on_click(move |_event, _data, _env| {
+                match cmd_sender16.send(Command::FetchJoystickState) {
+                    Ok(()) => (),
+                    Err(e) => {
+                        println!("Failed issuing 'fetch joystick state' command: {}", e);
+                        return;
+                    }
+                }
+            }),
+            1.0,
+        )
 }
 
 fn drive(
@@ -646,6 +679,7 @@ fn drive(
             Command::FetchJoystickCoords => fetch_joystick_coords(&mut hs, &event_sink)?,
             Command::CalibrateJoystick => calibrate_joystick(&mut hs, &event_sink)?,
             Command::StoreProfiles => store_profiles(&mut hs, &sender)?,
+            Command::FetchJoystickState => fetch_joystick_state(&mut hs)?,
             _ => wait_for_ok(&mut hs)?,
         };
     }

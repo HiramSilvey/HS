@@ -13,11 +13,14 @@ namespace hs {
 
 namespace {
 
-void WriteIntToSerial(const Teensy& teensy, int val) {
-  uint8_t bytes[4] = {
-      static_cast<uint8_t>(val >> 24), static_cast<uint8_t>(val >> 16 & 0xFF),
-      static_cast<uint8_t>(val >> 8 & 0xFF), static_cast<uint8_t>(val & 0xFF)};
+void WriteToSerial(const Teensy& teensy, int val) {
+  uint8_t* bytes = (uint8_t*)&val;
   teensy.SerialWrite(bytes, 4);
+}
+
+void WriteToSerial(const Teensy& teensy, double val) {
+  uint8_t* bytes = (uint8_t*)&val;
+  teensy.SerialWrite(bytes, 8);
 }
 
 void WriteErr(const Teensy& teensy) { teensy.SerialWrite(1); }
@@ -38,27 +41,35 @@ Configurator::Configurator(std::unique_ptr<Teensy> teensy)
       yz_angle_ticks_(util::ReadShortFromEEPROM(*teensy_, 16)) {}
 
 void Configurator::IncNeutralX() {
-  joystick_->set_x_in(neutral_x_ + range_tick_, range_);
+  neutral_x_ += range_tick_;
+  joystick_->set_x_in(neutral_x_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::DecNeutralX() {
-  joystick_->set_x_in(neutral_x_ - range_tick_, range_);
+  neutral_x_ -= range_tick_;
+  joystick_->set_x_in(neutral_x_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::IncNeutralY() {
-  joystick_->set_y_in(neutral_y_ + range_tick_, range_);
+  neutral_y_ += range_tick_;
+  joystick_->set_y_in(neutral_y_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::DecNeutralY() {
-  joystick_->set_y_in(neutral_y_ - range_tick_, range_);
+  neutral_y_ -= range_tick_;
+  joystick_->set_y_in(neutral_y_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::IncRange() {
-  joystick_->set_x_in(neutral_x_, range_ + range_tick_);
+  range_ += range_tick_;
+  joystick_->set_x_in(neutral_x_, range_);
+  joystick_->set_y_in(neutral_y_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::DecRange() {
-  joystick_->set_x_in(neutral_x_, range_ - range_tick_);
+  range_ -= range_tick_;
+  joystick_->set_x_in(neutral_x_, range_);
+  joystick_->set_y_in(neutral_y_, range_);
   WriteOk(*teensy_);
 }
 void Configurator::IncXYAngle() {
@@ -74,7 +85,7 @@ void Configurator::IncXZAngle() {
   WriteOk(*teensy_);
 }
 void Configurator::DecXZAngle() {
-  joystick_->set_xz_angle(--xy_angle_ticks_);
+  joystick_->set_xz_angle(--xz_angle_ticks_);
   WriteOk(*teensy_);
 }
 void Configurator::IncYZAngle() {
@@ -89,8 +100,8 @@ void Configurator::DecYZAngle() {
 void Configurator::FetchJoystickCoords() {
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(*teensy_);
 
-  WriteIntToSerial(*teensy_, coords.x);
-  WriteIntToSerial(*teensy_, coords.y);
+  WriteToSerial(*teensy_, coords.x);
+  WriteToSerial(*teensy_, coords.y);
 }
 
 void Configurator::CalibrateJoystick() {
@@ -166,11 +177,27 @@ void Configurator::StoreProfiles() {
   WriteOk(*teensy_);
 }
 
+void Configurator::FetchJoystickState() {
+  HallJoystick::Bounds x_in = joystick_->x_in();
+  HallJoystick::Bounds y_in = joystick_->y_in();
+
+  WriteToSerial(*teensy_, x_in.min);
+  WriteToSerial(*teensy_, x_in.max);
+  WriteToSerial(*teensy_, y_in.min);
+  WriteToSerial(*teensy_, y_in.max);
+  WriteToSerial(*teensy_, joystick_->xy_angle());
+  WriteToSerial(*teensy_, joystick_->xz_angle());
+  WriteToSerial(*teensy_, joystick_->yz_angle());
+  WriteToSerial(*teensy_, joystick_->out_min());
+  WriteToSerial(*teensy_, joystick_->out_max());
+  WriteToSerial(*teensy_, joystick_->out_neutral());
+}
+
 void Configurator::Loop() {
   while (true) {
     if (teensy_->SerialAvailable() > 0) {
       uint8_t data = teensy_->SerialRead();
-      if (data > 15) {
+      if (data > 16) {
 	WriteErr(*teensy_);
 	continue;
       }
@@ -223,6 +250,9 @@ void Configurator::Loop() {
 	  break;
 	case 15:
 	  DecYZAngle();
+	  break;
+	case 16:
+	  FetchJoystickState();
 	  break;
       }
     }

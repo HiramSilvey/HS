@@ -57,7 +57,7 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   last_fetch_micros_ = teensy.Micros();
 
   float raw_x = teensy.GetHallX();
-  float raw_y = teensy.GetHallY();
+  float raw_y = -teensy.GetHallY();
   float raw_z = teensy.GetHallZ();
 
   // Apply rotations piecewise. No-op if the angle is 0.
