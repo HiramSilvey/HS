@@ -17,7 +17,7 @@ using Layer = hs_profile_Profile_Layer;
 using Action = hs_profile_Profile_Layer_Action;
 
 NSController::NSController(std::unique_ptr<Teensy> teensy,
-                           std::unique_ptr<NSPad> nspad)
+			   std::unique_ptr<NSPad> nspad)
     : teensy_(std::move(teensy)),
       nspad_(std::move(nspad)),
       base_mapping_({}),
@@ -70,61 +70,61 @@ NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
     auto action = action_pin.action;
     int pin = action_pin.pin;
     if (action.which_action_type ==
-        hs_profile_Profile_Layer_Action_digital_tag) {
+	hs_profile_Profile_Layer_Action_digital_tag) {
       auto digital = action.action_type.digital;
       if (action_to_button_id.find(digital) != action_to_button_id.end()) {
-        int button_id = action_to_button_id[digital];
-        if (mapping.button_id_to_pins.find(button_id) !=
-            mapping.button_id_to_pins.end()) {
-          mapping.button_id_to_pins[button_id].push_back(pin);
-        } else {
-          mapping.button_id_to_pins[button_id] = {pin};
-        }
+	int button_id = action_to_button_id[digital];
+	if (mapping.button_id_to_pins.find(button_id) !=
+	    mapping.button_id_to_pins.end()) {
+	  mapping.button_id_to_pins[button_id].push_back(pin);
+	} else {
+	  mapping.button_id_to_pins[button_id] = {pin};
+	}
       } else {
-        switch (digital) {
-          case hs_profile_Profile_Layer_DigitalAction_R_STICK_UP:
-            mapping.z_y.push_back({joystick_->out_max(), pin});
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN:
-            mapping.z_y.push_back({joystick_->out_min(), pin});
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT:
-            mapping.z_x.push_back({joystick_->out_min(), pin});
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT:
-            mapping.z_x.push_back({joystick_->out_max(), pin});
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_D_PAD_UP:
-            mapping.dpad_up.push_back(pin);
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN:
-            mapping.dpad_down.push_back(pin);
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT:
-            mapping.dpad_left.push_back(pin);
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT:
-            mapping.dpad_right.push_back(pin);
-            break;
-          case hs_profile_Profile_Layer_DigitalAction_MOD:
-            mapping.mod.push_back(pin);
-            break;
-          default:
-            break;
-        }
+	switch (digital) {
+	  case hs_profile_Profile_Layer_DigitalAction_R_STICK_UP:
+	    mapping.z_y.push_back({joystick_->out().max, pin});
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN:
+	    mapping.z_y.push_back({joystick_->out().min, pin});
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT:
+	    mapping.z_x.push_back({joystick_->out().min, pin});
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT:
+	    mapping.z_x.push_back({joystick_->out().max, pin});
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_D_PAD_UP:
+	    mapping.dpad_up.push_back(pin);
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN:
+	    mapping.dpad_down.push_back(pin);
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT:
+	    mapping.dpad_left.push_back(pin);
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT:
+	    mapping.dpad_right.push_back(pin);
+	    break;
+	  case hs_profile_Profile_Layer_DigitalAction_MOD:
+	    mapping.mod.push_back(pin);
+	    break;
+	  default:
+	    break;
+	}
       }
     } else {
       auto analog = action.action_type.analog;
       int value = analog.value;
       switch (analog.id) {
-        case hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X:
-          mapping.z_x.push_back({value, pin});
-          break;
-        case hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y:
-          mapping.z_y.push_back({value, pin});
-          break;
-        default:
-          break;
+	case hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X:
+	  mapping.z_x.push_back({value, pin});
+	  break;
+	case hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y:
+	  mapping.z_y.push_back({value, pin});
+	  break;
+	default:
+	  break;
       }
     }
   }
@@ -135,7 +135,7 @@ NSButtonPinMapping NSController::GetButtonPinMapping(const Layer& layer) {
 void NSController::LoadProfile() {
   Layout layout = FetchProfile(*teensy_, hs_profile_Profile_Platform_SWITCH);
   joystick_ = std::make_unique<HallJoystick>(*teensy_, 0, 255,
-                                             layout.joystick_threshold);
+					     layout.joystick_threshold);
   base_mapping_ = GetButtonPinMapping(layout.base);
   if (layout.has_mod) {
     mod_mapping_ = GetButtonPinMapping(layout.mod);
@@ -173,16 +173,16 @@ int NSController::GetDPadDirection(const NSButtonPinMapping& mapping) {
 
 void NSController::UpdateButtons(const NSButtonPinMapping& mapping) {
   nspad_->SetRightYAxis(
-      joystick_->out_max() -
-      ResolveSOCD(*teensy_, mapping.z_y, joystick_->out_neutral()));
+      joystick_->out().max -
+      ResolveSOCD(*teensy_, mapping.z_y, joystick_->out().neutral));
   nspad_->SetRightXAxis(
-      ResolveSOCD(*teensy_, mapping.z_x, joystick_->out_neutral()));
+      ResolveSOCD(*teensy_, mapping.z_x, joystick_->out().neutral));
 
   for (const auto& element : mapping.button_id_to_pins) {
     for (const auto& pin : element.second) {
       if (teensy_->DigitalReadLow(pin)) {
-        nspad_->Press(element.first);
-        break;
+	nspad_->Press(element.first);
+	break;
       }
     }
   }
@@ -194,7 +194,7 @@ void NSController::Loop() {
   nspad_->ReleaseAll();
 
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(*teensy_);
-  nspad_->SetLeftYAxis(joystick_->out_max() - coords.y);
+  nspad_->SetLeftYAxis(joystick_->out().max - coords.y);
   nspad_->SetLeftXAxis(coords.x);
 
   bool mod_active = false;

@@ -483,15 +483,17 @@ fn store_profiles(hs: &mut Box<dyn SerialPort>, sender: &Sender<f64>) -> Result<
 fn fetch_joystick_state(hs: &mut Box<dyn SerialPort>) -> Result<()> {
     println!("Joystick state:");
     println!("x_in_min = {}", wait_for_i32(hs)?);
+    println!("x_in_neutral = {}", wait_for_i32(hs)?);
     println!("x_in_max = {}", wait_for_i32(hs)?);
     println!("y_in_min = {}", wait_for_i32(hs)?);
+    println!("y_in_neutral = {}", wait_for_i32(hs)?);
     println!("y_in_max = {}", wait_for_i32(hs)?);
     println!("xy_angle = {}", wait_for_f64(hs)?);
     println!("xz_angle = {}", wait_for_f64(hs)?);
     println!("yz_angle = {}", wait_for_f64(hs)?);
     println!("out_min = {}", wait_for_i32(hs)?);
-    println!("out_max = {}", wait_for_i32(hs)?);
     println!("out_neutral = {}", wait_for_i32(hs)?);
+    println!("out_max = {}", wait_for_i32(hs)?);
 
     Ok(())
 }

@@ -180,17 +180,20 @@ void Configurator::StoreProfiles() {
 void Configurator::FetchJoystickState() {
   HallJoystick::Bounds x_in = joystick_->x_in();
   HallJoystick::Bounds y_in = joystick_->y_in();
+  HallJoystick::Bounds out = joystick_->out();
 
   WriteToSerial(*teensy_, x_in.min);
+  WriteToSerial(*teensy_, x_in.neutral);
   WriteToSerial(*teensy_, x_in.max);
   WriteToSerial(*teensy_, y_in.min);
+  WriteToSerial(*teensy_, y_in.neutral);
   WriteToSerial(*teensy_, y_in.max);
   WriteToSerial(*teensy_, joystick_->xy_angle());
   WriteToSerial(*teensy_, joystick_->xz_angle());
   WriteToSerial(*teensy_, joystick_->yz_angle());
-  WriteToSerial(*teensy_, joystick_->out_min());
-  WriteToSerial(*teensy_, joystick_->out_max());
-  WriteToSerial(*teensy_, joystick_->out_neutral());
+  WriteToSerial(*teensy_, out.min);
+  WriteToSerial(*teensy_, out.neutral);
+  WriteToSerial(*teensy_, out.max);
 }
 
 void Configurator::Loop() {

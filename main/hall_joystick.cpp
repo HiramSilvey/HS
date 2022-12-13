@@ -12,19 +12,19 @@ namespace hs {
 
 HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
 			   int threshold)
-    : out_({.min = min, .max = max}),
-      out_neutral_((max - min + 1) / 2 + min),
+    : out_({.min = min, .neutral = (max - min + 1) / 2 + min, .max = max}),
       threshold_({threshold * -1, threshold}),
       last_fetch_micros_(0) {
-  int neutral_x = util::ReadIntFromEEPROM(teensy, 0);
-  int neutral_y = util::ReadIntFromEEPROM(teensy, 4);
-  int range = util::ReadIntFromEEPROM(teensy, 8);
+  const int neutral_x = util::ReadIntFromEEPROM(teensy, 0);
+  const int neutral_y = util::ReadIntFromEEPROM(teensy, 4);
+  const int range = util::ReadIntFromEEPROM(teensy, 8);
   set_x_in(neutral_x, range);
   set_y_in(neutral_y, range);
-  set_xy_angle(util::ReadShortFromEEPROM(teensy, 12));
-  set_xz_angle(util::ReadShortFromEEPROM(teensy, 14));
-  set_yz_angle(util::ReadShortFromEEPROM(teensy, 16));
-  curr_coords_ = {out_neutral_, out_neutral_};
+  z_min_ = util::ReadIntFromEEPROM(teensy, 12);
+  set_xy_angle(util::ReadShortFromEEPROM(teensy, 16));
+  set_xz_angle(util::ReadShortFromEEPROM(teensy, 18));
+  set_yz_angle(util::ReadShortFromEEPROM(teensy, 20));
+  curr_coords_ = {out_.neutral, out_.neutral};
 }
 
 int HallJoystick::Normalize(const Teensy& teensy, double val,
@@ -38,14 +38,35 @@ int HallJoystick::Normalize(const Teensy& teensy, double val,
 
 int HallJoystick::ResolveDigitalCoord(int coord) {
   const int percent_tilted =
-      ((coord - out_neutral_) * 100) / (out_neutral_ - out_.min);
+      ((coord - out_.neutral) * 100) / (out_.neutral - out_.min);
   if (percent_tilted <= threshold_.first) {
     return out_.min;
   }
   if (percent_tilted >= threshold_.second) {
     return out_.max;
   }
-  return out_neutral_;
+  return out_.neutral;
+}
+
+HallJoystick::Point HallJoystick::RotatePoint(const HallJoystick::Point& p) {
+  // Translate neutral inputs to the origin.
+  const float x = p.x - x_in_.neutral;
+  const float y = p.y - y_in_.neutral;
+  const float z = p.z - z_min_;
+
+  // 1. XY plane rotation.
+  const double r1_x = x * cos(xy_angle_) + y * sin(xy_angle_);
+  const double r1_y = -x * sin(xy_angle_) + y * cos(xy_angle_);
+  // 2. XZ plane rotation.
+  const double r2_x = r1_x * cos(xz_angle_) - z * sin(xz_angle_);
+  const double r2_z = r1_x * sin(xz_angle_) + z * cos(xz_angle_);
+  // 3. YZ axis rotation.
+  const double r3_y = r1_y * cos(yz_angle_) + r2_z * sin(yz_angle_);
+  const double r3_z = -r1_y * sin(yz_angle_) + r2_z * cos(yz_angle_);
+
+  // Translate back to original position.
+  return {
+      .x = r2_x + x_in_.neutral, .y = r3_y + y_in_.neutral, .z = r3_z + z_min_};
 }
 
 HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
@@ -56,24 +77,22 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   teensy.UpdateHallData();
   last_fetch_micros_ = teensy.Micros();
 
-  float raw_x = teensy.GetHallX();
-  float raw_y = -teensy.GetHallY();
-  float raw_z = teensy.GetHallZ();
+  const int raw_x = teensy.GetHallX() * 1000000;
+  const int raw_y = -teensy.GetHallY() * 1000000;
+  const int raw_z = teensy.GetHallZ() * 1000000;
 
-  // Apply rotations piecewise. No-op if the angle is 0.
-  // 1. XY plane rotation.
-  double rotated_x = raw_x * cos(xy_angle_) + raw_y * sin(xy_angle_);
-  double rotated_y = -raw_x * sin(xy_angle_) + raw_y * cos(xy_angle_);
-  // 2. XZ plane rotation.
-  rotated_x = rotated_x * cos(xz_angle_) - raw_z * sin(xz_angle_);
-  double rotated_z = rotated_x * sin(xz_angle_) + raw_z * cos(xz_angle_);
-  // 3. YZ axis rotation.
-  rotated_y = rotated_y * cos(yz_angle_) + rotated_z * sin(yz_angle_);
-  rotated_z = -rotated_y * sin(yz_angle_) + rotated_z * cos(yz_angle_);
+  // TODO: log raw z to determine whether min or max should be stored
+
+  double transformed_x = raw_x;
+  double transformed_y = raw_y;
+  double transformed_z = raw_z;
+
+  if (xy_angle_ != 0 || xz_angle_ != 0 || yz_angle_ != 0) {
+  }
 
   // Flatten points onto the XY plane.
-  int x = rotated_x / rotated_z * 1000000;
-  int y = rotated_y / rotated_z * 1000000;
+  int x = transformed_x / transformed_z * 1000000;
+  int y = transformed_y / transformed_z * 1000000;
 
   x = Normalize(teensy, x, x_in_);
   y = Normalize(teensy, y, y_in_);
