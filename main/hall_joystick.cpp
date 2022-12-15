@@ -20,15 +20,28 @@ HallJoystick::HallJoystick(const Teensy& teensy, int min, int max,
   const int range = util::ReadIntFromEEPROM(teensy, 8);
   set_x_in(neutral_x, range);
   set_y_in(neutral_y, range);
-  z_min_ = util::ReadIntFromEEPROM(teensy, 12);
-  set_xy_angle(util::ReadShortFromEEPROM(teensy, 16));
-  set_xz_angle(util::ReadShortFromEEPROM(teensy, 18));
-  set_yz_angle(util::ReadShortFromEEPROM(teensy, 20));
+  set_xy_angle(util::ReadShortFromEEPROM(teensy, 12));
+  set_xz_angle(util::ReadShortFromEEPROM(teensy, 14));
+  set_yz_angle(util::ReadShortFromEEPROM(teensy, 16));
   curr_coords_ = {out_.neutral, out_.neutral};
 }
 
-int HallJoystick::Normalize(const Teensy& teensy, double val,
-			    const Bounds& in) {
+HallJoystick::Point HallJoystick::RotatePoint(const HallJoystick::Point& p) {
+  // 1. XY plane rotation.
+  const double r1_x = p.x * cos(xy_angle_) + p.y * sin(xy_angle_);
+  const double r1_y = -p.x * sin(xy_angle_) + p.y * cos(xy_angle_);
+  // 2. XZ plane rotation.
+  const double r2_x = r1_x * cos(xz_angle_) - p.z * sin(xz_angle_);
+  const double r2_z = r1_x * sin(xz_angle_) + p.z * cos(xz_angle_);
+  // 3. YZ axis rotation.
+  const double r3_y = r1_y * cos(yz_angle_) + r2_z * sin(yz_angle_);
+  const double r3_z = -r1_y * sin(yz_angle_) + r2_z * cos(yz_angle_);
+
+  return {r2_x, r3_y, r3_z};
+}
+
+int HallJoystick::Normalize(const Teensy& teensy, int val,
+			    const InputBounds& in) {
   int mapped =
       round(static_cast<double>(val - in.min) /
 		static_cast<double>(in.max - in.min) * (out_.max - out_.min) +
@@ -48,27 +61,6 @@ int HallJoystick::ResolveDigitalCoord(int coord) {
   return out_.neutral;
 }
 
-HallJoystick::Point HallJoystick::RotatePoint(const HallJoystick::Point& p) {
-  // Translate neutral inputs to the origin.
-  const float x = p.x - x_in_.neutral;
-  const float y = p.y - y_in_.neutral;
-  const float z = p.z - z_min_;
-
-  // 1. XY plane rotation.
-  const double r1_x = x * cos(xy_angle_) + y * sin(xy_angle_);
-  const double r1_y = -x * sin(xy_angle_) + y * cos(xy_angle_);
-  // 2. XZ plane rotation.
-  const double r2_x = r1_x * cos(xz_angle_) - z * sin(xz_angle_);
-  const double r2_z = r1_x * sin(xz_angle_) + z * cos(xz_angle_);
-  // 3. YZ axis rotation.
-  const double r3_y = r1_y * cos(yz_angle_) + r2_z * sin(yz_angle_);
-  const double r3_z = -r1_y * sin(yz_angle_) + r2_z * cos(yz_angle_);
-
-  // Translate back to original position.
-  return {
-      .x = r2_x + x_in_.neutral, .y = r3_y + y_in_.neutral, .z = r3_z + z_min_};
-}
-
 HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   if (teensy.Micros() - last_fetch_micros_ < 330) {
     return curr_coords_;
@@ -77,22 +69,14 @@ HallJoystick::Coordinates HallJoystick::GetCoordinates(Teensy& teensy) {
   teensy.UpdateHallData();
   last_fetch_micros_ = teensy.Micros();
 
-  const int raw_x = teensy.GetHallX() * 1000000;
-  const int raw_y = -teensy.GetHallY() * 1000000;
-  const int raw_z = teensy.GetHallZ() * 1000000;
+  HallJoystick::Point cursor = {teensy.GetHallX(), teensy.GetHallY(),
+				teensy.GetHallZ()};
 
-  // TODO: log raw z to determine whether min or max should be stored
-
-  double transformed_x = raw_x;
-  double transformed_y = raw_y;
-  double transformed_z = raw_z;
-
-  if (xy_angle_ != 0 || xz_angle_ != 0 || yz_angle_ != 0) {
-  }
+  cursor = RotatePoint(cursor);
 
   // Flatten points onto the XY plane.
-  int x = transformed_x / transformed_z * 1000000;
-  int y = transformed_y / transformed_z * 1000000;
+  int x = cursor.x / cursor.z * 1000000;
+  int y = cursor.y / cursor.z * 1000000;
 
   x = Normalize(teensy, x, x_in_);
   y = Normalize(teensy, y, y_in_);

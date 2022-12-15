@@ -38,8 +38,8 @@ class Configurator {
 
   std::unique_ptr<Teensy> teensy_;
   std::unique_ptr<HallJoystick> joystick_;
-  int neutral_x_ = 0;
-  int neutral_y_ = 0;
+  HallJoystick::Point neutral_x_;
+  HallJoystick::Point neutral_y_;
   int range_ = 0;
   int range_tick_ = 0;
   int16_t xy_angle_ticks_ = 0;

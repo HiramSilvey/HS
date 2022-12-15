@@ -212,7 +212,7 @@ void PCController::UpdateButtons(const PCButtonPinMapping& mapping) {
 void PCController::Loop() {
   HallJoystick::Coordinates coords = joystick_->GetCoordinates(*teensy_);
   teensy_->SetJoystickX(coords.x);
-  teensy_->SetJoystickY(joystick_->out().max - coords.y);
+  teensy_->SetJoystickY(coords.y);
 
   bool mod_active = false;
   for (const auto& pin : base_mapping_.mod) {

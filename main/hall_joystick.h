@@ -16,10 +16,21 @@ class HallJoystick {
   // digital joystick activation threshold.
   explicit HallJoystick(const Teensy& teensy, int min, int max, int threshold);
 
+  struct InputBounds {
+    int min;
+    int max;
+  };
+
   struct Point {
     double x;
     double y;
     double z;
+  };
+
+  struct OutputBounds {
+    int min;
+    int neutral;
+    int max;
   };
 
   struct Coordinates {
@@ -27,32 +38,22 @@ class HallJoystick {
     int y;
   };
 
-  struct Bounds {
-    int min;
-    int neutral;
-    int max;
-  };
-
   static inline double GetAngleFromTicks(int16_t ticks) {
     return (M_PI * ticks) / 1024.0;
   }
 
-  inline Bounds x_in() { return x_in_; }
-  inline Bounds y_in() { return y_in_; }
+  inline InputBounds x_in() { return x_in_; }
+  inline InputBounds y_in() { return y_in_; }
   inline double xy_angle() { return xy_angle_; }
   inline double xz_angle() { return xz_angle_; }
   inline double yz_angle() { return yz_angle_; }
-  inline Bounds out() { return out_; }
+  inline OutputBounds out() { return out_; }
 
   inline void set_x_in(int neutral_x, int range) {
-    x_in_ = {.min = neutral_x - range,
-	     .neutral = neutral_x,
-	     .max = neutral_x + range};
+    x_in_ = {.min = neutral_x - range, .max = neutral_x + range};
   }
   inline void set_y_in(int neutral_y, int range) {
-    y_in_ = {.min = neutral_y - range,
-	     .neutral = neutral_y,
-	     .max = neutral_y + range};
+    y_in_ = {.min = neutral_y - range, .max = neutral_y + range};
   }
   inline void set_xy_angle(int16_t xy_angle_ticks) {
     xy_angle_ = GetAngleFromTicks(xy_angle_ticks);
@@ -74,7 +75,7 @@ class HallJoystick {
 
   // Map the provided int value from the specified input range to the global
   // output range.
-  int Normalize(const Teensy& teensy, double val, const Bounds& in);
+  int Normalize(const Teensy& teensy, int val, const InputBounds& in);
 
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);
@@ -84,15 +85,14 @@ class HallJoystick {
 
  private:
   // Input data bounds and rotation angles.
-  Bounds x_in_;
-  Bounds y_in_;
-  int z_min_;
+  InputBounds x_in_;
+  InputBounds y_in_;
   double xy_angle_;
   double xz_angle_;
   double yz_angle_;
 
   // Output data bounds.
-  Bounds out_;
+  OutputBounds out_;
 
   // Digital joystick activation thresholds (negative, positive).
   std::pair<int, int> threshold_;
