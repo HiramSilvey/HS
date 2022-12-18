@@ -1,7 +1,7 @@
 name: "Guilty Gear -strive-"
 platform_config {
     platform: PC
-    position: 3
+    position: 4
 }
 layout {
     joystick_threshold: 65                   # Digital joystick

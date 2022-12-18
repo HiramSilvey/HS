@@ -1,7 +1,7 @@
-name: "Super Smash Bros. Melee, Primary"
+name: "Super Smash Bros. Melee, Ice Climbers"
 platform_config {
     platform: PC
-    position: 1
+    position: 2
 }
 layout {
     base {
@@ -11,7 +11,7 @@ layout {
 	pinky_top {
 	  analog {
 	    id: SLIDER_LEFT                     # R
-	    value: 1022                         # Heaviest light shield value on Dolphin
+	    value: 598                          # Lightest light shield value on Dolphin
 	  }
 	}
 	index_middle { digital: L2 }            # L
@@ -20,7 +20,7 @@ layout {
 	pinky_middle {
 	  analog {
 	    id: SLIDER_LEFT                     # R
-	    value: 598                          # Lightest light shield value on Dolphin
+	    value: 1022                         # Heaviest light shield value on Dolphin
 	  }
 	}
 	thumb_top { digital: X }                # A

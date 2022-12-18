@@ -1,7 +1,7 @@
 name: "Hollow Knight"
 platform_config: {
     platform: PC
-    position: 2
+    position: 3
 }
 layout: {
     joystick_threshold: 45                 # Digital joystick
