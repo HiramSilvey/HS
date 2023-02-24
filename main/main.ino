@@ -39,7 +39,7 @@ void setup() {
 
   auto teensy = std::make_unique<hs::TeensyImpl>();
   if (teensy->DigitalReadLow(hs::pins::kLeftOuter)) {
-    hs::configurator::Configure(std::move(teensy));
+    hs::configurator::StoreProfiles(*teensy);
     exit(0);
   }
 

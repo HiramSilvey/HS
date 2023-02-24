@@ -24,16 +24,16 @@ using ::testing::Return;
 auto MappingEq(const PCButtonPinMapping& expected) {
   return AllOf(
       Field("button_id_to_pins", &PCButtonPinMapping::button_id_to_pins,
-            expected.button_id_to_pins),
+	    expected.button_id_to_pins),
       Field("mod", &PCButtonPinMapping::mod, expected.mod),
       Field("z_y", &PCButtonPinMapping::z_y,
-            ElementsAreArray(AnalogEq(expected.z_y))),
+	    ElementsAreArray(AnalogEq(expected.z_y))),
       Field("z_x", &PCButtonPinMapping::z_x,
-            ElementsAreArray(AnalogEq(expected.z_x))),
+	    ElementsAreArray(AnalogEq(expected.z_x))),
       Field("slider_left", &PCButtonPinMapping::slider_left,
-            ElementsAreArray(AnalogEq(expected.slider_left))),
+	    ElementsAreArray(AnalogEq(expected.slider_left))),
       Field("slider_right", &PCButtonPinMapping::slider_right,
-            ElementsAreArray(AnalogEq(expected.slider_right))),
+	    ElementsAreArray(AnalogEq(expected.slider_right))),
       Field("hat_up", &PCButtonPinMapping::hat_up, expected.hat_up),
       Field("hat_down", &PCButtonPinMapping::hat_down, expected.hat_down),
       Field("hat_left", &PCButtonPinMapping::hat_left, expected.hat_left),
@@ -57,26 +57,26 @@ TEST_F(PCControllerTest, GetButtonPinMapping_StandardDigital) {
   hs_profile_Profile_Layer layer = {
       .thumb_top = DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
       .thumb_middle =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_CIRCLE),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_CIRCLE),
       .thumb_bottom =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_TRIANGLE),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_TRIANGLE),
       .index_top =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_SQUARE),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_SQUARE),
       .index_middle =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L1),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L1),
       .middle_top =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L2),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L2),
       .middle_middle =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L3),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_L3),
       .middle_bottom =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R1),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R1),
       .ring_top = DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R2),
       .ring_middle =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R3),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R3),
       .ring_bottom =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_OPTIONS),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_OPTIONS),
       .pinky_top =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_SHARE)};
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_SHARE)};
 
   PCButtonPinMapping expected_mapping;
   expected_mapping.button_id_to_pins[2] = {pins::kThumbTop};
@@ -92,73 +92,75 @@ TEST_F(PCControllerTest, GetButtonPinMapping_StandardDigital) {
   expected_mapping.button_id_to_pins[10] = {pins::kRingBottom};
   expected_mapping.button_id_to_pins[9] = {pins::kPinkyTop};
 
+  EXPECT_CALL(*teensy_, Pow(2, 10)).WillOnce(Return(1024));
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
-              MappingEq(expected_mapping));
+	      MappingEq(expected_mapping));
 }
 
 TEST_F(PCControllerTest, GetButtonPinMapping_SpecialDigital) {
   hs_profile_Profile_Layer layer = {
       .thumb_top =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R_STICK_UP),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_R_STICK_UP),
       .thumb_middle = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN),
+	  hs_profile_Profile_Layer_DigitalAction_R_STICK_DOWN),
       .thumb_bottom = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT),
+	  hs_profile_Profile_Layer_DigitalAction_R_STICK_LEFT),
       .index_top = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT),
+	  hs_profile_Profile_Layer_DigitalAction_R_STICK_RIGHT),
       .index_middle = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MIN),
+	  hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MIN),
       .middle_top = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MAX),
+	  hs_profile_Profile_Layer_DigitalAction_SLIDER_LEFT_MAX),
       .middle_middle = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MIN),
+	  hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MIN),
       .middle_bottom =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_DOWN),
       .ring_top =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_UP),
       .ring_middle = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MAX),
+	  hs_profile_Profile_Layer_DigitalAction_SLIDER_RIGHT_MAX),
       .ring_bottom =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_D_PAD_LEFT),
       .left_outer = DigitalLayerAction(
-          hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT),
+	  hs_profile_Profile_Layer_DigitalAction_D_PAD_RIGHT),
       .left_inner =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_MOD)};
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_MOD)};
 
   const int joystick_min = 0;
   const int joystick_max = 1023;
 
   PCButtonPinMapping expected_mapping;
   expected_mapping.z_y = {{joystick_max, pins::kThumbTop},
-                          {joystick_min, pins::kThumbMiddle}};
+			  {joystick_min, pins::kThumbMiddle}};
   expected_mapping.z_x = {{joystick_min, pins::kThumbBottom},
-                          {joystick_max, pins::kIndexTop}};
+			  {joystick_max, pins::kIndexTop}};
   expected_mapping.slider_left = {{joystick_min, pins::kIndexMiddle},
-                                  {joystick_max, pins::kMiddleTop}};
+				  {joystick_max, pins::kMiddleTop}};
   expected_mapping.slider_right = {{joystick_min, pins::kMiddleMiddle},
-                                   {joystick_max, pins::kRingMiddle}};
+				   {joystick_max, pins::kRingMiddle}};
   expected_mapping.hat_up = {pins::kRingTop};
   expected_mapping.hat_down = {pins::kMiddleBottom};
   expected_mapping.hat_left = {pins::kRingBottom};
   expected_mapping.hat_right = {pins::kLeftOuter};
   expected_mapping.mod = {pins::kLeftInner};
 
+  EXPECT_CALL(*teensy_, Pow(2, 10)).WillOnce(Return(1024));
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
-              MappingEq(expected_mapping));
+	      MappingEq(expected_mapping));
 }
 
 TEST_F(PCControllerTest, GetButtonPinMapping_Analog) {
   hs_profile_Profile_Layer layer = {
       .thumb_top = AnalogLayerAction(
-          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 100),
+	  hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 100),
       .thumb_middle = AnalogLayerAction(
-          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X, 101),
+	  hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_X, 101),
       .pinky_middle = AnalogLayerAction(
-          hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_LEFT, 102),
+	  hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_LEFT, 102),
       .pinky_bottom = AnalogLayerAction(
-          hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_RIGHT, 103)};
+	  hs_profile_Profile_Layer_AnalogAction_ID_SLIDER_RIGHT, 103)};
 
   PCButtonPinMapping expected_mapping;
   expected_mapping.z_y = {{100, pins::kThumbTop}};
@@ -166,40 +168,43 @@ TEST_F(PCControllerTest, GetButtonPinMapping_Analog) {
   expected_mapping.slider_left = {{102, pins::kPinkyMiddle}};
   expected_mapping.slider_right = {{103, pins::kPinkyBottom}};
 
+  EXPECT_CALL(*teensy_, Pow(2, 10)).WillOnce(Return(1024));
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
-              MappingEq(expected_mapping));
+	      MappingEq(expected_mapping));
 }
 
 TEST_F(PCControllerTest, GetButtonPinMapping_MultiplePinsOneButton) {
   hs_profile_Profile_Layer layer = {
       .thumb_top = AnalogLayerAction(
-          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 100),
+	  hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 100),
       .thumb_middle = AnalogLayerAction(
-          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 101),
+	  hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 101),
       .thumb_bottom = AnalogLayerAction(
-          hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 102),
+	  hs_profile_Profile_Layer_AnalogAction_ID_R_STICK_Y, 102),
       .index_top = DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
       .index_middle =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X),
       .middle_top =
-          DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X)};
+	  DigitalLayerAction(hs_profile_Profile_Layer_DigitalAction_X)};
 
   PCButtonPinMapping expected_mapping;
   expected_mapping.z_y = {{100, pins::kThumbTop},
-                          {101, pins::kThumbMiddle},
-                          {102, pins::kThumbBottom}};
+			  {101, pins::kThumbMiddle},
+			  {102, pins::kThumbBottom}};
   expected_mapping.button_id_to_pins[2] = {pins::kIndexTop, pins::kIndexMiddle,
-                                           pins::kMiddleTop};
+					   pins::kMiddleTop};
 
+  EXPECT_CALL(*teensy_, Pow(2, 10)).WillOnce(Return(1024));
   PCController controller(std::move(teensy_));
   EXPECT_THAT(controller.GetButtonPinMapping(layer),
-              MappingEq(expected_mapping));
+	      MappingEq(expected_mapping));
 }
 
 TEST_F(PCControllerTest, GetDPadAngle) {
   const uint8_t pin = 1;
 
+  EXPECT_CALL(*teensy_, Pow(2, 10)).WillOnce(Return(1024));
   EXPECT_CALL(*teensy_, DigitalReadLow(pin)).WillRepeatedly(Return(true));
 
   PCController controller(std::move(teensy_));
@@ -250,9 +255,9 @@ TEST_F(PCControllerTest, GetDPadAngle) {
   EXPECT_EQ(controller.GetDPadAngle(mapping), 270);
 
   mapping = {.hat_up = {pin},
-             .hat_down = {pin},
-             .hat_left = {pin},
-             .hat_right = {pin}};
+	     .hat_down = {pin},
+	     .hat_left = {pin},
+	     .hat_right = {pin}};
   EXPECT_EQ(controller.GetDPadAngle(mapping), -1);
 }
 
@@ -272,9 +277,9 @@ TEST_F(PCControllerTest, UpdateButtons) {
   };
   mapping.mod = digital;
   mapping.button_id_to_pins = {{1, digital},  {2, digital},  {3, digital},
-                               {4, digital},  {5, digital},  {6, digital},
-                               {7, digital},  {8, digital},  {9, digital},
-                               {10, digital}, {11, digital}, {12, digital}};
+			       {4, digital},  {5, digital},  {6, digital},
+			       {7, digital},  {8, digital},  {9, digital},
+			       {10, digital}, {11, digital}, {12, digital}};
 
   EXPECT_CALL(*teensy_, DigitalReadLow(1))
       .Times(20)
@@ -290,6 +295,7 @@ TEST_F(PCControllerTest, UpdateButtons) {
     EXPECT_CALL(*teensy_, SetJoystickHat);
   }
 
+  EXPECT_CALL(*teensy_, Pow(2, 10)).WillOnce(Return(1024));
   PCController controller(std::move(teensy_));
   controller.UpdateButtons(mapping);
 }

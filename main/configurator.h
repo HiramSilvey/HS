@@ -9,17 +9,8 @@
 
 namespace hs {
 namespace configurator {
-namespace internal {
 
-void FetchStoredBounds(const Teensy& teensy);
-void FetchJoystickCoords(Teensy& teensy);
-void CalibrateJoystick(Teensy& teensy);
-void SaveCalibration(const Teensy& teensy);
-void StoreProfiles(const Teensy& teensy);
-
-}  // namespace internal
-
-void Configure(std::unique_ptr<Teensy> teensy);
+void StoreProfiles(Teensy& teensy);
 
 }  // namespace configurator
 }  // namespace hs
