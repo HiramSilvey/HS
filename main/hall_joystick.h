@@ -11,9 +11,9 @@ namespace hs {
 
 class HallJoystick {
  public:
-  // Minimum and maximum values each joystick axis is expected to output +
-  // digital joystick activation threshold.
-  explicit HallJoystick(const Teensy& teensy, int min, int max, int threshold);
+  // Output axis bit precision (i.e. number of bits supported) + digital
+  // joystick activation threshold.
+  explicit HallJoystick(Teensy& teensy, int out_precision, int threshold);
 
   int get_min();
   int get_max();
@@ -24,14 +24,8 @@ class HallJoystick {
     int y;
   };
 
-  struct Bounds {
-    int min;
-    int max;
-  };
-
-  // Map the provided int value from the specified input range to the global
-  // output range.
-  int Normalize(const Teensy& teensy, double val, const Bounds& in);
+  // Translate the raw input value to the expected output range.
+  int Translate(int val);
 
   // Resolve coordinate value based on digital activation threshold.
   int ResolveDigitalCoord(int coord);
@@ -40,24 +34,16 @@ class HallJoystick {
   Coordinates GetCoordinates(Teensy& teensy);
 
  private:
-  // Input data bounds and rotation angle.
-  Bounds x_in_;
-  Bounds y_in_;
-  double angle_;
+  // The difference between the input and output bit precision (i.e. number of
+  // bits supported).
+  const int precision_diff_;
 
-  // Output data bounds.
-  const Bounds out_;
+  // Output maximum and neutral values. Used for digital coordinate resolution.
+  const int out_max_;
   const int out_neutral_;
 
   // Digital joystick activation thresholds (negative, positive).
   const std::pair<int, int> threshold_;
-
-  // A buffer holding the current joystick coordinates that can be used when the
-  // sensor data isn't ready yet.
-  Coordinates curr_coords_;
-
-  // Time since the last sensor data fetch.
-  unsigned long last_fetch_micros_;
 };
 
 }  // namespace hs

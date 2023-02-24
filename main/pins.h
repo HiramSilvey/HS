@@ -11,22 +11,26 @@ namespace hs {
 namespace pins {
 
 // Button pins.
-const int kThumbTop = 0;
-const int kThumbMiddle = 1;
-const int kThumbBottom = 2;
-const int kIndexTop = 3;
-const int kIndexMiddle = 4;
-const int kMiddleTop = 5;
-const int kMiddleMiddle = 6;
-const int kMiddleBottom = 7;
-const int kRingTop = 8;
-const int kRingMiddle = 9;
-const int kRingBottom = 10;
-const int kPinkyTop = 11;
-const int kPinkyMiddle = 12;
-const int kPinkyBottom = 13;
-const int kLeftOuter = 14;
-const int kLeftInner = 15;
+constexpr int kThumbTop = 0;
+constexpr int kThumbMiddle = 1;
+constexpr int kThumbBottom = 2;
+constexpr int kIndexTop = 3;
+constexpr int kIndexMiddle = 4;
+constexpr int kMiddleTop = 5;
+constexpr int kMiddleMiddle = 6;
+constexpr int kMiddleBottom = 7;
+constexpr int kRingTop = 8;
+constexpr int kRingMiddle = 9;
+constexpr int kRingBottom = 10;
+constexpr int kPinkyTop = 11;
+constexpr int kPinkyMiddle = 12;
+constexpr int kPinkyBottom = 13;
+constexpr int kLeftOuter = 14;
+constexpr int kLeftInner = 15;
+
+// Joystick pins.
+constexpr int kX = 17;
+constexpr int kY = 19;
 
 struct ActionPin {
   hs_profile_Profile_Layer_Action action;

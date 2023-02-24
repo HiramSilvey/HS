@@ -4,7 +4,6 @@
 #define TEENSY_IMPL_H_
 
 #include <EEPROM.h>
-#include <Tlv493d.h>
 
 #include "Arduino.h"
 #include "teensy.h"
@@ -13,18 +12,14 @@ namespace hs {
 
 class TeensyImpl : public Teensy {
  public:
-  TeensyImpl() {
-    sensor_.begin();
-    sensor_.setAccessMode(sensor_.MASTERCONTROLLEDMODE);
-    sensor_.disableTemp();
-  }
+  inline int AnalogRead(uint8_t pin) const override { return analogRead(pin); }
   inline bool DigitalReadLow(uint8_t pin) const override {
     return digitalRead(pin) == LOW;
   }
   inline void Exit(int status) const override { exit(status); }
 
-  inline int Constrain(int amount, int low, int high) const override {
-    return constrain(amount, low, high);
+  inline double Pow(float base, float exponent) const override {
+    return pow(base, exponent);
   }
 
   inline void SerialWrite(uint8_t val) const override { Serial.write(val); }
@@ -64,14 +59,6 @@ class TeensyImpl : public Teensy {
   inline void EEPROMUpdate(int addr, uint8_t val) const override {
     EEPROM.update(addr, val);
   }
-
-  inline void UpdateHallData() override { sensor_.updateData(); }
-  inline float GetHallX() override { return sensor_.getX(); }
-  inline float GetHallY() override { return sensor_.getY(); }
-  inline float GetHallZ() override { return sensor_.getZ(); }
-
- private:
-  Tlv493d sensor_;
 };
 
 }  // namespace hs

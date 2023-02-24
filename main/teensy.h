@@ -10,11 +10,12 @@ class Teensy {
   virtual ~Teensy() {}
 
   // Arduino
+  virtual int AnalogRead(uint8_t pin) const = 0;
   virtual bool DigitalReadLow(uint8_t pin) const = 0;
   virtual void Exit(int status) const = 0;
 
   // Arduino: Math
-  virtual int Constrain(int amount, int low, int high) const = 0;
+  virtual double Pow(float base, float exponent) const = 0;
 
   // Arduino: Serial
   virtual void SerialWrite(uint8_t val) const = 0;
@@ -41,12 +42,6 @@ class Teensy {
   // EEPROM
   virtual uint8_t EEPROMRead(int addr) const = 0;
   virtual void EEPROMUpdate(int addr, uint8_t val) const = 0;
-
-  // Tlv493d
-  virtual void UpdateHallData() = 0;
-  virtual float GetHallX() = 0;
-  virtual float GetHallY() = 0;
-  virtual float GetHallZ() = 0;
 };
 
 }  // namespace hs
