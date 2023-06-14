@@ -1,0 +1,22 @@
+name: "Street Fighter 6"
+platform_config {
+    platform: PC
+    position: 5
+}
+layout {
+    joystick_threshold: 65                 # Digital joystick
+    base {
+        index_top { digital: SQUARE }      # LP
+        middle_top { digital: TRIANGLE }   # MP
+        ring_top { digital: R1 }           # HP
+        pinky_top { digital: L1 }          # HP+HK
+        index_middle { digital: X }        # LK
+        middle_middle { digital: CIRCLE }  # MK
+        ring_middle { digital: R2 }        # HK
+        pinky_middle { digital: L2 }       # MP+MK
+        thumb_top { digital: R3 }          # LP+LK
+        thumb_middle { digital: L3 }       # Unused
+        left_outer { digital: SHARE }      # Start 1
+        left_inner { digital: OPTIONS }    # Start 2
+    }
+}
