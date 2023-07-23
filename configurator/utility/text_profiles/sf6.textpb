@@ -4,7 +4,7 @@ platform_config {
     position: 5
 }
 layout {
-    joystick_threshold: 65                 # Digital joystick
+    joystick_threshold: 50                 # Digital joystick
     base {
         index_top { digital: SQUARE }      # LP
         middle_top { digital: TRIANGLE }   # MP
