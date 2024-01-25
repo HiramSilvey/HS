@@ -1,4 +1,4 @@
-// Copyright 2021 Hiram Silvey
+// Copyright 2024 Hiram Silvey
 
 use profile::profile::layer::action::ActionType::{Analog, Digital};
 use profile::profile::layer::Action;

@@ -1,4 +1,4 @@
-// Copyright 2021 Hiram Silvey
+// Copyright 2024 Hiram Silvey
 
 #ifndef CONFIGURATOR_H_
 #define CONFIGURATOR_H_

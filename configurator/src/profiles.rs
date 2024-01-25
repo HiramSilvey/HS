@@ -1,4 +1,4 @@
-// Copyright 2021 Hiram Silvey
+// Copyright 2024 Hiram Silvey
 
 use crate::profile::Profile;
 use anyhow::Result;

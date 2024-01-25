@@ -1,4 +1,4 @@
-// Copyright 2021 Hiram Silvey
+// Copyright 2024 Hiram Silvey
 
 #ifndef DECODER_H_
 #define DECODER_H_

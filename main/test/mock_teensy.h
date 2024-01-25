@@ -1,4 +1,4 @@
-// Copyright 2021 Hiram Silvey
+// Copyright 2024 Hiram Silvey
 
 #ifndef MOCK_TEENSY_H_
 #define MOCK_TEENSY_H_

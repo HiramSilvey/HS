@@ -1,4 +1,4 @@
-// Copyright 2021 Hiram Silvey
+// Copyright 2024 Hiram Silvey
 
 #ifndef HALL_JOYSTICK_H_
 #define HALL_JOYSTICK_H_
